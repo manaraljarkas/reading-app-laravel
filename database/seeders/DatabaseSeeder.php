@@ -28,6 +28,9 @@ class DatabaseSeeder extends Seeder
         // AuthorSeeder::class,
        //  BookSeeder::class,
         ChallengeSeeder::class,
+        //UserSeeder::class,
+        //SizeCategory::class
+        ReaderSeeder::class,
 );
     }
 }
