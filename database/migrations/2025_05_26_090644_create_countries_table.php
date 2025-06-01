@@ -16,6 +16,7 @@ return new class extends Migration
             $table->json('name');
             $table->float('longitude');
             $table->float('latitude');
+            
             $table->timestamps();
         });
     }

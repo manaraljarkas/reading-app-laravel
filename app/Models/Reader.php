@@ -18,7 +18,8 @@ class Reader extends Model
         'nickname',
         'quote',
         'number_of_books',
-        'number_of_challenges'];
+        'number_of_challenges',
+         'user_id'];
 
     public function requests()
     {
