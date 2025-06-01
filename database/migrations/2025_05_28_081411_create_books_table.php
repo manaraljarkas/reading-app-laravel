@@ -23,7 +23,7 @@ return new class extends Migration
             $table->boolean('is_challenged');
             $table->foreignId('author_id')->constrained('authors')->cascadeOnDelete();
             $table->foreignId('category_id')->constrained('categories')->cascadeOnDelete();
-            $table->foreignId('category_size_id')->constrained('size_categories')->cascadeOnDelete();
+            $table->foreignId('size_category_id')->constrained('size_categories')->cascadeOnDelete();
             $table->timestamps();
         });
     }

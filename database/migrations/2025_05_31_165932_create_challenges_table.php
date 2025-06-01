@@ -11,18 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('readers', function (Blueprint $table) {
+        Schema::create('challenges', function (Blueprint $table) {
             $table->id();
+            $table->json('title');
+            $table->json('description');
             $table->integer('points');
-            $table->string('first_name');
-            $table->string('last_name');
-            $table->string('picture');
-            $table->text('bio');
-            $table->string('nickname');
-            $table->text('quote');
+            $table->integer('duration');
             $table->integer('number_of_books');
-            $table->integer('number_of_challenges');
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('size_category_id')->constrained('size_categories')->cascadeOnDelete();
+            $table->foreignId('category_id')->constrained('categories')->cascadeOnDelete();
             $table->timestamps();
         });
     }
@@ -32,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('readers');
+        Schema::dropIfExists('challenges');
     }
 };

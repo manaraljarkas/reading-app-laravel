@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Challenge extends Model
+{
+    protected $fillable =
+    ['title', 'description', 'points', 'duration',
+    'number_of_books', 'size_category_id', 'category_id'];
+
+    public function books()
+    {
+        return $this->belongsToMany(Book::class, 'challenge_books');
+    }
+    public function readers()
+    {
+        return $this->belongsToMany(Reader::class, 'reader_challenges');
+    }
+    public function sizeCategories()
+    {
+        return $this->belongsTo(SizeCategory::class);
+    }
+    public function categories()
+    {
+        return $this->belongsTo(Category::class, 'categories');
+    }
+}

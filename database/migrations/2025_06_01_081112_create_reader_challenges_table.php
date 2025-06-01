@@ -11,13 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('reader_books', function (Blueprint $table) {
+        Schema::create('reader_challenges', function (Blueprint $table) {
             $table->id();
-            $table->integer('progress');
-            $table->enum('status', ['to_read', 'in_read', 'completed']);
-            $table->boolean('is_favourite');
+            $table->enum('progress', ['in_progress', 'completed', 'failed'])->default('in_progress');
+            $table->foreignId('challenge_id')->constrained('challenges')->cascadeOnDelete();
             $table->foreignId('reader_id')->constrained('readers')->cascadeOnDelete();
-            $table->foreignId('book_id')->constrained('books')->cascadeOnDelete();
             $table->timestamps();
         });
     }
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('reader_books');
+        Schema::dropIfExists('reader_challenges');
     }
 };
