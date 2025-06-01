@@ -24,6 +24,9 @@ class DatabaseSeeder extends Seeder
         $this->call(RolesAndPermissionsSeeder::class,
         //CategorySeeder::class,
         //BadgeSeeder::class,
+        //UserSeeder::class,
+        //SizeCategory::class
+        ReaderSeeder::class,
 );
     }
 }
