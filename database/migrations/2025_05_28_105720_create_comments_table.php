@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-
+use Illuminate\Support\Facades\DB;
 return new class extends Migration
 {
     /**
@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('comments', function (Blueprint $table) {
             $table->id();
-            $table->text('commnet');
+            $table->text('comment');
             $table->foreignId('book_id')->constrained('books')->cascadeOnDelete();
             $table->foreignId('reader_id')->constrained('readers')->cascadeOnDelete();
             $table->timestamps();
