@@ -22,7 +22,7 @@ class BookSeeder extends Seeder
         'star_rate' => 5,
         'number_of_pages' => 150,
         'is_challenged' => false,
-        'author_id' => 1,
+        'author_id' => 2,
         'category_id' => 1,
         'size_category_id' => 1,
         'created_at' => now(),

@@ -14,12 +14,12 @@ return new class extends Migration
         Schema::create('challenges', function (Blueprint $table) {
             $table->id();
             $table->json('title');
-            $table->json('description');
-            $table->integer('points');
+            $table->json('description')->nullable();
+            $table->integer('points')->default(0);
             $table->integer('duration');
             $table->integer('number_of_books');
-            $table->foreignId('size_category_id')->constrained('size_categories')->cascadeOnDelete();
-            $table->foreignId('category_id')->constrained('categories')->cascadeOnDelete();
+            $table->foreignId('size_category_id')->constrained('size_categories')->cascadeOnDelete()->nullable();
+            $table->foreignId('category_id')->constrained('categories')->cascadeOnDelete->nullable();
             $table->timestamps();
         });
     }

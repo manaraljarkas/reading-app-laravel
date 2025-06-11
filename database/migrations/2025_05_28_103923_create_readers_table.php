@@ -13,15 +13,15 @@ return new class extends Migration
     {
         Schema::create('readers', function (Blueprint $table) {
             $table->id();
-            $table->integer('points');
+            $table->integer('points')->default(0);
             $table->string('first_name');
             $table->string('last_name');
-            $table->string('picture');
-            $table->text('bio');
-            $table->string('nickname');
-            $table->text('quote');
-            $table->integer('number_of_books');
-            $table->integer('number_of_challenges');
+            $table->string('picture')->nullable();
+            $table->text('bio')->nullable();
+            $table->string('nickname')->nullable();
+            $table->text('quote')->nullable();
+            $table->integer('number_of_books')->default(0);
+            $table->integer('number_of_challenges')->default(0);
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });

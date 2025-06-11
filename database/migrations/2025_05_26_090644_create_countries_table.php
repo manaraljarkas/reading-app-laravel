@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('countries', function (Blueprint $table) {
             $table->id();
             $table->json('name');
-            $table->float('longitude');
-            $table->float('latitude');
-            
+            $table->float('longitude')->nullable();
+            $table->float('latitude')->nullable();
+
             $table->timestamps();
         });
     }

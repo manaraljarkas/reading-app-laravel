@@ -27,7 +27,7 @@ class DatabaseSeeder extends Seeder
         // SizeCategorySeeder::class
         // AuthorSeeder::class,
        //  BookSeeder::class,
-        ChallengeSeeder::class,
+        //ChallengeSeeder::class,
         //UserSeeder::class,
         //SizeCategory::class
         //ReaderSeeder::class,

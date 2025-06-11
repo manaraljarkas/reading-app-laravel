@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('reader_books', function (Blueprint $table) {
             $table->id();
-            $table->integer('progress');
-            $table->enum('status', ['to_read', 'in_read', 'completed']);
-            $table->boolean('is_favourite');
+            $table->integer('progress')->default(0);
+            $table->enum('status', ['to_read', 'in_read', 'completed'])->default('in_read');
+            $table->boolean('is_favourite')->default(false);
             $table->foreignId('reader_id')->constrained('readers')->cascadeOnDelete();
             $table->foreignId('book_id')->constrained('books')->cascadeOnDelete();
             $table->timestamps();
