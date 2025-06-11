@@ -12,12 +12,12 @@ class Book extends Model
         'book_pdf',
         'publish_date',
         'star_rate',
-        'image_cover',
-        'is_challenged',
+        'cover_image',
         'number_of_pages',
         'category_id',
         'author_id',
-        'category_size_id'
+        'category_size_id',
+        'summary'
     ];
         public function comments()
     {

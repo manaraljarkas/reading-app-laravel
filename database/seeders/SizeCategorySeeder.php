@@ -23,6 +23,5 @@ class SizeCategorySeeder extends Seeder
         'name' => json_encode($size, JSON_UNESCAPED_UNICODE)
         ]);
        }
-
     }
    }

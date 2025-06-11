@@ -30,7 +30,8 @@ class DatabaseSeeder extends Seeder
         ChallengeSeeder::class,
         //UserSeeder::class,
         //SizeCategory::class
-        ReaderSeeder::class,
+        //ReaderSeeder::class,
 );
+
     }
 }

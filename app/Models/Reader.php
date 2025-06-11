@@ -21,9 +21,9 @@ class Reader extends Model
         'number_of_challenges',
          'user_id'];
 
-    public function requests()
+    public function complaints()
     {
-        return $this->hasMany(Request::class);
+        return $this->hasMany(Complaint::class);
     }
     public function badges()
     {
