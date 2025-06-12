@@ -14,9 +14,12 @@ return new class extends Migration
         Schema::create('reader_challenges', function (Blueprint $table) {
             $table->id();
             $table->enum('progress', ['in_progress', 'completed', 'failed'])->default('in_progress');
+            $table->double('percentage');
             $table->foreignId('challenge_id')->constrained('challenges')->cascadeOnDelete();
             $table->foreignId('reader_id')->constrained('readers')->cascadeOnDelete();
+            $table->index(['reader_id', 'challenge_id']);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

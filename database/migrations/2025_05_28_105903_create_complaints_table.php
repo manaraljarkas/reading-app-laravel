@@ -17,6 +17,7 @@ return new class extends Migration
             $table->text('description');
             $table->foreignId('reader_id')->constrained('readers')->cascadeOnDelete();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

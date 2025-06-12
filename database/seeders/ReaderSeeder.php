@@ -65,8 +65,6 @@ class ReaderSeeder extends Seeder
                     'picture' => 'default.jpg',
                     'bio' => 'A passionate book lover.',
                     'quote' => 'Reading is dreaming with open eyes.',
-                    'number_of_books' => rand(1, 20),
-                    'number_of_challenges' => rand(0, 5),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);

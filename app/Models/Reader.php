@@ -4,11 +4,11 @@ namespace App\Models;
 
 
 use Illuminate\Database\Eloquent\Model;
-
-use App\Models\Request;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Reader extends Model
 {
+    use SoftDeletes;
     protected $fillable = [
         'points',
         'first_name',
@@ -17,9 +17,7 @@ class Reader extends Model
         'bio',
         'nickname',
         'quote',
-        'number_of_books',
-        'number_of_challenges',
-         'user_id'];
+        'user_id'];
 
     public function complaints()
     {
@@ -49,5 +47,9 @@ class Reader extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+    public function bookSuggestions()
+    {
+        return $this->hasMany(BookSuggestion::class);
     }
 }

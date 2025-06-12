@@ -17,6 +17,7 @@ return new class extends Migration
             $table->json('achievment');
             $table->string('image');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

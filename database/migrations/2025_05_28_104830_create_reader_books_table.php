@@ -16,9 +16,12 @@ return new class extends Migration
             $table->integer('progress')->default(0);
             $table->enum('status', ['to_read', 'in_read', 'completed'])->default('in_read');
             $table->boolean('is_favourite')->default(false);
+            $table->boolean('is_challenged')->default(false);
             $table->foreignId('reader_id')->constrained('readers')->cascadeOnDelete();
             $table->foreignId('book_id')->constrained('books')->cascadeOnDelete();
+            $table->index(['reader_id', 'book_id']);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

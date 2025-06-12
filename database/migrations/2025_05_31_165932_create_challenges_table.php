@@ -18,9 +18,10 @@ return new class extends Migration
             $table->integer('points')->default(0);
             $table->integer('duration');
             $table->integer('number_of_books');
-            $table->foreignId('size_category_id')->constrained('size_categories')->cascadeOnDelete()->nullable();
-            $table->foreignId('category_id')->constrained('categories')->cascadeOnDelete->nullable();
+            $table->foreignId('size_category_id')->nullable()->constrained('size_categories')->cascadeOnDelete();
+            $table->foreignId('category_id')->nullable()->constrained('categories')->cascadeOnDelete();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

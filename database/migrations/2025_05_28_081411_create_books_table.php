@@ -17,14 +17,15 @@ return new class extends Migration
             $table->json('description')->nullable();
             $table->date('publish_date')->nullable();
             $table->string('book_pdf');
-            $table->string('image_cover');
+            $table->string('cover_image');
             $table->integer('star_rate');
             $table->integer('number_of_pages');
-            $table->boolean('is_challenged');
+            $table->string('summary');
             $table->foreignId('author_id')->constrained('authors')->cascadeOnDelete();
             $table->foreignId('category_id')->constrained('categories')->cascadeOnDelete()->nullable();;
             $table->foreignId('size_category_id')->constrained('size_categories')->cascadeOnDelete()->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

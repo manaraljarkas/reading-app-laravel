@@ -3,12 +3,19 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Challenge extends Model
 {
-    protected $fillable =
-    ['title', 'description', 'points', 'duration',
-    'number_of_books', 'size_category_id', 'category_id'];
+    use SoftDeletes;
+    protected $fillable =[
+        'title',
+        'description',
+        'points',
+        'duration',
+        'number_of_books',
+        'size_category_id',
+        'category_id'];
 
     public function books()
     {

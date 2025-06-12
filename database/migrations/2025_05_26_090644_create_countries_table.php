@@ -16,8 +16,8 @@ return new class extends Migration
             $table->json('name');
             $table->float('longitude')->nullable();
             $table->float('latitude')->nullable();
-
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

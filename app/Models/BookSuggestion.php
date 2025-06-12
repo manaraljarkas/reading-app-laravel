@@ -5,16 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Comment extends Model
+class BookSuggestion extends Model
 {
     use SoftDeletes;
-    protected $fillable = ['commnet','book_id','reader_id'];
+    protected $fillable = ['title', 'author_name', 'note', 'reader_id'];
+
     public function readers()
     {
         return $this->belongsTo(Reader::class);
-    }
-    public function books()
-    {
-        return $this->belongsTo(Book::class);
     }
 }

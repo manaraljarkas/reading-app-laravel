@@ -2,11 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class RequestSeeder extends Seeder
+class ComplaintSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -25,7 +24,7 @@ class RequestSeeder extends Seeder
         $readerIds = DB::table('readers')->pluck('id');
 
         foreach ($readerIds as $index => $readerId) {
-            DB::table('requests')->insert([
+            DB::table('complaints')->insert([
                 'subject' => $subjects[$index % count($subjects)],
                 'description' => 'This is a request from the reader for assistance or feedback.',
                 'reader_id' => $readerId,

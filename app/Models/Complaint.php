@@ -3,19 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Complaint extends Model
 {
-          protected $fillable = [
-            'subject',
-            'description',
-            'reader_id'
+    use SoftDeletes;
+    protected $fillable = ['subject','description','reader_id'];
 
-    ];
-
-      public function readers()
+    public function readers()
     {
         return $this->belongsTo(Reader::class);
     }
-
 }

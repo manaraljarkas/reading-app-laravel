@@ -3,21 +3,23 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Book extends Model
 {
+    use SoftDeletes;
     protected $fillable = [
-        'description',
         'title',
-        'book_pdf',
+        'description',
         'publish_date',
-        'star_rate',
+        'book_pdf',
         'cover_image',
+        'star_rate',
         'number_of_pages',
+        'summary',
         'category_id',
         'author_id',
         'category_size_id',
-        'summary'
     ];
         public function comments()
     {
@@ -43,5 +45,12 @@ class Book extends Model
     {
         return $this->belongsTo(Category::class);
     }
-
+    public function bookChallenges()
+    {
+        return $this->hasOne(bookChallenge::class);
+    }
+    public function bookSuggestions()
+    {
+        return $this->hasMany(BookSuggestion::class);
+    }
 }

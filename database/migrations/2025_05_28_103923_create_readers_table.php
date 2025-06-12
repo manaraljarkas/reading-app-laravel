@@ -20,10 +20,9 @@ return new class extends Migration
             $table->text('bio')->nullable();
             $table->string('nickname')->nullable();
             $table->text('quote')->nullable();
-            $table->integer('number_of_books')->default(0);
-            $table->integer('number_of_challenges')->default(0);
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

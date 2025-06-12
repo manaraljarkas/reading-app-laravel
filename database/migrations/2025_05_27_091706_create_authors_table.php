@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('authors', function (Blueprint $table) {
             $table->id();
             $table->json('name');
-            $table->integer('number_of_books');
             $table->string('image')->nullable();
             $table->foreignId('country_id')->constrained('countries')->cascadeOnDelete();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
