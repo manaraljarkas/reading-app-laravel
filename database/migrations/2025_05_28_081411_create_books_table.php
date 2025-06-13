@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('cover_image');
             $table->integer('star_rate');
             $table->integer('number_of_pages');
-            $table->string('summary');
+            $table->json('summary')->nullable();
             $table->foreignId('author_id')->constrained('authors')->cascadeOnDelete();
             $table->foreignId('category_id')->constrained('categories')->cascadeOnDelete()->nullable();;
             $table->foreignId('size_category_id')->constrained('size_categories')->cascadeOnDelete()->nullable();

@@ -17,22 +17,22 @@ class BadgeSeeder extends Seeder
             [
                 'title' => ['en' => 'First Book', 'ar' => 'أول كتاب'],
                 'achievment' => ['en' => 'Completed your first book', 'ar' => 'أنهيت أول كتاب لك'],
-                'image' => 'first-book.svg',
+                'image' => 'badge_1.jpg',
             ],
             [
                 'title' => ['en' => '5 Books', 'ar' => '5 كتب'],
                 'achievment' => ['en' => 'Completed 5 books', 'ar' => 'أنهيت 5 كتب'],
-                'image' => '5-books.svg',
+                'image' => 'badge_2.jpg',
             ],
             [
                 'title' => ['en' => 'Night Reader', 'ar' => 'قارئ ليلي'],
                 'achievment' => ['en' => 'Read after midnight', 'ar' => 'قرأت بعد منتصف الليل'],
-                'image' => 'night-reader.svg',
+                'image' => 'badge_3.jpg',
             ],
             [
                 'title' => ['en' => 'Streak Master', 'ar' => 'متسلسل القراءة'],
                 'achievment' => ['en' => 'Read for 7 consecutive days', 'ar' => 'قرأت لمدة 7 أيام متتالية'],
-                'image' => 'streak.svg',
+                'image' => 'badge_4.jpg',
             ],
         ];
 
