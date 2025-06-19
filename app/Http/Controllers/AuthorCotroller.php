@@ -1,0 +1,27 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Author;
+use Illuminate\Http\Request;
+
+class AuthorCotroller extends Controller
+{
+   public function index(){
+    $authors = Author::withCount('books')
+        ->with('country')
+        ->get();
+
+    $Authors = $authors->map(function ($author) {
+
+     return [
+        'name' => $author->name,
+         'id' => $author->id,
+        'country_name' => $author->country?->name,
+         'image' => $author->image,
+         'number_of_books' =>$author->books_count ,
+            ];
+        });
+
+    return response()->json($Authors);
+}}

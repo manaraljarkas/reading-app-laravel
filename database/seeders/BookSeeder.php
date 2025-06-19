@@ -68,7 +68,7 @@ class BookSeeder extends Seeder
              'star_rate' => 4,
              'number_of_pages' => 11,
              'summary' => ['en' => 'https://youtu.be/js-Ne9Wd4ms?si=QjCZ2FF9J2CxB25F', 'ar' => 'https://youtu.be/PUnD6SN8ciA?si=vQmGhOdUQrBiIfNx'],
-             'author_id' => 10,
+             'author_id' => 2,
             'category_id' => 2,
             'size_category_id' => 1,
              'created_at' => now(),

@@ -9,11 +9,14 @@ class Author extends Model
 {
     use SoftDeletes;
     protected $fillable = ['name','image','country_id'];
+    protected $casts = [
+    'name' => 'array',
+     ];
     public function books()
     {
         return $this->hasMany(Book::class);
     }
-     public function countries()
+     public function country()
     {
         return $this->belongsTo(Country::class);
     }

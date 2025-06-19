@@ -9,7 +9,11 @@ class Category extends Model
 {
     use SoftDeletes;
     protected $fillable = ['name','icon'];
+    
 
+    protected $casts=[
+    'name'=>'array'
+    ];
     public function readers()
     {
         return $this->belongsToMany(Reader::class, 'reader_categories');
