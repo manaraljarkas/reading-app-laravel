@@ -21,19 +21,21 @@ class DatabaseSeeder extends Seeder
         //     'name' => 'Test User',
         //     'email' => 'test@example.com',
         // ]);
-        $this->call(CountrySeeder::class);
-        $this->call(AuthorSeeder::class);
-        $this->call(CategorySeeder::class);
-        $this->call(SizeCategorySeeder::class);
-        $this->call(UserSeeder::class);
-        $this->call(ReaderSeeder::class);
-        $this->call(BookSeeder::class);
-        $this->call(BadgeSeeder::class);
-        $this->call(BookChallengeSeeder::class);
-        $this->call(BookSuggestionSeeder::class);
-        $this->call(ChallengeSeeder::class);
-        $this->call(CommentSeeder::class);
-        $this->call(ComplaintSeeder::class);
-        $this->call(RolesAndPermissionsSeeder::class);
+        $this->call([
+            CountrySeeder::class,
+            AuthorSeeder::class,
+            CategorySeeder::class,
+            SizeCategorySeeder::class,
+            UserSeeder::class,
+            ReaderSeeder::class,
+            BookSeeder::class,
+            BadgeSeeder::class,
+            BookChallengeSeeder::class,
+            BookSuggestionSeeder::class,
+            ChallengeSeeder::class,
+            CommentSeeder::class,
+            ComplaintSeeder::class,
+            RolesAndPermissionsSeeder::class
+        ]);
     }
 }
