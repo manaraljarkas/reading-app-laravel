@@ -8,6 +8,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Book extends Model
 {
     use SoftDeletes;
+        protected $casts = [
+    'title' => 'array',
+    'description' => 'array',
+    'summary' => 'array',
+       ];
     protected $fillable = [
         'title',
         'description',
@@ -21,6 +26,8 @@ class Book extends Model
         'author_id',
         'category_size_id',
     ];
+
+
         public function comments()
     {
         return $this->hasMany(Comment::class);

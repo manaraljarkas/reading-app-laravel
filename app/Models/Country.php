@@ -9,6 +9,9 @@ class Country extends Model
 {
     use SoftDeletes;
     protected $fillable = ['name','longitude','latitude'];
+    protected $casts=[
+    'name'=>'array'
+    ];
     public function authors()
     {
         return $this->hasMany(Author::class);

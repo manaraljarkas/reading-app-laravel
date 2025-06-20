@@ -17,6 +17,10 @@ class Challenge extends Model
         'size_category_id',
         'category_id'];
 
+     protected $casts=['title'=>'array'
+     ,'description'=>'array'
+    ];
+
     public function books()
     {
         return $this->belongsToMany(Book::class, 'challenge_books');
