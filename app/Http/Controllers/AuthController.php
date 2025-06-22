@@ -32,6 +32,7 @@ class AuthController extends Controller
             'message'=>'User Registered Successfully.',
             'token'=>$token
         ], 201);
+
     }
 
     public function login(Request $request)
@@ -40,20 +41,24 @@ class AuthController extends Controller
             'email' => 'required|string|email',
             'password' => 'required|string',
         ]);
+
         if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json([
                 'message' => 'Invalid email or password'
             ], 401);
         }
+
         $user = User::where('email', $request->email)->firstOrFail();
         $token = $user->createToken('auth_token')->plainTextToken;
         $reader = $user->reader;
+
         if (!$reader) {
             return response()->json([
                 'message' => 'Login successfully But Profile not found for this user.',
                 'token' => $token
             ], 200);
         }
+
         return response()->json([
             'message' => 'Login successfully',
             'first_name' => $reader->first_name,
@@ -62,6 +67,7 @@ class AuthController extends Controller
             'nickname' => $reader->nickname,
             'token' => $token
         ], 200);
+
     }
 
     public function setupProfile(StoreProfileRequest $request)

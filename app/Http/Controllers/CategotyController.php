@@ -6,13 +6,15 @@ use App\Models\Category;
 
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class CategotyController extends Controller
 {
-    public function index($readerId){
+    public function index(){
 
     $categories=Category::select('id','name','icon')->get();
+    $readerId = Auth::id();
 
     $categories=$categories->map(function($category) use ($readerId){
     $is_followed= DB::table('reader_categories')->

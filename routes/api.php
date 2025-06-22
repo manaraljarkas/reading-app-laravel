@@ -13,12 +13,10 @@ use Illuminate\Support\Facades\Route;
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
 
-Route::get('/getchallenges/{readerId}',[ChallengesController::class,'index']);
-Route::get('/getAuthors',[AuthorCotroller::class,'index']);
-Route::get('/getCategories/{readerId}',[CategotyController::class,'index']);
 
-Route::get('/getBookFile/{BookId}',[BookController::class,'getBookFile']);
-Route::get('/getBooksComments/{BookId}',[BookController::class,'getBooksComments']);
+
+
+
 Route::get('/getsuggestions',[SuggestionController::class,'index']);
 
 
@@ -30,9 +28,10 @@ Route::post('logout', [AuthController::class, 'logout']);
 Route::post('auth/setup-profile', [AuthController::class, 'setupProfile']);
 Route::post('auth/edit-profile', [AuthController::class, 'editProfile']);
 
-
-
-
-
+Route::get('/getAuthors',[AuthorCotroller::class,'index']);
+Route::get('/getCategories',[CategotyController::class,'index']);
+Route::get('/getchallenges',[ChallengesController::class,'index']);
+Route::get('/getBookFile/{BookId}',[BookController::class,'getBookFile']);
+Route::get('/getBooksComments/{BookId}',[BookController::class,'getBooksComments']);
 
 });
