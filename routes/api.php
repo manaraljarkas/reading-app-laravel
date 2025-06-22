@@ -17,7 +17,7 @@ Route::post('login', [AuthController::class, 'login']);
 
 
 
-Route::get('/getsuggestions',[SuggestionController::class,'index']);
+
 
 
 
@@ -33,5 +33,6 @@ Route::get('/getCategories',[CategotyController::class,'index']);
 Route::get('/getchallenges',[ChallengesController::class,'index']);
 Route::get('/getBookFile/{BookId}',[BookController::class,'getBookFile']);
 Route::get('/getBooksComments/{BookId}',[BookController::class,'getBooksComments']);
+Route::get('/getsuggestions',[SuggestionController::class,'index']);
 
 });
