@@ -26,6 +26,7 @@ class AuthController extends Controller
             'email' =>$request->email,
             'password' =>Hash::make($request->password)
         ]);
+        
         Mail::to($user->email)->send(new WelcomeMail($user));
         $token = $user->createToken('auth_token')->plainTextToken;
         return response()->json([

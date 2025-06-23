@@ -20,4 +20,29 @@ class SuggestionController extends Controller
     return response()->json($suggestions);
 
    }
+
+   public function getSuggestionInfo($suggestionId){
+   $admin=Auth::user();
+    $suggestion=BookSuggestion::FindOrFail($suggestionId);
+    return response()->json([
+     'note' =>$suggestion->note
+    ]);
+   }
+
+   public function UpdateSuggestion(Request $request,$suggestionId){
+    $admin=Auth::user();
+
+    $suggestion=BookSuggestion::FindOrFail($suggestionId);
+    $validate=$request->validate([
+     'status'=>'required|in:[Pending,Accepted,Denied]'
+    ]);
+
+    $suggestion->status=$request->input('status');
+    $suggestion->save();
+    return response()->json(
+    [  'status'=> $suggestion->status]);
+
+   }
+
+
 }
