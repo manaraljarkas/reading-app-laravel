@@ -4,11 +4,15 @@ namespace App\Http\Controllers;
 use App\Models\Challenge;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class ChallengesController extends Controller
 {
-   public function index($readerId){
+   public function index(){
+
+    $readerId = Auth::id();
+    
      $challenges = Challenge::select('challenges.id','challenges.title', 'description', 'points', 'challenges.created_at', 'duration','reader_challenges.percentage')
      ->join('reader_challenges','challenges.id','=','reader_challenges.challenge_id')->
      where('reader_challenges.reader_id','=',$readerId)->get();

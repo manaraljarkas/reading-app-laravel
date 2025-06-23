@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('author_name')->nullable();
             $table->text('note')->nullable();
             $table->foreignId('reader_id')->constrained('readers')->cascadeOnDelete();
+            $table->enum('status',['Pending','Accepted','Denied'])->default('Pending');
             $table->timestamps();
             $table->softDeletes();
         });

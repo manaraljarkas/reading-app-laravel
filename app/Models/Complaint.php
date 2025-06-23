@@ -10,7 +10,7 @@ class Complaint extends Model
     use SoftDeletes;
     protected $fillable = ['subject','description','reader_id'];
 
-    public function readers()
+    public function reader()
     {
         return $this->belongsTo(Reader::class);
     }
