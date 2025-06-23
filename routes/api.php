@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 //      Unauthenticated  routes
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
+Route::post('/dashboard/login', [AuthController::class, 'webLogin']);
 
 Route::get('/getchallenges/{readerId}',[ChallengesController::class,'index']);
 Route::get('/getAuthors',[AuthorCotroller::class,'index']);

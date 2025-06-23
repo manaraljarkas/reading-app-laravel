@@ -64,6 +64,26 @@ class AuthController extends Controller
         ], 200);
     }
 
+    public function webLogin(Request $request)
+    {
+        $request->validate([
+            'email' =>'required|string|email',
+            'password' => 'required|string'
+        ]);
+        if (!Auth::attempt($request->only('email', 'password')))
+        {
+            return response()->json(
+                ['message'=>'invalid email or password'],
+                 401);
+        }
+        $user = User::where('email', $request->email)->FirstOrFail();
+        $token = $user->createToken('auth_Token')->plainTextToken;
+        return response()->json([
+            'message'=>'Login Successfully',
+            'token'=>$token
+        ], 201);
+    }
+
     public function setupProfile(StoreProfileRequest $request)
     {
         $userId = Auth::user()->id;
