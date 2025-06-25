@@ -6,7 +6,7 @@ use App\Models\Author;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class AuthorCotroller extends Controller
+class AuthorController extends Controller
 {
    public function index(){
 
@@ -20,11 +20,10 @@ class AuthorCotroller extends Controller
 
      return [
         'name' => $author->name,
-         'id' => $author->id,
+        'id' => $author->id,
         'country_name' => $author->country?->name,
-         'image' => $author->image,
-         'number_of_books' =>$author->books_count ,
-            ];
+        'image' => $author->image,
+        'number_of_books' =>$author->books_count ,];
         });
 
     return response()->json($Authors);
