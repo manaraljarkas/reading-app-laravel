@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\SizeCategory;
+use Illuminate\Support\Facades\DB;
+
 class SizeCategorySeeder extends Seeder
 {
     /**
@@ -12,16 +12,24 @@ class SizeCategorySeeder extends Seeder
      */
     public function run(): void
     {
-       $sizes=[
-          ['ar' => 'صغير',  'en' => 'Small'],
-          ['ar' => 'متوسط', 'en' => 'Medium'],
-          ['ar' => 'كبير',  'en' => 'Large'],
-       ];
+        $sizecategories = [
+            [
+                'name' => ['ar' => 'صغير',  'en' => 'Small']
+            ],
+            [
+                'name' => ['ar' => 'متوسط', 'en' => 'Medium']
+            ],
+            [
+                'name' => ['ar' => 'كبير',  'en' => 'Large']
+            ]
+        ];
 
-       foreach($sizes as $size){
-        SizeCategory::create([
-        'name' => json_encode($size, JSON_UNESCAPED_UNICODE)
-        ]);
-       }
+        foreach ($sizecategories as $sizecategory) {
+            DB::table('size_categories')->insert([
+                'name' => json_encode($sizecategory['name'], JSON_UNESCAPED_UNICODE),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
     }
-   }
+}

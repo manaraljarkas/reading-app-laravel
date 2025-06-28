@@ -33,9 +33,12 @@ Route::post('auth/edit-profile', [AuthController::class, 'editProfile']);
 Route::get('/getAuthors',[AuthorController::class,'index']);
 
 //---------------------------Book--------------------------
-Route::get('/getBookFile/{BookId}',[BookController::class,'getBookFile']);
-Route::get('/getBooksComments/{BookId}',[BookController::class,'getBooksComments']);
-Route::get('/getNumbers',[BookController::class,'getNumbers']);
+Route::get('book/getBookFile/{BookId}',[BookController::class,'getBookFile']);
+Route::get('book/getBooksComments/{BookId}',[BookController::class,'getBooksComments']);
+Route::get('book/getNumbers',[BookController::class,'getNumbers']);
+Route::get('book/getMostRatedBooks', [BookController::class, 'getMostRatedBooks']);
+Route::get('book/getAuthorBooks/{authorId}', [BookController::class, 'getAuthorBooks']);
+Route::get('book/getCategoryBooks/{categoryId}', [BookController::class, 'getCategoryBooks']);
 
 //----------------------------Category----------------------------
 Route::get('/getCategories',[CategotyController::class,'index']);

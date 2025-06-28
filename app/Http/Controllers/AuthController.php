@@ -19,21 +19,20 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'email' =>'required|string|email|max:255|unique:users,email',
+            'email' => 'required|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:8'
         ]);
         $user = User::create([
-            'email' =>$request->email,
-            'password' =>Hash::make($request->password)
+            'email' => $request->email,
+            'password' => Hash::make($request->password)
         ]);
-        
+
         Mail::to($user->email)->send(new WelcomeMail($user));
         $token = $user->createToken('auth_token')->plainTextToken;
         return response()->json([
-            'message'=>'User Registered Successfully.',
-            'token'=>$token
+            'message' => 'User Registered Successfully.',
+            'token' => $token
         ], 201);
-
     }
 
     public function login(Request $request)
@@ -68,26 +67,25 @@ class AuthController extends Controller
             'nickname' => $reader->nickname,
             'token' => $token
         ], 200);
-
     }
 
     public function webLogin(Request $request)
     {
         $request->validate([
-            'email' =>'required|string|email',
+            'email' => 'required|string|email',
             'password' => 'required|string'
         ]);
-        if (!Auth::attempt($request->only('email', 'password')))
-        {
+        if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json(
-                ['message'=>'invalid email or password'],
-                 401);
+                ['message' => 'invalid email or password'],
+                401
+            );
         }
         $user = User::where('email', $request->email)->FirstOrFail();
         $token = $user->createToken('auth_Token')->plainTextToken;
         return response()->json([
-            'message'=>'Login Successfully',
-            'token'=>$token
+            'message' => 'Login Successfully',
+            'token' => $token
         ], 201);
     }
 
@@ -101,7 +99,7 @@ class AuthController extends Controller
             $validated['picture'] = $path;
         }
         $profile = Reader::create($validated);
-        return response()->json(['message'=>'Profile created successfully.'], 201);
+        return response()->json(['message' => 'Profile created successfully.'], 201);
     }
 
     public function editProfile(UpdateProfileRequest $request)
@@ -110,8 +108,7 @@ class AuthController extends Controller
 
         $reader = Reader::where('user_id', $userId)->firstOrFail();
 
-        if($reader->user_id != $userId)
-        {
+        if ($reader->user_id != $userId) {
             return response()->json(['message' => 'Unauthurized'], 403);
         }
 
@@ -124,11 +121,10 @@ class AuthController extends Controller
             $reader->picture = $path;
         }
 
-        if($reader->save())
-        {
+        if ($reader->save()) {
             event(new ProfileUpdated($userId, array_keys($validated)));
             return response()->json(['message' => 'Profile updated successfully.'], 200);
-        }else{
+        } else {
             return response()->json(['message' => 'some error happened.'], 500);
         }
     }
@@ -136,6 +132,6 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
-        return response()->json(['message'=>'Logout Successfully']);
+        return response()->json(['message' => 'Logout Successfully']);
     }
 }
