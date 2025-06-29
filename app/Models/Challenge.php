@@ -18,7 +18,7 @@ class Challenge extends Model
         'category_id'];
 
      protected $casts=['title'=>'array'
-     ,'description'=>'array'
+     ,'description'=>'array',
     ];
 
     public function books()
@@ -29,12 +29,12 @@ class Challenge extends Model
     {
         return $this->belongsToMany(Reader::class, 'reader_challenges');
     }
-    public function sizeCategories()
+    public function sizeCategory()
     {
         return $this->belongsTo(SizeCategory::class);
     }
-    public function categories()
+    public function category()
     {
-        return $this->belongsTo(Category::class, 'categories');
+        return $this->belongsTo(Category::class);
     }
 }

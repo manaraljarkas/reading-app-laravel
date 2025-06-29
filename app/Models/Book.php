@@ -24,7 +24,7 @@ class Book extends Model
         'summary',
         'category_id',
         'author_id',
-        'category_size_id',
+        'size_category_id',
     ];
 
 
@@ -32,7 +32,7 @@ class Book extends Model
     {
         return $this->hasMany(Comment::class);
     }
-        public function authors()
+        public function author()
     {
         return $this->belongsTo(Author::class);
     }
@@ -44,11 +44,11 @@ class Book extends Model
     {
         return $this->belongsToMany(Challenge::class, 'challenge_books');
     }
-        public function sizecategories()
+        public function sizecategory()
     {
-        return $this->belongsTo(SizeCategory::class);
+        return $this->belongsTo(SizeCategory::class, 'size_category_id');
     }
-        public function categories()
+        public function category()
     {
         return $this->belongsTo(Category::class);
     }

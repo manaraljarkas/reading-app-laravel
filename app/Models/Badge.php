@@ -8,10 +8,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Badge extends Model
 {
     use SoftDeletes;
-    protected $fillable = ['title','achievment','image'];
+    protected $fillable = ['title', 'achievment', 'image'];
+    protected $casts = [
+        'title' => 'array',
+        'achievment' => 'array',
+    ];
     public function readers()
     {
         return $this->belongsToMany(Reader::class, 'reader_badges');
     }
-
 }

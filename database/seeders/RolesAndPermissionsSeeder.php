@@ -17,4 +17,6 @@ class RolesAndPermissionsSeeder extends Seeder
         $admin = Role::firstOrCreate(['name' => 'admin']);
         $admin = Role::firstOrCreate(['name' => 'super_admin']);
     }
+
+    
 }
