@@ -6,7 +6,7 @@ use App\Models\Complaint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class complaintController extends Controller
+class ComplaintController extends Controller
 {
     public function getComplaints()
     {

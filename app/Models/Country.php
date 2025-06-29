@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Country extends Model
 {
     use SoftDeletes;
-    protected $fillable = ['name','longitude','latitude'];
+    protected $fillable = ['name','code','longitude','latitude'];
     protected $casts=[
     'name'=>'array'
     ];

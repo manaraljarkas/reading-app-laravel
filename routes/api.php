@@ -1,12 +1,11 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\AuthorCotroller;
-use App\Http\Controllers\BagdeController;
+use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\CategotyController;
 use App\Http\Controllers\ChallengesController;
-use App\Http\Controllers\complaintController;
+use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\ReaderController;
 use App\Http\Controllers\SizeCategoryController;
 use App\Http\Controllers\SuggestionController;
@@ -14,94 +13,55 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 
-
-
-
 //      Unauthenticated  routes
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
+Route::post('/dashboard/login', [AuthController::class, 'webLogin']);
 
 
 
 
 
-//      Authenticated  routes
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('logout', [AuthController::class, 'logout']);
-    Route::post('auth/setup-profile', [AuthController::class, 'setupProfile']);
-    Route::post('auth/edit-profile', [AuthController::class, 'editProfile']);
+//---------------------Authenticated  routes---------------------------
+Route::middleware('auth:sanctum')->group(function()
+{
+//--------------------------Auth--------------------------
+Route::post('logout', [AuthController::class, 'logout']);
+Route::post('auth/setup-profile', [AuthController::class, 'setupProfile']);
+Route::post('auth/edit-profile', [AuthController::class, 'editProfile']);
 
-    Route::get('/getAuthors', [AuthorCotroller::class, 'index']);
-    Route::get('/getCategories', [CategotyController::class, 'index']);
-    Route::get('/getchallenges', [ChallengesController::class, 'index']);
-    Route::get('/getBookFile/{BookId}', [BookController::class, 'getBookFile']);
-    Route::get('/getBooksComments/{BookId}', [BookController::class, 'getBooksComments']);
-    Route::get('/getsuggestions', [SuggestionController::class, 'index']);
+//--------------------------Author------------------------
+Route::get('/getAuthors',[AuthorController::class,'index']);
 
-    Route::get('/getCategories', [CategotyController::class, 'getCategories']);
+//---------------------------Book--------------------------
+Route::get('book/getBookFile/{BookId}',[BookController::class,'getBookFile']);
+Route::get('book/getBooksComments/{BookId}',[BookController::class,'getBooksComments']);
+Route::get('book/getNumbers',[BookController::class,'getNumbers']);
+Route::get('book/getMostRatedBooks', [BookController::class, 'getMostRatedBooks']);
+Route::get('book/getAuthorBooks/{authorId}', [BookController::class, 'getAuthorBooks']);
+Route::get('book/getCategoryBooks/{categoryId}', [BookController::class, 'getCategoryBooks']);
 
-    Route::post('/editCategory/{id}', [CategotyController::class, 'editCategory']);
+//----------------------------Category----------------------------
+Route::get('/getCategories',[CategotyController::class,'index']);
 
-    Route::post('/addcategory', [CategotyController::class, 'addcategory']);
+//----------------------------Challenge--------------------------------
+Route::get('/getchallenges',[ChallengesController::class,'index']);
 
-    Route::get('/getNumbers', [BookController::class, 'getNumbers']);
+//----------------------------Suggestion----------------------------
+Route::get('/getsuggestions',[SuggestionController::class,'index']);
+Route::post('/UpdateSuggestion/{suggestionId}',[SuggestionController::class,'UpdateSuggestion']);
+Route::get('/getSuggestionInfo/{suggestionId}',[SuggestionController::class,'getSuggestionInfo']);
 
-    Route::get('/getbookinfo/{bookId}', [BookController::class, 'getbookinfo']);
+//----------------------------Complaint-------------------------------
+Route::get('/getComplaints',[ComplaintController::class,'getComplaints']);
 
-    Route::delete('/deleteBook/{bookId}', [BookController::class, 'deleteBook']);
+//----------------------------Admin--------------------------------------
+Route::get('/getAdminInfo/{adminId}',[UserController::class,'getAdminInfo']);
+Route::post('/AddAdmin',[UserController::class,'AddAdmin']);
+Route::delete('/deleteAdmin/{Adminid}',[UserController::class,'deleteAdmin']);
 
-    Route::get('/getComplaints', [complaintController::class, 'getComplaints']);
-
-    Route::post('/UpdateSuggestion/{suggestionId}', [SuggestionController::class, 'UpdateSuggestion']);
-
-    Route::delete('/deleteSuggestion_D/{suggestionId}', [SuggestionController::class, 'deleteSuggestion']);
-
-    Route::get('/getSuggestionInfo/{suggestionId}', [SuggestionController::class, 'getSuggestionInfo']);
-
-    Route::get('/getAdminInfo/{adminId}', [UserController::class, 'getAdminInfo']);
-
-    Route::post('/AddAdmin', [UserController::class, 'AddAdmin']);
-
-    Route::delete('/deleteAdmin/{Adminid}', [UserController::class, 'deleteAdmin']);
-
-    Route::get('/getReaderInfo/{readerId}', [ReaderController::class, 'getReaderInfo']);
-
-    Route::delete('/DeleteReader/{readerId}', [ReaderController::class, 'DeleteReader']);
-
-    Route::get('/getAdmins', [UserController::class, 'getAdmins']);
-
-    Route::get('/getReaders', [ReaderController::class, 'getReaders']);
-
-    Route::get('/getBooks', [BookController::class, 'getBooks']);
-
-    Route::post('/addBook', [BookController::class, 'addBook']);
-
-    Route::get('/getAuthors_D', [AuthorCotroller::class, 'getAuthors_D']);
-
-    Route::post('/AddAuthor_D', [AuthorCotroller::class, 'AddAuthor']);
-
-    Route::post('/editAuthor/{id}', [AuthorCotroller::class, 'editAuthor']);
-
-    Route::delete('/deleteAuthor_D/{authorId}', [AuthorCotroller::class, 'deleteAuthor']);
-
-    Route::get('/getchallenges_D', [ChallengesController::class, 'getchallenges']);
-
-    Route::post('/editchallenge/{id}', [ChallengesController::class, 'editchallenge']);
-
-     Route::post('/addChallenge', [ChallengesController::class, 'addChallenge']);
-
-    Route::get('/getchallengeinfo/{id}', [ChallengesController::class, 'getchallengeinfo']);
-
-    Route::delete('/deleteChallenge_D/{challengeId}', [ChallengesController::class, 'deleteChallenge']);
-
-    Route::get('/getBadges_D', [BagdeController::class, 'getBadges']);
-
-    Route::delete('/deletebadge_D/{badgeId}', [BagdeController::class, 'deletebadge']);
-
-    Route::post('/addBadge_D', [BagdeController::class, 'addBadge']);
-
-    Route::post('/editBadge/{id}', [BagdeController::class, 'editBadge']);
-
-
+//-----------------------------Reader-------------------------------------
+Route::get('/getReaderInfo/{readerId}',[ReaderController::class,'getReaderInfo']);
+Route::delete('/DeleteReader/{readerId}',[ReaderController::class,'DeleteReader']);
 
 });

@@ -18,7 +18,6 @@ return new class extends Migration
             $table->date('publish_date');
             $table->string('book_pdf');
             $table->string('cover_image');
-            $table->integer('star_rate')->default(0);
             $table->integer('number_of_pages');
             $table->json('summary')->nullable();
             $table->foreignId('author_id')->constrained('authors')->cascadeOnDelete();

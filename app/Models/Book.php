@@ -8,18 +8,17 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Book extends Model
 {
     use SoftDeletes;
-        protected $casts = [
-    'title' => 'array',
-    'description' => 'array',
-    'summary' => 'array',
-       ];
+    protected $casts = [
+        'title' => 'array',
+        'description' => 'array',
+        'summary' => 'array',
+    ];
     protected $fillable = [
         'title',
         'description',
         'publish_date',
         'book_pdf',
         'cover_image',
-        'star_rate',
         'number_of_pages',
         'summary',
         'category_id',
@@ -28,27 +27,27 @@ class Book extends Model
     ];
 
 
-        public function comments()
+    public function comments()
     {
         return $this->hasMany(Comment::class);
     }
-        public function author()
+    public function author()
     {
         return $this->belongsTo(Author::class);
     }
-        public function readers()
+    public function readers()
     {
-        return $this->belongsToMany(Reader::class, 'reader_books');
+        return $this->belongsToMany(User::class, 'reader_books', 'book_id', 'reader_id');
     }
-        public function challenges()
+    public function challenges()
     {
         return $this->belongsToMany(Challenge::class, 'challenge_books');
     }
-        public function sizecategory()
+    public function sizecategory()
     {
         return $this->belongsTo(SizeCategory::class, 'size_category_id');
     }
-        public function category()
+    public function category()
     {
         return $this->belongsTo(Category::class);
     }
