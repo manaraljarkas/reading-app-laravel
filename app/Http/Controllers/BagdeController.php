@@ -26,6 +26,7 @@ class BagdeController extends Controller
 
         return response()->json($badges);
     }
+
     public function deletebadge($badgeId)
     {
         $user = Auth::user();
@@ -36,6 +37,7 @@ class BagdeController extends Controller
         $badge->delete();
         return response()->json(['message' => 'Badge deleted successfully']);
     }
+
     public function addBadge(Request $request)
     {
         $user = Auth::user();
@@ -59,6 +61,7 @@ class BagdeController extends Controller
             'image' => $imagePath,
         ]);
     }
+
     public function editBadge(Request $request, $id)
     {
         $user = Auth::user();

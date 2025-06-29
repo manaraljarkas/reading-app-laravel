@@ -9,24 +9,24 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthorController extends Controller
 {
-public function index()
-{
-    $reader = Auth::user();
+    public function index()
+    {
+        $reader = Auth::user();
 
-    $authors = Author::withCount('books')->with('country')->get();
+        $authors = Author::withCount('books')->with('country')->get();
 
-    $Authors = $authors->map(function ($author) {
-        return [
-            'name' => $author->name,
-            'id' => $author->id,
-            'country_name' => $author->country?->name,
-            'image' => $author->image ? asset('storage/' . $author->image) : null,
-            'number_of_books' => $author->books_count,
-        ];
-    });
+        $Authors = $authors->map(function ($author) {
+            return [
+                'name' => $author->name,
+                'id' => $author->id,
+                'country_name' => $author->country?->name,
+                'image' => $author->image ? asset('storage/' . $author->image) : null,
+                'number_of_books' => $author->books_count,
+            ];
+        });
 
-    return response()->json($Authors);
-}
+        return response()->json($Authors);
+    }
 
     public function getAuthors_D()
     {
@@ -45,6 +45,7 @@ public function index()
             });
         return response()->json($authors);
     }
+
     public function AddAuthor(Request $request)
     {
         $user = Auth::user();
@@ -79,6 +80,7 @@ public function index()
             'country_id' => $country->id,
         ]);
     }
+
     public function deleteAuthor($AuthorId)
     {
         $user = Auth::user();
@@ -89,6 +91,7 @@ public function index()
         $author->delete();
         return response()->json(['message' => 'Author deleted successfully']);
     }
+    
     public function editAuthor(Request $request, $id)
     {
         $user = Auth::user();
