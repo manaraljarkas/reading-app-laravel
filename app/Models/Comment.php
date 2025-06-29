@@ -9,7 +9,7 @@ class Comment extends Model
 {
     use SoftDeletes;
     protected $fillable = ['commnet','book_id','reader_id'];
-    public function readers()
+    public function reader()
     {
         return $this->belongsTo(Reader::class);
     }

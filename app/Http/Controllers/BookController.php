@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Book;
+use App\Models\BookChallenge;
 use App\Models\Category;
 use App\Models\Challenge;
 use App\Models\Comment;
@@ -13,6 +14,7 @@ use App\Helpers\CountryHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class BookController extends Controller
 {
@@ -22,15 +24,26 @@ class BookController extends Controller
         $book = Book::select('book_pdf')->where('id', '=', $BookId)->first();
 
         $fileUrl = asset('storage/images/books/pdfs/' . $book->book_pdf);
+        $fileUrl = asset('storage/images/books/pdfs/' . $book->book_pdf);
 
+        return response()->json(['pdf_url' => $fileUrl]);
         return response()->json(['pdf_url' => $fileUrl]);
     }
 
     public function getBooksComments($BookId)
     {
         $reader = Auth::user();
-        $comments = Comment::where('book_id', '=', $BookId)->with('reader')->get();
+        $comments = Comment::where('book_id', '=', $BookId)->with('reader')->with('reader')->get();
 
+        $comments = $comments->map(function ($comment) {
+            return [
+                'reader_id' => $comment->reader_id,
+                'reader_name' => $comment->reader?->first_name,
+                'reader_image' => asset('storage/' . $comment->reader?->image),
+                'comment' => $comment->comment,
+            ];
+        });
+        return response()->json($comments);
         $comments = $comments->map(function ($comment) {
             return [
                 'reader_id' => $comment->reader_id,
@@ -177,159 +190,42 @@ class BookController extends Controller
         });
     }
 
-    public function getMostRatedBooks()
+    public function getBooks()
     {
-        $user_id = Auth::id();
-
-        $books = Book::with([
-            'author.country',
-            'category',
-            'sizecategory'
-        ])
-            ->withCount(['readers as readers_count'])
-            ->addSelect([
-                'star_rate' => function ($query) {
-                    $query->from('reader_books')
-                        ->selectRaw('AVG(rating)')
-                        ->whereColumn('reader_books.book_id', 'books.id');
-                }
-            ])
-            ->whereExists(function ($query) {
-                $query->select(DB::raw(1))
-                    ->from('reader_books')
-                    ->whereColumn('reader_books.book_id', 'books.id');
-            })
-            ->orderByDesc('star_rate')
-            ->take(10)
-            ->get()
-            ->map(function ($book) use ($user_id) {
-                $author = $book->author;
-                $country = $author?->country;
-                $countryFlag = $country?->code ? CountryHelper::countryToEmoji($country->code) : null;
-
-                $readerBook = DB::table('reader_books')
-                    ->where('book_id', $book->id)
-                    ->where('reader_id', $user_id)
-                    ->first();
-
+        $user = Auth::user();
+        $books = Book::with('category', 'author')
+            ->withcount('readers')
+            ->paginate(10)
+            ->through(function ($book) {
                 return [
                     'id' => $book->id,
                     'title' => $book->title,
-                    'description' => $book->description,
-                    'author_name' => $author?->name,
-                    'country_flag' => $countryFlag,
+                    'author_name' => $book->author?->name,
+                    'category' => $book->category?->name,
                     'publish_date' => $book->publish_date,
-                    'cover_image' => $book->cover_image,
-                    'star_rate' => round($book->star_rate),
-                    'readers_count' => $book->readers_count,
-                    'category_name' => $book->category?->name,
-                    'size_category_name' => $book->sizecategory?->name,
-                    'number_of_pages' => $book->number_of_pages,
-                    'is_favourite' => (bool) ($readerBook->is_favourite ?? false),
-                    'is_in_library' => (bool) $readerBook,
+                    'star_rate' => $book->star_rate,
+                    'number_of_readers' => $book->readers_count,
                 ];
             });
 
         return response()->json($books);
     }
 
-    public function getAuthorBooks($authorId)
+    public function getBookInfo($bookId)
     {
-        $user_id = Auth::id();
+        $user = Auth::user();
+        $book = Book::where('id', '=', $bookId)->with('sizecategory')->with('bookChallenges')->first();
+        $number_of_participants = DB::table('reader_books')->where('reader_books.book_id', '=', $bookId)->count();
 
-        $books = Book::with([
-            'author.country',
-            'category',
-            'sizecategory'
-        ])
-            ->where('author_id', $authorId)
-            ->withCount(['readers as readers_count'])
-            ->addSelect([
-                'star_rate' => function ($query) {
-                    $query->from('reader_books')
-                        ->selectRaw('AVG(rating)')
-                        ->whereColumn('reader_books.book_id', 'books.id');
-                }
-            ])
+        $comments = Comment::where('book_id', '=', $bookId)
+            ->with('reader')
             ->get()
-            ->map(function ($book) use ($user_id) {
-                $author = $book->author;
-                $country = $author?->country;
-                $countryFlag = $country?->code ? CountryHelper::countryToEmoji($country->code) : null;
-
-                $readerBook = DB::table('reader_books')
-                    ->where('book_id', $book->id)
-                    ->where('reader_id', $user_id)
-                    ->first();
-
+            ->map(function ($comment) {
                 return [
-                    'id' => $book->id,
-                    'title' => $book->title,
-                    'description' => $book->description,
-                    'author_name' => $author?->name,
-                    'country_flag' => $countryFlag,
-                    'publish_date' => $book->publish_date,
-                    'cover_image' => $book->cover_image,
-                    'star_rate' => round($book->star_rate),
-                    'readers_count' => $book->readers_count,
-                    'category_name' => $book->category?->name,
-                    'size_category_name' => $book->sizecategory?->name,
-                    'number_of_pages' => $book->number_of_pages,
-                    'is_favourite' => (bool) ($readerBook->is_favourite ?? false),
-                    'is_in_library' => (bool) $readerBook,
+                    'image' => asset('storage/' . $comment->reader?->image),
+                    'name' => $comment->reader?->first_name,
+                    'comment' => $comment->comment,
                 ];
             });
-
-        return response()->json($books);
-    }
-
-    public function getCategoryBooks($categoryId)
-    {
-        $user_id = Auth::id();
-
-        $books = Book::with([
-            'author.country',
-            'category',
-            'sizecategory'
-        ])
-            ->where('category_id', $categoryId)
-            ->withCount(['readers as readers_count'])
-            ->addSelect([
-                'star_rate' => function ($query) {
-                    $query->from('reader_books')
-                        ->selectRaw('AVG(rating)')
-                        ->whereColumn('reader_books.book_id', 'books.id');
-                }
-            ])
-            ->get()
-            ->map(function ($book) use ($user_id) {
-                $author = $book->author;
-                $country = $author?->country;
-                $countryFlag = $country?->code ? CountryHelper::countryToEmoji($country->code) : null;
-
-                $readerBook = DB::table('reader_books')
-                    ->where('book_id', $book->id)
-                    ->where('reader_id', $user_id)
-                    ->first();
-
-                return [
-                    'id' => $book->id,
-                    'title' => $book->title,
-                    'description' => $book->description,
-                    'author_name' => $author?->name,
-                    'country_flag' => $countryFlag,
-                    'publish_date' => $book->publish_date,
-                    'cover_image' => $book->cover_image,
-                    'star_rate' => round($book->star_rate),
-                    'readers_count' => $book->readers_count,
-                    'category_name' => $book->category?->name,
-                    'size_category_name' => $book->sizecategory?->name,
-                    'number_of_pages' => $book->number_of_pages,
-                    'is_favourite' => (bool) ($readerBook->is_favourite ?? false),
-                    'is_in_library' => (bool) $readerBook,
-                ];
-            });
-
-        return response()->json($books);
     }
 }

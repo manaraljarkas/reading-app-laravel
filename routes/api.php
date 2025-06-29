@@ -8,6 +8,7 @@ use App\Http\Controllers\CategotyController;
 use App\Http\Controllers\ChallengesController;
 use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\ReaderController;
+use App\Http\Controllers\SizeCategoryController;
 use App\Http\Controllers\SuggestionController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;

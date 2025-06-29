@@ -9,5 +9,7 @@ class BookChallenge extends Model
 {
     use SoftDeletes;
     protected $fillable = ['duration', 'points', 'description', 'book_id'];
-
+    protected $casts = [
+    'description' => 'array',
+];
 }

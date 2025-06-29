@@ -9,8 +9,9 @@ class SizeCategory extends Model
 {
     use SoftDeletes;
     protected $fillable = ['name'];
-    protected $casts = ['name' => 'array'];
-
+    protected $casts=[
+    'name'=>'array'
+    ];
     public function books()
     {
         return $this->hasMany(Book::class);
