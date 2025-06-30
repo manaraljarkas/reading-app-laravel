@@ -72,11 +72,13 @@ class BookController extends Controller
         ]);
     }
 
-    public function getBooks()
+    public function index()
     {
         $user = Auth::user();
+        $rate=DB::table('reader_books');
         $books = Book::with('category', 'author')
             ->withcount('readers')
+            ->withAvg('readers as average_rating', 'reader_books.rating')
             ->paginate(10)
             ->through(function ($book) {
                 return [
@@ -85,7 +87,7 @@ class BookController extends Controller
                     'author_name' => $book->author?->name,
                     'category' => $book->category?->name,
                     'publish_date' => $book->publish_date,
-                    'star_rate' => $book->star_rate,
+                    'star_rate' => round($book->average_rating, 2),
                     'number_of_readers' => $book->readers_count,
                 ];
             });
@@ -93,7 +95,7 @@ class BookController extends Controller
         return response()->json($books);
     }
 
-    public function getBookInfo($bookId)
+    public function show($bookId)
     {
         $user = Auth::user();
         $book = Book::where('id', '=', $bookId)->with('sizecategory')->with('bookChallenges')->first();
@@ -114,14 +116,14 @@ class BookController extends Controller
             'size_Category' => $book->sizecategory->name,
             'description' => $book->description,
             'summary' => $book->summary,
-            'book_challenge_duration' => $book->bookChallenges->duration,
-            'book_challenge_points' => $book->bookChallenges->points,
+            'book_challenge_duration' => $book->bookChallenges?->duration,
+            'book_challenge_points' => $book->bookChallenges?->points,
             'book_challenge_participants' => $number_of_participants,
             'comments' => $comments,
         ]);
     }
 
-    public function deleteBook($bookId)
+    public function destroy($bookId)
     {
         $user = Auth::user();
         $book = Book::find($bookId);
@@ -133,7 +135,7 @@ class BookController extends Controller
         return response()->json(['message' => 'book deleted successufly']);
     }
 
-    public function addBook(Request $request)
+    public function store(Request $request)
     {
         $user = Auth::user();
         DB::transaction(function () use ($request) {

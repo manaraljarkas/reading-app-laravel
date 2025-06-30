@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class BagdeController extends Controller
 {
-    public function getBadges()
+    public function index()
     {
         $user = Auth::user();
         $badges = Badge::select('title', 'image', 'achievment')
@@ -27,7 +27,7 @@ class BagdeController extends Controller
         return response()->json($badges);
     }
 
-    public function deletebadge($badgeId)
+    public function destroy($badgeId)
     {
         $user = Auth::user();
         $badge = Badge::find($badgeId);
@@ -38,7 +38,7 @@ class BagdeController extends Controller
         return response()->json(['message' => 'Badge deleted successfully']);
     }
 
-    public function addBadge(Request $request)
+    public function store(Request $request)
     {
         $user = Auth::user();
         $validated = $request->validate([
@@ -62,7 +62,7 @@ class BagdeController extends Controller
         ]);
     }
 
-    public function editBadge(Request $request, $id)
+    public function update(Request $request, $id)
     {
         $user = Auth::user();
         $badge = Badge::findOrFail($id);
@@ -102,4 +102,14 @@ class BagdeController extends Controller
             'image' => asset('storage/' . $badge->image),
         ]);
     }
+    public function show($id)
+{
+    $badge = Badge::findOrFail($id);
+
+    return response()->json([
+        'title' => $badge->title,
+        'achievment' => $badge->achievment,
+        'image' => asset('storage/' . $badge->image),
+    ]);
+}
 }

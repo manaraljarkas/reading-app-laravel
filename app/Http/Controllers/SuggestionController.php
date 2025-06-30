@@ -26,7 +26,7 @@ class SuggestionController extends Controller
         return response()->json($suggestions);
     }
 
-    public function getSuggestionInfo($suggestionId)
+    public function show($suggestionId)
     {
         $admin = Auth::user();
         $suggestion = BookSuggestion::FindOrFail($suggestionId);
@@ -34,7 +34,7 @@ class SuggestionController extends Controller
             'note' => $suggestion->note,
         ]);
     }
-    public function deleteSuggestion($suggestionId)
+    public function destroy($suggestionId)
     {
         $user = Auth::user();
 
@@ -46,7 +46,7 @@ class SuggestionController extends Controller
         return response()->json(['message' => 'Suggestion deleted successfully']);
     }
 
-    public function UpdateSuggestion(Request $request, $suggestionId)
+    public function Update(Request $request, $suggestionId)
     {
         $admin = Auth::user();
 

@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class ReaderController extends Controller
 {
-    public function getReaders()
+    public function index()
     {
         $user = Auth::user();
         $readers = Reader::select('id', 'first_name', 'picture', 'user_id')
@@ -26,7 +26,7 @@ class ReaderController extends Controller
         return response()->json($readers);
     }
 
-    public function getReaderInfo($readerId)
+    public function show($readerId)
     {
         $reader = Auth::user();
         $readerinfo = Reader::select('first_name', 'picture', 'points', 'bio', 'nickname')->where('id', '=', $readerId)->first();
@@ -50,7 +50,7 @@ class ReaderController extends Controller
         ]);
     }
 
-    public function DeleteReader($readerId)
+    public function destroy($readerId)
     {
         $user = Auth::user();
         $reader = Reader::find($readerId);

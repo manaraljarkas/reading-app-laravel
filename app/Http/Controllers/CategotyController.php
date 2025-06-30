@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 class CategotyController extends Controller
 {
-    public function index()
+    public function getCategories()
     {
         $categories = Category::select('id', 'name', 'icon')->get();
         $readerId = Auth::id();
@@ -28,7 +28,7 @@ class CategotyController extends Controller
 
         return response()->json($categories);
     }
-    public function getCategories()
+    public function index()
     {
         $user = Auth::user();
         $categories = Category::withcount('books')
@@ -43,7 +43,7 @@ class CategotyController extends Controller
             });
         return response()->json($categories);
     }
-    public function addcategory(Request $request)
+    public function store(Request $request)
     {
         $user = Auth::user();
         $validated = $request->validate([
@@ -63,7 +63,7 @@ class CategotyController extends Controller
         return response()->json(['message' => 'category added successufly']);
     }
 
-    public function editCategory(Request $request, $id)
+    public function update(Request $request, $id)
     {
         $user = Auth::user();
         $category = Category::select('id', 'name', 'icon')->findOrFail($id);

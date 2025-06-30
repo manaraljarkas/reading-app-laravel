@@ -9,15 +9,16 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    public function getAdmins()
+    public function index()
     {
         $user = Auth::user();
-        $admins = User::where('role', '=', 'admin')->select('id', 'name', 'email')->paginate(10);
+        $admins = User::where('role', '=', 'admin')->
+        select('id', 'name', 'email')->paginate(10);
 
         return response()->json([$admins]);
     }
 
-    public function getAdminInfo($adminId)
+    public function show($adminId)
     {
         $user = Auth::user();
 
@@ -26,7 +27,7 @@ class UserController extends Controller
         return response()->json($admins);
     }
 
-    public function AddAdmin(Request $request)
+    public function store(Request $request)
     {
         $user = Auth::user();
 
@@ -46,7 +47,7 @@ class UserController extends Controller
         return response()->json(['message' => 'Admin addedd sueccsufly']);
     }
 
-    public function deleteAdmin($adminId)
+    public function destroy($adminId)
     {
         $user = Auth::user();
         $admin = User::where('role', 'admin')->where('id', $adminId)->first();

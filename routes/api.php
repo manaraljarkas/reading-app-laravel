@@ -14,6 +14,7 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 
+
 //      Unauthenticated  routes
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
@@ -30,63 +31,65 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('auth/setup-profile', [AuthController::class, 'setupProfile']);
     Route::post('auth/edit-profile', [AuthController::class, 'editProfile']);
 
+
     //--------------------------Author------------------------
-    Route::get('/getAuthors', [AuthorController::class, 'index']);
-    Route::get('/getAuthors_D', [AuthorController::class, 'getAuthors_D']);
-    Route::post('/AddAuthor_D', [AuthorController::class, 'AddAuthor']);
-    Route::post('/editAuthor/{id}', [AuthorController::class, 'editAuthor']);
-    Route::delete('/deleteAuthor_D/{authorId}', [AuthorController::class, 'deleteAuthor']);
+    Route::get('/author/getAuthors', [AuthorController::class, 'getAuthors']);
+    Route::post('/author/update/{id}', [AuthorController::class, 'update']);
+    Route::apiResource('authors', AuthorController::class)->except(['show','update']);
+
+
 
     //---------------------------Book--------------------------
-    Route::get('book/getBookFile/{BookId}', [BookController::class, 'getBookFile']);
-    Route::get('book/getBooksComments/{BookId}', [BookController::class, 'getBooksComments']);
-    Route::get('book/getNumbers', [BookController::class, 'getNumbers']);
-    Route::get('book/getMostRatedBooks', [BookController::class, 'getMostRatedBooks']);
-    Route::get('book/getAuthorBooks/{authorId}', [BookController::class, 'getAuthorBooks']);
-    Route::get('book/getCategoryBooks/{categoryId}', [BookController::class, 'getCategoryBooks']);
-    Route::get('book/getBooks', [BookController::class, 'getBooks']);
-    Route::post('book/addBook', [BookController::class, 'addBook']);
-    Route::delete('book/deleteBook/{bookId}', [BookController::class, 'deleteBook']);
-    Route::get('book/getbookinfo/{bookId}', [BookController::class, 'getbookinfo']);
+     Route::get('book/getBookFile/{BookId}', [BookController::class, 'getBookFile']);
+     Route::get('book/getBooksComments/{BookId}', [BookController::class, 'getBooksComments']);
+     Route::get('book/getNumbers', [BookController::class, 'getNumbers']);
+     Route::get('book/getMostRatedBooks', [BookController::class, 'getMostRatedBooks']);
+     Route::get('book/getAuthorBooks/{authorId}', [BookController::class, 'getAuthorBooks']);
+     Route::get('book/getCategoryBooks/{categoryId}', [BookController::class, 'getCategoryBooks']);
+     Route::apiResource('books', BookController::class)->except(['update']);
 
-    //----------------------------Category----------------------------
-    Route::get('/getCategories', [CategotyController::class, 'index']);
-    Route::post('/addcategory', [CategotyController::class, 'addcategory']);
-    Route::post('/editCategory/{id}', [CategotyController::class, 'editCategory']);
 
-    //----------------------------Challenge--------------------------------
-    Route::get('/getchallenges', [ChallengesController::class, 'index']);
-    Route::get('/getchallenges_D', [ChallengesController::class, 'getchallenges']);
-    Route::post('/editchallenge/{id}', [ChallengesController::class, 'editchallenge']);
-    Route::post('/addChallenge', [ChallengesController::class, 'addChallenge']);
-    Route::get('/getchallengeinfo/{id}', [ChallengesController::class, 'getchallengeinfo']);
-    Route::delete('/deleteChallenge_D/{challengeId}', [ChallengesController::class, 'deleteChallenge']);
+
+    // //----------------------------Category----------------------------
+     Route::get('/category/getCategories', [CategotyController::class, 'getCategories']);
+     Route::post('/category/update/{id}', [CategotyController::class, 'update']);
+    Route::apiResource('categories', CategotyController::class)->except(['show','destroy']);
+
+
+
+    // //----------------------------Challenge--------------------------------
+     Route::get('/challenge/getchallenges', [ChallengesController::class, 'getchallenges']);
+     Route::post('/challenge/update/{id}', [ChallengesController::class, 'update']);
+     Route::apiResource('challenges', ChallengesController::class)->except(['update']);
+
+
+
 
     //----------------------------Suggestion----------------------------
-    Route::get('/getsuggestions', [SuggestionController::class, 'index']);
-    Route::post('/UpdateSuggestion/{suggestionId}', [SuggestionController::class, 'UpdateSuggestion']);
-    Route::get('/getSuggestionInfo/{suggestionId}', [SuggestionController::class, 'getSuggestionInfo']);
-    Route::delete('/deleteSuggestion_D/{suggestionId}', [SuggestionController::class, 'deleteSuggestion']);
+    Route::post('/suggestion/Update/{id}', [SuggestionController::class, 'update']);
+    Route::apiResource('suggestions', SuggestionController::class)->except(['store']);
+
+
 
     //----------------------------Complaint-------------------------------
-    Route::get('/getComplaints', [ComplaintController::class, 'getComplaints']);
+    Route::get('/complaint/getComplaints', [ComplaintController::class, 'getComplaints']);
+
+
+
 
     //----------------------------Admin--------------------------------------
-    Route::get('/getAdminInfo/{adminId}', [UserController::class, 'getAdminInfo']);
-    Route::post('/AddAdmin', [UserController::class, 'AddAdmin']);
-    Route::delete('/deleteAdmin/{Adminid}', [UserController::class, 'deleteAdmin']);
-    Route::get('/getAdmins', [UserController::class, 'getAdmins']);
-    Route::get('/getAdminInfo/{adminId}', [UserController::class, 'getAdminInfo']);
+    Route::apiResource('admins', UserController::class)->except(['update']);
+
+
 
     //-----------------------------Reader-------------------------------------
-    Route::get('/getReaderInfo/{readerId}', [ReaderController::class, 'getReaderInfo']);
-    Route::delete('/DeleteReader/{readerId}', [ReaderController::class, 'DeleteReader']);
-    Route::get('/getReaders', [ReaderController::class, 'getReaders']);
-    Route::get('/getReaderInfo/{readerId}', [ReaderController::class, 'getReaderInfo']);
+      Route::apiResource('readers', ReaderController::class)->except(['store', 'update']);
+
+
+
 
     //-----------------------------Badge-------------------------------------
-    Route::get('/getBadges_D', [BagdeController::class, 'getBadges']);
-    Route::delete('/deletebadge_D/{badgeId}', [BagdeController::class, 'deletebadge']);
-    Route::post('/addBadge_D', [BagdeController::class, 'addBadge']);
-    Route::post('/editBadge/{id}', [BagdeController::class, 'editBadge']);
+     Route::post('/badge/update/{id}', [BagdeController::class, 'update']);
+     Route::apiResource('badges', BagdeController::class);
+
 });

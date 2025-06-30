@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthorController extends Controller
 {
-    public function index()
+    public function getAuthors()
     {
         $reader = Auth::user();
 
@@ -28,7 +28,7 @@ class AuthorController extends Controller
         return response()->json($Authors);
     }
 
-    public function getAuthors_D()
+    public function index()
     {
         $user = Auth::user();
         $authors = Author::with('country')
@@ -46,42 +46,30 @@ class AuthorController extends Controller
         return response()->json($authors);
     }
 
-    public function AddAuthor(Request $request)
+    public function store(Request $request)
     {
         $user = Auth::user();
         $validated = $request->validate([
             'name.en' => 'required|string',
             'name.ar' => 'required|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
-            'country_name.en' => 'required|string',
-            'country_name.ar' => 'required|string',
-            'longitude' => 'required|numeric',
-            'latitude' => 'required|numeric',
+            'country_id' => 'required|exists:countries,id',    
         ]);
+
         $imagePath = null;
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('images/authors', 'public');
-        }
-        $country = Country::create([
-            'name' => [
-                'en' => $request->input('country_name.en'),
-                'ar' => $request->input('country_name.ar'),
-            ],
-            'longitude' => $request->longitude,
-            'latitude' => $request->latitude,
-        ]);
-
-        $author = Author::create([
+         $author = Author::create([
             'name' => [
                 'en' => $request->input('name.en'),
                 'ar' => $request->input('name.ar'),
             ],
             'image' => $imagePath,
-            'country_id' => $country->id,
+            'country_id' => $request->country_id,
         ]);
-    }
+    }}
 
-    public function deleteAuthor($AuthorId)
+    public function destroy($AuthorId)
     {
         $user = Auth::user();
         $author = Author::find($AuthorId);
@@ -91,8 +79,8 @@ class AuthorController extends Controller
         $author->delete();
         return response()->json(['message' => 'Author deleted successfully']);
     }
-    
-    public function editAuthor(Request $request, $id)
+
+    public function update(Request $request, $id)
     {
         $user = Auth::user();
         $author = Author::select('id', 'name', 'image', 'country_id')->with('country')->findOrFail($id);
