@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Translatable\HasTranslations;
 
 class Challenge extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes,HasTranslations;
     protected $fillable =[
         'title',
         'description',
@@ -16,6 +17,7 @@ class Challenge extends Model
         'number_of_books',
         'size_category_id',
         'category_id'];
+    public $translatable = ['title', 'description'];
 
      protected $casts=['title'=>'array'
      ,'description'=>'array',

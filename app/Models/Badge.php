@@ -9,6 +9,7 @@ class Badge extends Model
 {
     use SoftDeletes;
     protected $fillable = ['title', 'achievment', 'image'];
+    public $translatable = ['title', 'achievment'];
     protected $casts = [
         'title' => 'array',
         'achievment' => 'array',

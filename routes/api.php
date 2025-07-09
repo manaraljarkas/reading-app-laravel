@@ -40,11 +40,29 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     //---------------------------Book--------------------------
+
+    //---------------------------APIs using language middleware------------------------------
+    Route::prefix('mobile')->middleware('set.lang')->group(function () {
+    Route::get('/books/most-rated', [BookController::class, 'getMostRatedBooks']);
+    Route::get('/books/author-books/{authorId}', [BookController::class, 'getAuthorBooks']);
+    Route::get('/books/category-books/{categoryId}', [BookController::class, 'getCategoryBooks']);
+
+
+
+
+    
+
+
+
+
+
+});
+
+
+
      Route::get('book/getBookFile/{BookId}', [BookController::class, 'getBookFile']);
      Route::get('book/getBooksComments/{BookId}', [BookController::class, 'getBooksComments']);
      Route::get('book/getNumbers', [BookController::class, 'getNumbers']);
-     Route::get('book/getMostRatedBooks', [BookController::class, 'getMostRatedBooks']);
-     Route::get('book/getAuthorBooks/{authorId}', [BookController::class, 'getAuthorBooks']);
      Route::get('book/getCategoryBooks/{categoryId}', [BookController::class, 'getCategoryBooks']);
      Route::apiResource('books', BookController::class)->except(['update']);
 

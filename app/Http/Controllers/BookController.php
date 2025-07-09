@@ -75,7 +75,7 @@ class BookController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $rate=DB::table('reader_books');
+        $rate = DB::table('reader_books');
         $books = Book::with('category', 'author')
             ->withcount('readers')
             ->withAvg('readers as average_rating', 'reader_books.rating')
@@ -190,7 +190,7 @@ class BookController extends Controller
         });
     }
 
-     public function getMostRatedBooks()
+    public function getMostRatedBooks()
     {
         $user_id = Auth::id();
 
@@ -216,6 +216,8 @@ class BookController extends Controller
             ->take(10)
             ->get()
             ->map(function ($book) use ($user_id) {
+                $locale = app()->getLocale();
+
                 $author = $book->author;
                 $country = $author?->country;
                 $countryFlag = $country?->code ? CountryHelper::countryToEmoji($country->code) : null;
@@ -227,21 +229,22 @@ class BookController extends Controller
 
                 return [
                     'id' => $book->id,
-                    'title' => $book->title,
-                    'description' => $book->description,
-                    'author_name' => $author?->name,
+                    'title' => $book->getTranslation('title', $locale),
+                    'description' => $book->getTranslation('description', $locale),
+                    'author_name' => $author?->getTranslation('name', $locale),
                     'country_flag' => $countryFlag,
                     'publish_date' => $book->publish_date,
                     'cover_image' => $book->cover_image,
                     'star_rate' => round($book->star_rate),
                     'readers_count' => $book->readers_count,
-                    'category_name' => $book->category?->name,
-                    'size_category_name' => $book->sizecategory?->name,
+                    'category_name' => $book->category?->getTranslation('name', $locale),
+                    'size_category_name' => $book->sizecategory?->getTranslation('name', $locale),
                     'number_of_pages' => $book->number_of_pages,
                     'is_favourite' => (bool) ($readerBook->is_favourite ?? false),
                     'is_in_library' => (bool) $readerBook,
                 ];
             });
+
 
         return response()->json($books);
     }
@@ -266,6 +269,7 @@ class BookController extends Controller
             ])
             ->get()
             ->map(function ($book) use ($user_id) {
+                $locale = app()->getLocale();
                 $author = $book->author;
                 $country = $author?->country;
                 $countryFlag = $country?->code ? CountryHelper::countryToEmoji($country->code) : null;
@@ -277,16 +281,16 @@ class BookController extends Controller
 
                 return [
                     'id' => $book->id,
-                    'title' => $book->title,
-                    'description' => $book->description,
-                    'author_name' => $author?->name,
+                    'title' => $book->getTranslation('title', $locale),
+                    'description' => $book->getTranslation('description', $locale),
+                    'author_name' => $author?->getTranslation('name', $locale),
                     'country_flag' => $countryFlag,
                     'publish_date' => $book->publish_date,
                     'cover_image' => $book->cover_image,
                     'star_rate' => round($book->star_rate),
                     'readers_count' => $book->readers_count,
-                    'category_name' => $book->category?->name,
-                    'size_category_name' => $book->sizecategory?->name,
+                    'category_name' => $book->category?->getTranslation('name', $locale),
+                    'size_category_name' => $book->sizecategory?->getTranslation('name', $locale),
                     'number_of_pages' => $book->number_of_pages,
                     'is_favourite' => (bool) ($readerBook->is_favourite ?? false),
                     'is_in_library' => (bool) $readerBook,
