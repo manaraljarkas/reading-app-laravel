@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
@@ -15,6 +14,30 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         $users = [
+            [
+                'name' => 'Super Admin',
+                'email' => 'superadmin@test.com',
+                'password' => Hash::make('12345678'),
+                'role' => 'super_admin',
+            ],
+            [
+                'name' => 'Admin1',
+                'email' => 'admin1@test.com',
+                'password' => Hash::make('12345678'),
+                'role' => 'admin',
+            ],
+            [
+                'name' => 'Admin2',
+                'email' => 'admin2@test.com',
+                'password' => Hash::make('12345678'),
+                'role' => 'admin',
+            ],
+            [
+                'name' => 'Admin3',
+                'email' => 'admin3@test.com',
+                'password' => Hash::make('12345678'),
+                'role' => 'admin',
+            ],
             [
                 'name' => 'Manar Aljarkas',
                 'email' => 'manaraljarkas@test.com',
@@ -53,16 +76,16 @@ class UserSeeder extends Seeder
             ],
         ];
 
-        foreach ($users as $user) {
-            DB::table('users')->insert([
-                'name' => $user['name'],
-                'email' => $user['email'],
-                'password' => $user['password'],
+        foreach ($users as $userData) {
+            $user = User::create([
+                'name' => $userData['name'],
+                'email' => $userData['email'],
+                'password' => $userData['password'],
                 'fcm_token' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-                'role' => $user['role'] ?? null,
+                'role' => $userData['role'],
             ]);
+
+            $user->assignRole($userData['role']);
         }
     }
 }

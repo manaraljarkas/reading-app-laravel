@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             AuthorSeeder::class,
             CategorySeeder::class,
             SizeCategorySeeder::class,
+            RolesAndPermissionsSeeder::class,
             UserSeeder::class,
             ReaderSeeder::class,
             BookSeeder::class,
@@ -34,8 +35,7 @@ class DatabaseSeeder extends Seeder
             BookSuggestionSeeder::class,
             ChallengeSeeder::class,
             CommentSeeder::class,
-            ComplaintSeeder::class,
-            RolesAndPermissionsSeeder::class
+            ComplaintSeeder::class
         ]);
     }
 }

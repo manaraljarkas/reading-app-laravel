@@ -9,6 +9,7 @@ use Spatie\Translatable\HasTranslations;
 class Country extends Model
 {
     use SoftDeletes,HasTranslations;
+    public $translatable = ['name'];
     protected $fillable = ['name','code'];
     protected $casts=[
     'name'=>'array'
