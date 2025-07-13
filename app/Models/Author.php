@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Translatable\HasTranslations;
 
 class Author extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes,HasTranslations;
+    public $translatable = ['name'];
     protected $fillable = ['name','image','country_id'];
     protected $casts = [
     'name' => 'array',

@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CountryHelper;
 use App\Models\Book;
 use App\Models\BookChallenge;
 use App\Models\Category;
 use App\Models\Challenge;
 use App\Models\Comment;
 use App\Models\Reader;
+use App\Models\ReaderBook;
 use App\Models\User;
-use App\Helpers\CountryHelper;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class BookController extends Controller
 {
@@ -75,7 +76,7 @@ class BookController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $rate=DB::table('reader_books');
+        $rate = DB::table('reader_books');
         $books = Book::with('category', 'author')
             ->withcount('readers')
             ->withAvg('readers as average_rating', 'reader_books.rating')
@@ -190,7 +191,7 @@ class BookController extends Controller
         });
     }
 
-     public function getMostRatedBooks()
+    public function getMostRatedBooks()
     {
         $user_id = Auth::id();
 
@@ -216,6 +217,8 @@ class BookController extends Controller
             ->take(10)
             ->get()
             ->map(function ($book) use ($user_id) {
+                $locale = app()->getLocale();
+
                 $author = $book->author;
                 $country = $author?->country;
                 $countryFlag = $country?->code ? CountryHelper::countryToEmoji($country->code) : null;
@@ -227,21 +230,22 @@ class BookController extends Controller
 
                 return [
                     'id' => $book->id,
-                    'title' => $book->title,
-                    'description' => $book->description,
-                    'author_name' => $author?->name,
+                    'title' => $book->getTranslation('title', $locale),
+                    'description' => $book->getTranslation('description', $locale),
+                    'author_name' => $author?->getTranslation('name', $locale),
                     'country_flag' => $countryFlag,
                     'publish_date' => $book->publish_date,
                     'cover_image' => $book->cover_image,
                     'star_rate' => round($book->star_rate),
                     'readers_count' => $book->readers_count,
-                    'category_name' => $book->category?->name,
-                    'size_category_name' => $book->sizecategory?->name,
+                    'category_name' => $book->category?->getTranslation('name', $locale),
+                    'size_category_name' => $book->sizecategory?->getTranslation('name', $locale),
                     'number_of_pages' => $book->number_of_pages,
                     'is_favourite' => (bool) ($readerBook->is_favourite ?? false),
                     'is_in_library' => (bool) $readerBook,
                 ];
             });
+
 
         return response()->json($books);
     }
@@ -266,6 +270,7 @@ class BookController extends Controller
             ])
             ->get()
             ->map(function ($book) use ($user_id) {
+                $locale = app()->getLocale();
                 $author = $book->author;
                 $country = $author?->country;
                 $countryFlag = $country?->code ? CountryHelper::countryToEmoji($country->code) : null;
@@ -277,16 +282,16 @@ class BookController extends Controller
 
                 return [
                     'id' => $book->id,
-                    'title' => $book->title,
-                    'description' => $book->description,
-                    'author_name' => $author?->name,
+                    'title' => $book->getTranslation('title', $locale),
+                    'description' => $book->getTranslation('description', $locale),
+                    'author_name' => $author?->getTranslation('name', $locale),
                     'country_flag' => $countryFlag,
                     'publish_date' => $book->publish_date,
                     'cover_image' => $book->cover_image,
                     'star_rate' => round($book->star_rate),
                     'readers_count' => $book->readers_count,
-                    'category_name' => $book->category?->name,
-                    'size_category_name' => $book->sizecategory?->name,
+                    'category_name' => $book->category?->getTranslation('name', $locale),
+                    'size_category_name' => $book->sizecategory?->getTranslation('name', $locale),
                     'number_of_pages' => $book->number_of_pages,
                     'is_favourite' => (bool) ($readerBook->is_favourite ?? false),
                     'is_in_library' => (bool) $readerBook,
@@ -344,5 +349,81 @@ class BookController extends Controller
             });
 
         return response()->json($books);
+    }
+
+    public function getBookComments($bookId)
+    {
+        $user = Auth::id();
+        $comments = Comment::with('reader')->where('book_id', '=', $bookId)->get()->map(function ($comment) use ($bookId) {
+            return [
+                'reader_name' => $comment->reader?->first_name,
+                'reader_image' => $comment->reader?->picture ? asset('storage/images/readers/' . $comment->reader->picture)
+                    : null,
+                'reader_nickname' => $comment->reader?->nickname,
+                'comment' => $comment->comment
+            ];
+        });
+        return response()->json($comments);
+    }
+
+    public function AddCommentToTheBook($bookId, Request $request)
+    {
+        $reader = Auth::user()->reader;
+
+        if (!$reader) {
+            return response()->json(['message' => 'Reader not found for this user.'], 404);
+        }
+
+        $validated = $request->validate([
+            'comment' => 'required|string'
+        ]);
+
+        $comment = Comment::create([
+            'comment' => $request->comment,
+            'book_id' => $bookId,
+            'reader_id' => $reader->id,
+        ]);
+    }
+
+    public function AddBookToFavorite($bookId)
+    {
+        $reader = Auth::user()->reader;
+
+        if (!$reader) {
+            return response()->json(['message' => 'Reader not found.'], 404);
+        }
+
+        $book = Book::findOrFail($bookId);
+
+        $reader->books()->syncWithoutDetaching([
+            $bookId => ['is_favourite' => true]
+        ]);
+    }
+
+    public function AddBookToDoList($bookId)
+    {
+        $reader = Auth::user()->reader;
+        if (!$reader) {
+            return response()->json(['message' => 'Reader not found.'], 404);
+        }
+        $book = Book::findOrFail($bookId);
+        $reader->books()->syncWithoutDetaching([
+            $bookId => ['status' => 'to_read']
+        ]);
+    }
+
+    public function RateBook($bookId, Request $request)
+    {
+        $reader = Auth::user()->reader;
+        if (!$reader) {
+            return response()->json(['message' => 'Reader not found.'], 404);
+        }
+        $validated = $request->validate([
+            'rate' => 'integer|required|min:1|max:5'
+        ]);
+        $book = Book::findOrFail($bookId);
+        $reader->books()->syncWithoutDetaching([
+            $bookId => ['rating' => $request->rate]
+        ]);
     }
 }

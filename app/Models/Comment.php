@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Comment extends Model
 {
     use SoftDeletes;
-    protected $fillable = ['commnet','book_id','reader_id'];
+    protected $fillable = ['comment','book_id','reader_id'];
     public function reader()
     {
         return $this->belongsTo(Reader::class);

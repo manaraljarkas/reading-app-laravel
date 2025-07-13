@@ -17,4 +17,5 @@ class ReaderBook extends Model
         'reader_id',
         'rating'
     ];
+    
 }

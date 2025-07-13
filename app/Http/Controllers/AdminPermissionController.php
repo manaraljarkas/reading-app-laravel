@@ -1,0 +1,63 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class AdminPermissionController extends Controller
+{
+
+    public function show(User $admin)
+    {
+        $allPermissions = collect(config('admin_permissions.permissions'))
+            ->flatMap(function ($actions, $model) {
+                return collect($actions)->map(function ($action) use ($model) {
+                    return "$action $model";
+                });
+            });
+
+        $adminPermissions = $admin->getPermissionNames();
+
+        $permissions = $allPermissions->mapWithKeys(function ($permission) use ($adminPermissions) {
+            return [$permission => $adminPermissions->contains($permission)];
+        });
+
+        return response()->json([
+            'permissions' => $permissions,
+        ]);
+    }
+
+    public function update(Request $request, User $admin)
+    {
+        $allPermissions = collect(config('admin_permissions.permissions'))
+            ->flatMap(function ($actions, $model) {
+                return collect($actions)->map(function ($action) use ($model) {
+                    return "$action $model";
+                });
+            })->toArray();
+
+        $validated = $request->validate([
+            'permissions' => ['required', 'array'],
+        ]);
+
+        $requestedPermissions = $validated['permissions'];
+
+        $validKeys = array_intersect(array_keys($requestedPermissions), $allPermissions);
+
+        foreach ($validKeys as $permissionName) {
+            $isEnabled = filter_var($requestedPermissions[$permissionName], FILTER_VALIDATE_BOOLEAN);
+
+            if ($isEnabled) {
+                $admin->givePermissionTo($permissionName);
+            } else {
+                $admin->revokePermissionTo($permissionName);
+            }
+        }
+
+        return response()->json([
+            'message' => 'Permissions updated successfully.',
+        ]);
+    }
+}

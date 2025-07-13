@@ -1,7 +1,10 @@
 <?php
 
 namespace App\Http\Controllers;
+
+use App\Models\BookChallenge;
 use App\Models\Challenge;
+use App\Models\ReaderChallenge;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -13,9 +16,8 @@ class ChallengesController extends Controller
     {
         $readerId = Auth::id();
 
-        $challenges = Challenge::select('challenges.id', 'challenges.title', 'description', 'points', 'challenges.created_at', 'duration', 'reader_challenges.percentage')->
-        join('reader_challenges', 'challenges.id', '=', 'reader_challenges.challenge_id')
-        ->where('reader_challenges.reader_id', '=', $readerId)->get();
+        $challenges = Challenge::select('challenges.id', 'challenges.title', 'description', 'points', 'challenges.created_at', 'duration', 'reader_challenges.percentage')->join('reader_challenges', 'challenges.id', '=', 'reader_challenges.challenge_id')
+            ->where('reader_challenges.reader_id', '=', $readerId)->get();
 
         $now = now();
 
@@ -173,34 +175,66 @@ class ChallengesController extends Controller
         ]);
 
         DB::transaction(function () use ($request) {
-    $challenge = Challenge::create([
-        'title' => [
-            'en' => $request->input('title')['en'],
-            'ar' => $request->input('title')['ar']
-        ],
-        'description' => [
-            'en' => $request->input('description')['en'],
-            'ar' => $request->input('description')['ar']
-        ],
-        'points' => $request->points,
-        'number_of_books' => $request->number_of_books,
-        'duration' => $request->duration,
-        'category_id' => $request->category_id,
-        'size_category_id' => $request->size_category_id,
-    ]);
-
-    if ($request->has('ids_books')) {
-        foreach ($request->ids_books as $book_id) {
-            DB::table('challenge_books')->insert([
-                'challenge_id' => $challenge->id,
-                'book_id' => $book_id,
-                'created_at' => now(),
-                'updated_at' => now(),
+            $challenge = Challenge::create([
+                'title' => [
+                    'en' => $request->input('title')['en'],
+                    'ar' => $request->input('title')['ar']
+                ],
+                'description' => [
+                    'en' => $request->input('description')['en'],
+                    'ar' => $request->input('description')['ar']
+                ],
+                'points' => $request->points,
+                'number_of_books' => $request->number_of_books,
+                'duration' => $request->duration,
+                'category_id' => $request->category_id,
+                'size_category_id' => $request->size_category_id,
             ]);
-        }
+
+            if ($request->has('ids_books')) {
+                foreach ($request->ids_books as $book_id) {
+                    DB::table('challenge_books')->insert([
+                        'challenge_id' => $challenge->id,
+                        'book_id' => $book_id,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+        });
     }
-});
-}}
+    public function GetBookChallenge($bookId)
+    {
+        $user = Auth::user();
+        $locale = app()->getLocale();
+        $book_challenge = BookChallenge::findOrFail($bookId);
 
+        return response()->json([
+            'id' => $book_challenge->id,
+            'description' => $book_challenge->getTranslation('description', $locale),
+            'points' => $book_challenge->points,
+            'duration' => $book_challenge->duration
+        ]);
+    }
 
-
+    public function JoinToChallenge($challengeId)
+    {
+        $reader = Auth::user()->reader;
+        if (! $reader) {
+            return response()->json(['message' => 'Reader not found.'], 404);
+        }
+        $challenge = Challenge::findOrFail($challengeId);
+        $already = $reader->challenges()
+            ->where('challenge_id', $challengeId)
+            ->exists();
+        if ($already) {
+            return response()->json(['message' => 'You have already joined this challenge.'], 400);
+        }
+        $reader->challenges()->attach($challengeId, [
+            'progress'   => 'in_progress',
+            'percentage' => 0.0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+}

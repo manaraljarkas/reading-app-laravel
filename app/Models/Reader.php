@@ -33,12 +33,19 @@ class Reader extends Model
     }
     public function books()
     {
-        return $this->belongsToMany(Book::class, 'reader_books');
+        return $this->belongsToMany(Book::class, 'reader_books')->withPivot([
+                    'progress',
+                    'status',
+                    'is_favourite',
+                    'is_challenged',
+                    'rating'
+                ]);
     }
 
     public function challenges()
     {
-        return $this->belongsToMany(Challenge::class, 'reader_challenges');
+        return $this->belongsToMany(Challenge::class, 'reader_challenges') ->
+        withPivot(['progress', 'percentage']);
     }
     public function categories()
     {
