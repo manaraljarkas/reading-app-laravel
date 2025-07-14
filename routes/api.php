@@ -4,11 +4,11 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\BagdeController;
-use App\Http\Controllers\CategotyController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ChallengesController;
 use App\Http\Controllers\ComplaintController;
+use App\Http\Controllers\CountryController;
 use App\Http\Controllers\ReaderController;
-use App\Http\Controllers\SizeCategoryController;
 use App\Http\Controllers\SuggestionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminPermissionController;
@@ -47,6 +47,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/books/most-rated', [BookController::class, 'getMostRatedBooks']);
         Route::get('/books/author-books/{authorId}', [BookController::class, 'getAuthorBooks']);
         Route::get('/books/category-books/{categoryId}', [BookController::class, 'getCategoryBooks']);
+        Route::get('/books/favorites', [BookController::class, 'getFavoriteBooks']);
+        Route::get('/books/toread', [BookController::class, 'getToReadBooks']);
+        Route::get('/books/inread', [BookController::class, 'getInReadBooks']);
+        Route::get('/books/completed', [BookController::class, 'getCompletedBooks']);
 
         Route::get('/books/GetBookChallenge/{Id}', [ChallengesController::class, 'GetBookChallenge']);
     });
@@ -67,9 +71,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     // //----------------------------Category----------------------------
-    Route::get('/category/getCategories', [CategotyController::class, 'getCategories']);
-    Route::post('/category/update/{id}', [CategotyController::class, 'update']);
-    Route::apiResource('categories', CategotyController::class)->except(['show', 'destroy']);
+    Route::get('/category/getCategories', [CategoryController::class, 'getCategories']);
+    Route::post('/category/update/{id}', [CategoryController::class, 'update']);
+    Route::apiResource('categories', CategoryController::class)->except(['show', 'destroy']);
+    Route::post('/categories/{category}/follow', [CategoryController::class, 'followCategory']);
+    Route::delete('/categories/{category}/unfollow', [CategoryController::class, 'unfollowCategory']);
 
 
 
@@ -91,6 +97,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/complaint/getComplaints', [ComplaintController::class, 'getComplaints']);
 
 
+    //------------------------------------Country-------------------------------------
+    Route::get('/country/get-trips', [CountryController::class, 'getTrips']);
 
 
     //----------------------------Admin--------------------------------------
@@ -117,5 +125,5 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
 
-    
+
 });

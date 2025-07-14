@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\CountryHelper;
+use App\Services\BookService;
+use Illuminate\Http\JsonResponse;
 use App\Models\Book;
 use App\Models\BookChallenge;
 use App\Models\Category;
 use App\Models\Challenge;
 use App\Models\Comment;
 use App\Models\Reader;
-use App\Models\ReaderBook;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +17,14 @@ use Illuminate\Support\Facades\DB;
 
 class BookController extends Controller
 {
+
+    protected BookService $service;
+
+    public function __construct(BookService $service)
+    {
+        $this->service = $service;
+    }
+
     public function getBookFile($BookId)
     {
         $reader = Auth::user();
@@ -191,164 +199,54 @@ class BookController extends Controller
         });
     }
 
-    public function getMostRatedBooks()
+    public function getMostRatedBooks(): JsonResponse
     {
-        $user_id = Auth::id();
-
-        $books = Book::with([
-            'author.country',
-            'category',
-            'sizecategory'
-        ])
-            ->withCount(['readers as readers_count'])
-            ->addSelect([
-                'star_rate' => function ($query) {
-                    $query->from('reader_books')
-                        ->selectRaw('AVG(rating)')
-                        ->whereColumn('reader_books.book_id', 'books.id');
-                }
-            ])
-            ->whereExists(function ($query) {
-                $query->select(DB::raw(1))
-                    ->from('reader_books')
-                    ->whereColumn('reader_books.book_id', 'books.id');
-            })
-            ->orderByDesc('star_rate')
-            ->take(10)
-            ->get()
-            ->map(function ($book) use ($user_id) {
-                $locale = app()->getLocale();
-
-                $author = $book->author;
-                $country = $author?->country;
-                $countryFlag = $country?->code ? CountryHelper::countryToEmoji($country->code) : null;
-
-                $readerBook = DB::table('reader_books')
-                    ->where('book_id', $book->id)
-                    ->where('reader_id', $user_id)
-                    ->first();
-
-                return [
-                    'id' => $book->id,
-                    'title' => $book->getTranslation('title', $locale),
-                    'description' => $book->getTranslation('description', $locale),
-                    'author_name' => $author?->getTranslation('name', $locale),
-                    'country_flag' => $countryFlag,
-                    'publish_date' => $book->publish_date,
-                    'cover_image' => $book->cover_image,
-                    'star_rate' => round($book->star_rate),
-                    'readers_count' => $book->readers_count,
-                    'category_name' => $book->category?->getTranslation('name', $locale),
-                    'size_category_name' => $book->sizecategory?->getTranslation('name', $locale),
-                    'number_of_pages' => $book->number_of_pages,
-                    'is_favourite' => (bool) ($readerBook->is_favourite ?? false),
-                    'is_in_library' => (bool) $readerBook,
-                ];
-            });
-
-
-        return response()->json($books);
+        $books = $this->service->getTopRatedBooks();
+        return $this->respond($books);
     }
 
-    public function getAuthorBooks($authorId)
+    public function getAuthorBooks($authorId): JsonResponse
     {
-        $user_id = Auth::id();
-
-        $books = Book::with([
-            'author.country',
-            'category',
-            'sizecategory'
-        ])
-            ->where('author_id', $authorId)
-            ->withCount(['readers as readers_count'])
-            ->addSelect([
-                'star_rate' => function ($query) {
-                    $query->from('reader_books')
-                        ->selectRaw('AVG(rating)')
-                        ->whereColumn('reader_books.book_id', 'books.id');
-                }
-            ])
-            ->get()
-            ->map(function ($book) use ($user_id) {
-                $locale = app()->getLocale();
-                $author = $book->author;
-                $country = $author?->country;
-                $countryFlag = $country?->code ? CountryHelper::countryToEmoji($country->code) : null;
-
-                $readerBook = DB::table('reader_books')
-                    ->where('book_id', $book->id)
-                    ->where('reader_id', $user_id)
-                    ->first();
-
-                return [
-                    'id' => $book->id,
-                    'title' => $book->getTranslation('title', $locale),
-                    'description' => $book->getTranslation('description', $locale),
-                    'author_name' => $author?->getTranslation('name', $locale),
-                    'country_flag' => $countryFlag,
-                    'publish_date' => $book->publish_date,
-                    'cover_image' => $book->cover_image,
-                    'star_rate' => round($book->star_rate),
-                    'readers_count' => $book->readers_count,
-                    'category_name' => $book->category?->getTranslation('name', $locale),
-                    'size_category_name' => $book->sizecategory?->getTranslation('name', $locale),
-                    'number_of_pages' => $book->number_of_pages,
-                    'is_favourite' => (bool) ($readerBook->is_favourite ?? false),
-                    'is_in_library' => (bool) $readerBook,
-                ];
-            });
-
-        return response()->json($books);
+        $books = $this->service->getBooksByAuthor($authorId);
+        return $this->respond($books);
     }
 
-    public function getCategoryBooks($categoryId)
+    public function getCategoryBooks($categoryId): JsonResponse
     {
-        $user_id = Auth::id();
+        $books = $this->service->getBooksByCategory($categoryId);
+        return $this->respond($books);
+    }
 
-        $books = Book::with([
-            'author.country',
-            'category',
-            'sizecategory'
-        ])
-            ->where('category_id', $categoryId)
-            ->withCount(['readers as readers_count'])
-            ->addSelect([
-                'star_rate' => function ($query) {
-                    $query->from('reader_books')
-                        ->selectRaw('AVG(rating)')
-                        ->whereColumn('reader_books.book_id', 'books.id');
-                }
-            ])
-            ->get()
-            ->map(function ($book) use ($user_id) {
-                $author = $book->author;
-                $country = $author?->country;
-                $countryFlag = $country?->code ? CountryHelper::countryToEmoji($country->code) : null;
+    public function getFavoriteBooks(): JsonResponse
+    {
+        $books = $this->service->getFavoriteBooks();
+        return $this->respond($books);
+    }
 
-                $readerBook = DB::table('reader_books')
-                    ->where('book_id', $book->id)
-                    ->where('reader_id', $user_id)
-                    ->first();
+    public function getToReadBooks(): JsonResponse
+    {
+        $books = $this->service->getBooksByStatus('to_read');
+        return $this->respond($books);
+    }
 
-                return [
-                    'id' => $book->id,
-                    'title' => $book->title,
-                    'description' => $book->description,
-                    'author_name' => $author?->name,
-                    'country_flag' => $countryFlag,
-                    'publish_date' => $book->publish_date,
-                    'cover_image' => $book->cover_image,
-                    'star_rate' => round($book->star_rate),
-                    'readers_count' => $book->readers_count,
-                    'category_name' => $book->category?->name,
-                    'size_category_name' => $book->sizecategory?->name,
-                    'number_of_pages' => $book->number_of_pages,
-                    'is_favourite' => (bool) ($readerBook->is_favourite ?? false),
-                    'is_in_library' => (bool) $readerBook,
-                ];
-            });
+    public function getInReadBooks(): JsonResponse
+    {
+        $books = $this->service->getBooksByStatus('in_read');
+        return $this->respond($books);
+    }
 
-        return response()->json($books);
+    public function getCompletedBooks(): JsonResponse
+    {
+        $books = $this->service->getBooksByStatus('completed');
+        return $this->respond($books);
+    }
+
+    private function respond($books)
+    {
+        return response()->json([
+            'success' => true,
+            'data' => $this->service->transformBooks($books),
+        ]);
     }
 
     public function getBookComments($bookId)

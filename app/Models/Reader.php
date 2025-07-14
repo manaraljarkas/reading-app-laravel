@@ -17,7 +17,8 @@ class Reader extends Model
         'bio',
         'nickname',
         'quote',
-        'user_id'];
+        'user_id'
+    ];
 
     public function complaints()
     {
@@ -34,22 +35,25 @@ class Reader extends Model
     public function books()
     {
         return $this->belongsToMany(Book::class, 'reader_books')->withPivot([
-                    'progress',
-                    'status',
-                    'is_favourite',
-                    'is_challenged',
-                    'rating'
-                ]);
+            'progress',
+            'status',
+            'is_favourite',
+            'is_challenged',
+            'rating'
+        ]);
+    }
+    public function readerBooks()
+    {
+        return $this->hasMany(ReaderBook::class, 'reader_id');
     }
 
     public function challenges()
     {
-        return $this->belongsToMany(Challenge::class, 'reader_challenges') ->
-        withPivot(['progress', 'percentage']);
+        return $this->belongsToMany(Challenge::class, 'reader_challenges')->withPivot(['progress', 'percentage']);
     }
     public function categories()
     {
-        return $this->belongsToMany(Category::class, 'reader_categories');
+        return $this->belongsToMany(Category::class, 'reader_categories')->withTimestamps();
     }
     public function user()
     {

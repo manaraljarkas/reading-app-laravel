@@ -16,7 +16,8 @@ class ChallengesController extends Controller
     {
         $readerId = Auth::id();
 
-        $challenges = Challenge::select('challenges.id', 'challenges.title', 'description', 'points', 'challenges.created_at', 'duration', 'reader_challenges.percentage')->join('reader_challenges', 'challenges.id', '=', 'reader_challenges.challenge_id')
+        $challenges = Challenge::select('challenges.id', 'challenges.title', 'description', 'points', 'challenges.created_at', 'duration', 'reader_challenges.percentage')
+        ->join('reader_challenges', 'challenges.id', '=', 'reader_challenges.challenge_id')
             ->where('reader_challenges.reader_id', '=', $readerId)->get();
 
         $now = now();

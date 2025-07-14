@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CountryController extends Controller
 {
@@ -44,5 +45,32 @@ class CountryController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function getTrips()
+    {
+        $user = Auth::user();
+        $reader = $user->reader;
+
+        if (!$reader) {
+            return response()->json([
+                'message' => 'Reader profile not found.',
+            ], 404);
+        }
+
+        $books = $reader->books()->with('author.country')->get();
+
+        $trips = $books
+            ->filter(fn($book) => $book->author && $book->author->country && $book->author->country->code)
+            ->groupBy(fn($book) => $book->author->country->code)
+            ->map(fn($group, $code) => [
+                'country_code' => $code,
+                'book_count' => $group->count(),
+            ])->values();
+
+        return response()->json([
+            'message' => 'Trips data fetched successfully.',
+            'data' => $trips,
+        ], 200);
     }
 }
