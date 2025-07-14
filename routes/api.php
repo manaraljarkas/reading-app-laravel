@@ -34,9 +34,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     //--------------------------Author------------------------
-    Route::get('/author/getAuthors', [AuthorController::class, 'getAuthors']);
     Route::post('/author/update/{id}', [AuthorController::class, 'update']);
     Route::apiResource('authors', AuthorController::class)->except(['show', 'update']);
+
+
+         //---------------------------APIs using language middleware------------------------------
+    Route::prefix('mobile')->middleware('set.lang')->group(function () {
+    Route::get('/author/getAuthors', [AuthorController::class, 'getAuthors']);
+    });
 
 
 
@@ -47,7 +52,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/books/most-rated', [BookController::class, 'getMostRatedBooks']);
         Route::get('/books/author-books/{authorId}', [BookController::class, 'getAuthorBooks']);
         Route::get('/books/category-books/{categoryId}', [BookController::class, 'getCategoryBooks']);
-
         Route::get('/books/GetBookChallenge/{Id}', [ChallengesController::class, 'GetBookChallenge']);
     });
 
@@ -67,18 +71,25 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     // //----------------------------Category----------------------------
-    Route::get('/category/getCategories', [CategotyController::class, 'getCategories']);
+        //---------------------------APIs using language middleware------------------------------
+    Route::prefix('mobile')->middleware('set.lang')->group(function () {
+     Route::get('/category/getCategories', [CategotyController::class, 'getCategories']);
+    });
+
     Route::post('/category/update/{id}', [CategotyController::class, 'update']);
     Route::apiResource('categories', CategotyController::class)->except(['show', 'destroy']);
 
 
 
     // //----------------------------Challenge--------------------------------
-    Route::get('/challenge/getchallenges', [ChallengesController::class, 'getchallenges']);
     Route::post('/challenge/update/{id}', [ChallengesController::class, 'update']);
     Route::apiResource('challenges', ChallengesController::class)->except(['update']);
-    Route::get('/challenge/JoinToChallenge/{id}', [ChallengesController::class, 'JoinToChallenge']);
+    Route::get('/challenge/JoinToBookChallenge/{id}', [ChallengesController::class, 'JoinToBookChallenge']);
 
+            //---------------------------APIs using language middleware------------------------------
+    Route::prefix('mobile')->middleware('set.lang')->group(function () {
+     Route::get('/challenge/getchallenges', [ChallengesController::class, 'getchallenges']);
+    });
 
 
     //----------------------------Suggestion----------------------------
@@ -117,5 +128,5 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
 
-    
+
 });

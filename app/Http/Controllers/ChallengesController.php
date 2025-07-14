@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Book;
 use App\Models\BookChallenge;
 use App\Models\Challenge;
+use App\Models\ReaderBook;
 use App\Models\ReaderChallenge;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -14,14 +16,18 @@ class ChallengesController extends Controller
 {
     public function getchallenges()
     {
-        $readerId = Auth::id();
-
+        $user = Auth::user();
+        $readerId = $user->reader?->id;
+        if (!$readerId) {
+            return response()->json(['message' => 'Reader profile not found.'], 404);
+        }
         $challenges = Challenge::select('challenges.id', 'challenges.title', 'description', 'points', 'challenges.created_at', 'duration', 'reader_challenges.percentage')->join('reader_challenges', 'challenges.id', '=', 'reader_challenges.challenge_id')
             ->where('reader_challenges.reader_id', '=', $readerId)->get();
 
         $now = now();
 
         $challenges = $challenges->map(function ($challenge) use ($readerId, $now) {
+            $locale = app()->getLocale();
             $startDate = Carbon::parse($challenge->created_at);
             $endDate = $startDate->copy()->addDays($challenge->duration);
             $now = Carbon::now();
@@ -31,8 +37,8 @@ class ChallengesController extends Controller
 
             return [
                 'id' => $challenge->id,
-                'title' => $challenge->title,
-                'description' => $challenge->description,
+                'title' => $challenge->getTranslation('title', $locale),
+                'description' => $challenge->getTranslation('description', $locale),
                 'points' => $challenge->points,
                 'time_left' => $timeLeft,
                 'percentage' => $challenge->percentage,
@@ -217,24 +223,36 @@ class ChallengesController extends Controller
         ]);
     }
 
-    public function JoinToChallenge($challengeId)
+    public function JoinToBookChallenge($bookId)
     {
-        $reader = Auth::user()->reader;
-        if (! $reader) {
+        $user = Auth::user();
+        $reader = $user->reader;
+        if (!$reader) {
             return response()->json(['message' => 'Reader not found.'], 404);
         }
-        $challenge = Challenge::findOrFail($challengeId);
-        $already = $reader->challenges()
-            ->where('challenge_id', $challengeId)
-            ->exists();
-        if ($already) {
-            return response()->json(['message' => 'You have already joined this challenge.'], 400);
+        $book = Book::findOrFail($bookId);
+        if (!$book) {
+            return response()->json(['message' => 'Book not found.'], 404);
         }
-        $reader->challenges()->attach($challengeId, [
-            'progress'   => 'in_progress',
-            'percentage' => 0.0,
-            'created_at' => now(),
-            'updated_at' => now(),
+        $book_challenge = BookChallenge::where('book_id', $bookId)->first();
+
+        if (!$book_challenge) {
+            return response()->json(['message' => 'No challenge found for this book.'], 404);
+        }
+
+        $already=ReaderBook::where('book_id',$bookId)->where('reader_id',$reader->id)
+         ->where('is_challenged', true)->exists();
+
+        if($already){
+         return response()->json(['message' => 'Already joined this book challenge.'], 409);
+        }
+        $reader->books()->syncWithoutDetaching([
+            $bookId => [
+                'is_challenged' => true,
+                'status' => 'in_read',
+            ]
         ]);
+
+        return response()->json(['message' => 'Joined to challenge successfully.']);
     }
 }
