@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class CategotyController extends Controller
+class CategoryController extends Controller
 {
     public function getCategories()
     {
@@ -94,5 +94,32 @@ class CategotyController extends Controller
             'name' => $category->name,
             'icon' => asset('storage/' . $category->icon),
         ]);
+    }
+
+    public function followCategory($categoryId)
+    {
+        $reader = Auth::user()->reader;
+
+        if (!$reader) {
+            return response()->json(['message' => 'Reader not found.'], 404);
+        }
+
+        $category = Category::find($categoryId);
+
+        if (!$category) {
+            return response()->json(['message' => 'Category not found.'], 404);
+        }
+
+        $isFollowing = $reader->categories()
+            ->where('category_id', $categoryId)
+            ->exists();
+
+        if ($isFollowing) {
+            return response()->json(['message' => 'Already following this category.'], 200);
+        }
+
+        $reader->categories()->attach($categoryId);
+
+        return response()->json(['message' => 'Category followed successfully.'], 201);
     }
 }

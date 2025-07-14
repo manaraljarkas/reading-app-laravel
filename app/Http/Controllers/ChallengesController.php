@@ -26,7 +26,7 @@ class ChallengesController extends Controller
 
         $now = now();
 
-        $challenges = $challenges->map(function ($challenge) use ($readerId, $now) {
+            $challenges = $challenges->map(function ($challenge) use ($readerId, $now) {
             $locale = app()->getLocale();
             $startDate = Carbon::parse($challenge->created_at);
             $endDate = $startDate->copy()->addDays($challenge->duration);

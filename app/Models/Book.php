@@ -39,8 +39,14 @@ class Book extends Model
     }
     public function readers()
     {
-        return $this->belongsToMany(User::class, 'reader_books', 'book_id', 'reader_id');
+        return $this->belongsToMany(User::class, 'reader_books', 'book_id', 'reader_id')
+            ->withPivot('is_favourite', 'rating');
     }
+    public function readerBooks()
+    {
+        return $this->hasMany(ReaderBook::class, 'book_id');
+    }
+
     public function challenges()
     {
         return $this->belongsToMany(Challenge::class, 'challenge_books');
