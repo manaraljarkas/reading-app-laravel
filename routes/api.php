@@ -12,6 +12,7 @@ use App\Http\Controllers\ReaderController;
 use App\Http\Controllers\SuggestionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminPermissionController;
+use App\Http\Controllers\SizeCategoryController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -115,6 +116,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('countries', CountryController::class);
     Route::post('/country/update/{country_id}', [CountryController::class, 'update']);
     Route::get('/country/get-trips', [CountryController::class, 'getTrips']);
+
+
+    //------------------------------------Size Category-------------------------------------
+    Route::apiResource('size-categories', SizeCategoryController::class);
+    Route::post('/size-category/update/{size_category_id}', [SizeCategoryController::class, 'update']);
 
 
     //----------------------------Admin--------------------------------------

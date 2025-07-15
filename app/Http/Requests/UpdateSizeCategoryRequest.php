@@ -11,7 +11,7 @@ class UpdateSizeCategoryRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,9 @@ class UpdateSizeCategoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => ['sometimes', 'array'],
+            'name.ar' => ['sometimes', 'string', 'max:255'],
+            'name.en' => ['sometimes', 'string', 'max:255'],
         ];
     }
 }

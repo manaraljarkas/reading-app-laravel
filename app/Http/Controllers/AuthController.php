@@ -6,6 +6,7 @@ use App\Events\ProfileUpdated;
 use App\Http\Requests\StoreProfileRequest;
 use App\Http\Requests\UpdateProfileRequest;
 use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterRequest;
 use App\Mail\WelcomeMail;
 use App\Models\Reader;
 use App\Models\User;
@@ -27,12 +28,9 @@ class AuthController extends Controller
         $this->permissionService = $permissionService;
     }
 
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
-        $request->validate([
-            'email' => 'required|string|email|max:255|unique:users,email',
-            'password' => 'required|string|min:8'
-        ]);
+        $validated = $request->validated();
         $user = User::create([
             'email' => $request->email,
             'password' => Hash::make($request->password)
@@ -93,7 +91,6 @@ class AuthController extends Controller
             'permissions' => $permissions,
         ], 200);
     }
-
 
     public function setupProfile(StoreProfileRequest $request)
     {
