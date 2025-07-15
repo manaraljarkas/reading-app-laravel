@@ -58,7 +58,6 @@ class BookController extends Controller
         return response()->json($comments);
     }
 
-
     public function getNumbers()
     {
         $reader = Auth::user();
