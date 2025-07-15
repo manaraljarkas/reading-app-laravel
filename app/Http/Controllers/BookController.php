@@ -10,6 +10,7 @@ use App\Models\Category;
 use App\Models\Challenge;
 use App\Models\Comment;
 use App\Models\Reader;
+use App\Models\ReaderBook;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,14 +28,34 @@ class BookController extends Controller
 
     public function getBookFile($BookId)
     {
-        $reader = Auth::user();
-        $book = Book::select('book_pdf')->where('id', '=', $BookId)->first();
+        $user = Auth::user();
+        $reader = $user->reader;
+
+        if (!$reader) {
+            return response()->json(['message' => 'Reader profile not found.'], 404);
+        }
+
+        $book = Book::select('book_pdf')->where('id', $BookId)->first();
         if (!$book || !$book->book_pdf) {
             return response()->json(['message' => 'Book file not found.'], 404);
         }
+
+        $readerBook = ReaderBook::where('reader_id', $reader->id)
+            ->where('book_id', $BookId)
+            ->first();
+
+        $currentPage = ($readerBook && $readerBook->progress > 0) ? $readerBook->progress : 1;
+
         $fileUrl = asset('storage/images/books/pdfs/' . $book->book_pdf);
-        return response()->json(['pdf_url' => $fileUrl]);
+
+        return response()->json([
+            'pdf_url' => $fileUrl,
+            'current_page' => $currentPage
+        ]);
     }
+
+
+
 
     public function getBooksComments($BookId)
     {
@@ -249,15 +270,15 @@ class BookController extends Controller
     {
         $user = Auth::user();
         $comments = Comment::with('reader')->where('book_id', '=', $bookId)->get()
-        ->map(function ($comment) use ($bookId) {
-            return [
-                'reader_name' => $comment->reader?->first_name,
-                'reader_image' => $comment->reader?->picture ? asset('storage/images/readers/' . $comment->reader->picture)
-                    : null,
-                'reader_nickname' => $comment->reader?->nickname,
-                'comment' => $comment->comment
-            ];
-        });
+            ->map(function ($comment) use ($bookId) {
+                return [
+                    'reader_name' => $comment->reader?->first_name,
+                    'reader_image' => $comment->reader?->picture ? asset('storage/images/readers/' . $comment->reader->picture)
+                        : null,
+                    'reader_nickname' => $comment->reader?->nickname,
+                    'comment' => $comment->comment
+                ];
+            });
         return response()->json($comments);
     }
 
@@ -321,14 +342,14 @@ class BookController extends Controller
     public function RateBook($bookId, Request $request)
     {
         $user = Auth::user();
-        $reader=$user->reader;
+        $reader = $user->reader;
 
         $book = Book::findOrFail($bookId);
         if (!$reader) {
             return response()->json(['message' => 'Reader not found.'], 404);
         }
-        if(!$book){
-            return response()->json(['message'=>'Book not Found']);
+        if (!$book) {
+            return response()->json(['message' => 'Book not Found']);
         }
         $validated = $request->validate([
             'rate' => 'integer|required|min:1|max:5'
@@ -337,6 +358,6 @@ class BookController extends Controller
         $reader->books()->syncWithoutDetaching([
             $bookId => ['rating' => $request->rate]
         ]);
-        return response()->json(['message'=>'Book rated successfully']);
+        return response()->json(['message' => 'Book rated successfully']);
     }
 }
