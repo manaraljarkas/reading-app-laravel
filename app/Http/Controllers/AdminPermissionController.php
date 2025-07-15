@@ -4,25 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use App\Services\PermissionService;
 
 class AdminPermissionController extends Controller
 {
 
+    protected $permissionService;
+
+    public function __construct(PermissionService $permissionService)
+    {
+        $this->permissionService = $permissionService;
+    }
+
     public function show(User $admin)
     {
-        $allPermissions = collect(config('admin_permissions.permissions'))
-            ->flatMap(function ($actions, $model) {
-                return collect($actions)->map(function ($action) use ($model) {
-                    return "$action $model";
-                });
-            });
-
-        $adminPermissions = $admin->getPermissionNames();
-
-        $permissions = $allPermissions->mapWithKeys(function ($permission) use ($adminPermissions) {
-            return [$permission => $adminPermissions->contains($permission)];
-        });
+        $permissions = $this->permissionService->getUserPermissionMap($admin);
 
         return response()->json([
             'permissions' => $permissions,

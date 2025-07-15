@@ -8,14 +8,24 @@ use App\Http\Requests\UpdateProfileRequest;
 use App\Mail\WelcomeMail;
 use App\Models\Reader;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Auth;
+use App\Services\PermissionService;
+
 
 
 class AuthController extends Controller
 {
+
+    protected $permissionService;
+
+    public function __construct(PermissionService $permissionService)
+    {
+        $this->permissionService = $permissionService;
+    }
+
     public function register(Request $request)
     {
         $request->validate([
@@ -77,16 +87,16 @@ class AuthController extends Controller
         ]);
         if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json(
-                ['message' => 'invalid email or password'],
-                401
-            );
+                ['message' => 'invalid email or password'],401);
         }
         $user = User::where('email', $request->email)->FirstOrFail();
         $token = $user->createToken('auth_Token')->plainTextToken;
+        $permissions = $this->permissionService->getUserPermissionMap($user);
         return response()->json([
             'message' => 'Login Successfully',
-            'token' => $token
-        ], 201);
+            'token' => $token,
+            'permissions' => $permissions,
+        ], 200);
     }
 
     public function setupProfile(StoreProfileRequest $request)
