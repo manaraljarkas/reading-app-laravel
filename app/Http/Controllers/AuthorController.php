@@ -16,11 +16,12 @@ class AuthorController extends Controller
         $authors = Author::withCount('books')->with('country')->get();
 
         $Authors = $authors->map(function ($author) {
+            $locale=app()->getLocale();
             return [
-                'name' => $author->name,
+                'name' => $author->getTranslation('name',$locale),
                 'id' => $author->id,
-                'country_name' => $author->country?->name,
-                'image' => $author->image ? asset('storage/' . $author->image) : null,
+                'country_name' => $author->country?->getTranslation('name',$locale),
+                'image' => $author->image ? asset('storage/images/authors/' . $author->image) : null,
                 'number_of_books' => $author->books_count,
             ];
         });
@@ -53,7 +54,7 @@ class AuthorController extends Controller
             'name.en' => 'required|string',
             'name.ar' => 'required|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
-            'country_id' => 'required|exists:countries,id',    
+            'country_id' => 'required|exists:countries,id',
         ]);
 
         $imagePath = null;

@@ -13,15 +13,20 @@ class CategoryController extends Controller
     public function getCategories()
     {
         $categories = Category::select('id', 'name', 'icon')->get();
-        $readerId = Auth::id();
+        $user = Auth::user();
+        $readerId = $user->reader?->id;
 
         $categories = $categories->map(function ($category) use ($readerId) {
-            $is_followed = DB::table('reader_categories')->where('reader_categories.reader_id', '=', $readerId)->where('reader_categories.category_id', '=', $category->id)->exists();
+            $locale=app()->getLocale();
+            $is_followed = DB::table('reader_categories')->
+            where('reader_categories.reader_id', '=', $readerId)->
+            where('reader_categories.category_id', '=', $category->id)
+            ->exists();
 
             return [
                 'id' => $category->id,
-                'name' => $category->name,
-                'icon' => $category->icon,
+                'name' => $category->getTranslation('name',$locale),
+                'icon' => asset('storage/images/categories/' . $category->icon),
                 'is_followed' => $is_followed,
             ];
         });

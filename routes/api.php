@@ -34,9 +34,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     //--------------------------Author------------------------
-    Route::get('/author/getAuthors', [AuthorController::class, 'getAuthors']);
     Route::post('/author/update/{id}', [AuthorController::class, 'update']);
     Route::apiResource('authors', AuthorController::class)->except(['show', 'update']);
+
+
+         //---------------------------APIs using language middleware------------------------------
+    Route::prefix('mobile')->middleware('set.lang')->group(function () {
+    Route::get('/author/getAuthors', [AuthorController::class, 'getAuthors']);
+    });
 
 
 
@@ -71,6 +76,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     // //----------------------------Category----------------------------
+        //---------------------------APIs using language middleware------------------------------
+    Route::prefix('mobile')->middleware('set.lang')->group(function () {
+     Route::get('/category/getCategories', [CategoryController::class, 'getCategories']);
+    });
+
+    Route::post('/category/update/{id}', [CategoryController::class, 'update']);
+    Route::apiResource('categories', CategoryController::class)->except(['show', 'destroy']);
     Route::get('/category/getCategories', [CategoryController::class, 'getCategories']);
     Route::post('/category/update/{id}', [CategoryController::class, 'update']);
     Route::apiResource('categories', CategoryController::class)->except(['show', 'destroy']);
@@ -80,11 +92,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     // //----------------------------Challenge--------------------------------
-    Route::get('/challenge/getchallenges', [ChallengesController::class, 'getchallenges']);
     Route::post('/challenge/update/{id}', [ChallengesController::class, 'update']);
     Route::apiResource('challenges', ChallengesController::class)->except(['update']);
-    Route::get('/challenge/JoinToChallenge/{id}', [ChallengesController::class, 'JoinToChallenge']);
+    Route::get('/challenge/JoinToBookChallenge/{id}', [ChallengesController::class, 'JoinToBookChallenge']);
 
+            //---------------------------APIs using language middleware------------------------------
+    Route::prefix('mobile')->middleware('set.lang')->group(function () {
+     Route::get('/challenge/getchallenges', [ChallengesController::class, 'getchallenges']);
+    });
 
 
     //----------------------------Suggestion----------------------------
