@@ -112,6 +112,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     //------------------------------------Country-------------------------------------
+    Route::apiResource('countries', CountryController::class);
+    Route::post('/country/update/{country_id}', [CountryController::class, 'update']);
     Route::get('/country/get-trips', [CountryController::class, 'getTrips']);
 
 
@@ -133,11 +135,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     //------------------------------Permissions------------------------------------
-    Route::middleware('role:super_admin')->group(function () {
         Route::get('/admin-permissions/{admin}', [AdminPermissionController::class, 'show']);
         Route::post('/admin-permissions/{admin}', [AdminPermissionController::class, 'update']);
-    });
-
-
 
 });

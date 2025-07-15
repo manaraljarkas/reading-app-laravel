@@ -23,7 +23,7 @@ class StoreCountryRequest extends FormRequest
     {
         return [
             'name' => 'required|array',
-            'code' => 'nullable|string|size:2',
+            'code' => 'required|string|size:2',
         ];
     }
 }
