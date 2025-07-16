@@ -2,8 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\BookService;
-use Illuminate\Http\JsonResponse;
+use App\Http\Requests\StoreBookRequest;
 use App\Models\Book;
 use App\Models\BookChallenge;
 use App\Models\Category;
@@ -11,6 +10,8 @@ use App\Models\Challenge;
 use App\Models\Comment;
 use App\Models\Reader;
 use App\Models\User;
+use App\Services\BookService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -35,29 +36,6 @@ class BookController extends Controller
         $fileUrl = asset('storage/images/books/pdfs/' . $book->book_pdf);
         return response()->json(['pdf_url' => $fileUrl]);
     }
-
-    public function getBooksComments($BookId)
-    {
-        $reader = Auth::user();
-
-        $comments = Comment::where('book_id', '=', $BookId)
-            ->with('reader')
-            ->get();
-
-        $comments = $comments->map(function ($comment) {
-            return [
-                'reader_id' => $comment->reader_id,
-                'reader_name' => $comment->reader?->first_name,
-                'reader_image' => $comment->reader && $comment->reader->picture
-                    ? asset('storage/images/readers/' . $comment->reader->picture)
-                    : null,
-                'comment' => $comment->comment,
-            ];
-        });
-
-        return response()->json($comments);
-    }
-
 
     public function getNumbers()
     {
@@ -89,9 +67,9 @@ class BookController extends Controller
             ->through(function ($book) {
                 return [
                     'id' => $book->id,
-                    'title' => $book->title,
-                    'author_name' => $book->author?->name,
-                    'category' => $book->category?->name,
+                    'title' => $book->getTranslations('title'),
+                    'author_name' => $book->author?->getTranslations('name'),
+                    'category' => $book->category?->getTranslations('name'),
                     'publish_date' => $book->publish_date,
                     'star_rate' => round($book->average_rating, 2),
                     'number_of_readers' => $book->readers_count,
@@ -112,16 +90,18 @@ class BookController extends Controller
             ->get()
             ->map(function ($comment) {
                 return [
-                    'image' => asset('storage/' . $comment->reader?->image),
+                    'image' => $comment->reader?->image
+                        ? asset('storage/images/readers/' . $comment->reader->image)
+                        : null,
                     'name' => $comment->reader?->first_name,
                     'comment' => $comment->comment,
                 ];
             });
 
         return response()->json([
-            'size_Category' => $book->sizecategory->name,
-            'description' => $book->description,
-            'summary' => $book->summary,
+            'size_Category' => $book->sizecategory->getTranslations('name'),
+            'description' => $book->getTranslations('description'),
+            'summary' => $book->getTranslations('summary'),
             'book_challenge_duration' => $book->bookChallenges?->duration,
             'book_challenge_points' => $book->bookChallenges?->points,
             'book_challenge_participants' => $number_of_participants,
@@ -141,28 +121,11 @@ class BookController extends Controller
         return response()->json(['message' => 'book deleted successufly']);
     }
 
-    public function store(Request $request)
+    public function store(StoreBookRequest $request)
     {
         $user = Auth::user();
         DB::transaction(function () use ($request) {
-            $validated = $request->validate([
-                'title.en' => 'required|string',
-                'title.ar' => 'required|string',
-                'author_id' => 'required|integer|exists:authors,id',
-                'description.en' => 'required|string',
-                'description.ar' => 'required|string',
-                'category_id' => 'required|integer|exists:categories,id',
-                'publish_date' => 'required|date',
-                'number_of_pages' => 'integer|required',
-                'size_category_id' => 'integer|required|exists:size_categories,id',
-                'summary' => 'sometimes|string',
-                'book_file' => 'required|file',
-                'cover_image' => 'required|image',
-                'challenge_duration' => 'required|integer',
-                'challenge_points' => 'required|integer',
-                'description_BookChallenge.en' => 'required|string',
-                'description_BookChallenge.ar' => 'required|string',
-            ]);
+
             $filepath = $request->file('book_file')->store('storage/books/pdfs', 'public');
             $coverpath = $request->file('cover_image')->store('storage/books/covers', 'public');
             $book = Book::create([
@@ -177,7 +140,10 @@ class BookController extends Controller
                 'author_id' => $request->author_id,
                 'publish_date' => $request->publish_date,
                 'number_of_pages' => $request->number_of_pages,
-                'summary' => $request->summary,
+                 'summary' => [
+                    'en' => $request->input('summary')['en'],
+                    'ar' => $request->input('summary')['ar'],
+                ],
                 'book_pdf' => $filepath,
                 'cover_image' => $coverpath,
                 'size_category_id' => $request->size_category_id,

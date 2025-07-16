@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
+use App\Http\Requests\StoreCategoryRequest;
 
+use App\Http\Requests\UpdateCategoryRequest;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -41,21 +43,17 @@ class CategoryController extends Controller
             ->through(function ($category) {
                 return [
                     'id' => $category->id,
-                    'icon' => asset('storage/' . $category->icon),
-                    'name' => $category->name,
+                    'icon' => asset('storage/images/categories/' . $category->icon),
+                    'name' => $category->getTranslations('name'),
                     'number_of_books' => $category->books_count,
                 ];
             });
         return response()->json($categories);
     }
-    public function store(Request $request)
+    public function store(StoreCategoryRequest $request)
     {
         $user = Auth::user();
-        $validated = $request->validate([
-            'name.en' => 'required|string',
-            'name.ar' => 'required|string',
-            'icon' => 'image|required',
-        ]);
+
         $imagePath = $request->file('icon')->store('images/ccategories', 'public');
         $category = Category::create([
             'name' => [
@@ -68,20 +66,16 @@ class CategoryController extends Controller
         return response()->json(['message' => 'category added successufly']);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateCategoryRequest $request, $id)
     {
         $user = Auth::user();
         $category = Category::select('id', 'name', 'icon')->findOrFail($id);
-        $validated = $request->validate([
-            'name.en' => 'sometimes|string',
-            'name.ar' => 'sometimes|string',
-            'icon' => 'sometimes|image',
-        ]);
-        if ($request->has('name')) {
-            $category->name = [
-                'en' => $request->input('name')['en'] ?? $category->name['en'],
-                'ar' => $request->input('name')['ar'] ?? $category->name['ar'],
-            ];
+
+        if ($request->has('name_en')) {
+            $category->setTranslation('name', 'en', $request->input('name_en'));
+        }
+        if ($request->has('name_ar')) {
+            $category->setTranslation('name', 'ar', $request->input('name_ar'));
         }
 
         if ($request->hasFile('icon')) {
@@ -91,8 +85,8 @@ class CategoryController extends Controller
         $category->save();
         return response()->json([
             'id' => $category->id,
-            'name' => $category->name,
-            'icon' => asset('storage/' . $category->icon),
+            'name' => $category->getTranslations('name'),
+            'icon' => asset('storage/images/categories/' . $category->icon),
         ]);
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreAdminRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,16 +28,9 @@ class UserController extends Controller
         return response()->json($admins);
     }
 
-    public function store(Request $request)
+    public function store(StoreAdminRequest $request)
     {
         $user = Auth::user();
-
-        $validate = $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|string|email|max:255|unique:users,email',
-            'password' => 'required|string|min:8',
-        ]);
-
         $admin = User::create([
             'name' => $request->name,
             'email' => $request->email,

@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Translatable\HasTranslations;
 
 class Badge extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes,HasTranslations ;
     protected $fillable = ['title', 'achievment', 'image'];
     public $translatable = ['title', 'achievment'];
     protected $casts = [

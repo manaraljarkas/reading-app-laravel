@@ -62,7 +62,7 @@ class ReaderSeeder extends Seeder
                     'first_name' => $reader['first_name'],
                     'last_name' => $reader['last_name'],
                     'nickname' => $reader['nickname'],
-                    'picture' => 'default.jpg',
+                    'picture' => 'default.webp',
                     'bio' => 'A passionate book lover.',
                     'quote' => 'Reading is dreaming with open eyes.',
                     'created_at' => now(),

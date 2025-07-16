@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreAuthoreRequest;
+use App\Http\Requests\UpdateAuthorRequest;
 use App\Models\Author;
 use App\Models\Country;
 use Illuminate\Http\Request;
@@ -38,24 +40,18 @@ class AuthorController extends Controller
             ->through(function ($author) {
                 return [
                     'id' => $author->id,
-                    'image' => $author->image ? asset('storage/' . $author->image) : null,
-                    'name' => $author->name,
-                    'country' => $author->country->name,
+                    'image' => $author->image ? asset('storage/images/authors/' . $author->image) : null,
+                    'name' => $author->getTranslations('name'),
+                    'country' => $author->country->getTranslations('name'),
                     'number_of_books' => $author->books_count,
                 ];
             });
         return response()->json($authors);
     }
 
-    public function store(Request $request)
+    public function store(StoreAuthoreRequest $request)
     {
         $user = Auth::user();
-        $validated = $request->validate([
-            'name.en' => 'required|string',
-            'name.ar' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
-            'country_id' => 'required|exists:countries,id',
-        ]);
 
         $imagePath = null;
         if ($request->hasFile('image')) {
@@ -81,23 +77,25 @@ class AuthorController extends Controller
         return response()->json(['message' => 'Author deleted successfully']);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateAuthorRequest $request, $id)
     {
         $user = Auth::user();
         $author = Author::select('id', 'name', 'image', 'country_id')->with('country')->findOrFail($id);
 
-        $validated = $request->validate([
-            'name.en' => 'sometimes|string',
-            'name.ar' => 'sometimes|string',
-            'image' => 'sometimes|image',
-            'country_id' => 'sometimes|exists:countries,id',
-        ]);
+
+        // if ($request->has('name')) {
+        //     $author->name = [
+        //         'en' => $request->input('name')['en'] ?? $author->name['en'],
+        //         'ar' => $request->input('name')['ar'] ?? $author->name['ar'],
+        //     ];
+        // }
         if ($request->has('name')) {
-            $author->name = [
-                'en' => $request->input('name')['en'] ?? $author->name['en'],
-                'ar' => $request->input('name')['ar'] ?? $author->name['ar'],
-            ];
+            $newTranslations = $request->input('name', []);
+            $oldTranslations = $author->getTranslations('name');
+
+            $author->setTranslations('name', array_merge($oldTranslations, $newTranslations));
         }
+
         if ($request->hasFile('image')) {
             $imagepath = $request->file('image')->store('images/authors', 'public');
             $author->image = $imagepath;
@@ -108,9 +106,9 @@ class AuthorController extends Controller
         $author->save();
         $author->load('country');
         return response()->json([
-            'name' => $author->name,
-            'image' => asset('storage/' . $author->image),
-            'country' => $author->country->name,
+            'name' => $author->getTranslations('name'),
+            'image' => asset('storage/images/authors/' . $author->image),
+            'country' => $author->country->getTranslations('name'),
         ]);
     }
 }

@@ -9,7 +9,7 @@ use Spatie\Translatable\HasTranslations;
 class Author extends Model
 {
     use SoftDeletes,HasTranslations;
-    public $translatable = ['name'];
+    protected $translatable = ['name'];
     protected $fillable = ['name','image','country_id'];
     protected $casts = [
     'name' => 'array',

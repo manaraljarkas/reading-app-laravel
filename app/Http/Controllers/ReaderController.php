@@ -20,7 +20,7 @@ class ReaderController extends Controller
                     'id' => $reader->id,
                     'name' => $reader->first_name,
                     'email' => $reader->user?->email ?? 'no user attached',
-                    'picture' => asset('storage/' . $reader->picture),
+                    'picture' => asset('storage/images/readers/' . $reader->picture),
                 ];
             });
         return response()->json($readers);
@@ -39,7 +39,7 @@ class ReaderController extends Controller
 
         return response()->json([
             'name' => $readerinfo->first_name,
-            'picture' => $readerinfo->picture ? asset('storage/' . $readerinfo->picture) : null,
+            'picture' => $readerinfo->picture ? asset('storage/images/readers/' . $readerinfo->picture) : null,
             'nickname' => $readerinfo->nickname,
             'bio' => $readerinfo->bio,
             'number_of_challenges' => $number_of_challenges,

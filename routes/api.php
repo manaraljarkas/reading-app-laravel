@@ -63,7 +63,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     Route::get('book/getBookFile/{BookId}', [BookController::class, 'getBookFile']);
-    Route::get('book/getBooksComments/{BookId}', [BookController::class, 'getBooksComments']);
     Route::get('book/getNumbers', [BookController::class, 'getNumbers']);
     Route::get('book/getCategoryBooks/{categoryId}', [BookController::class, 'getCategoryBooks']);
     Route::apiResource('books', BookController::class)->except(['update']);

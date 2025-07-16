@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreChallengeRequest;
+use App\Http\Requests\UpdateChallengeRequest;
 use App\Models\Book;
 use App\Models\BookChallenge;
 use App\Models\Challenge;
@@ -58,10 +60,10 @@ class ChallengesController extends Controller
             ->through(function ($challenge) {
                 return [
                     'id' => $challenge->id,
-                    'title' => $challenge->title,
+                    'title' => $challenge->getTranslations('title'),
                     'points' => $challenge->points,
-                    'category' => $challenge->category?->name ?? 'No category',
-                    'size_category' => $challenge->sizeCategory?->name,
+                    'category' => $challenge->category?->getTranslations('name') ?? 'No category',
+                    'size_category' => $challenge->sizeCategory?->getTranslations('name'),
                     'duration' => $challenge->duration,
                     'number_of_participants' => $challenge->readers_count,
                 ];
@@ -88,32 +90,23 @@ class ChallengesController extends Controller
         ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateChallengeRequest $request, $id)
     {
         $user = Auth::user();
-        $validated = $request->validate([
-            'title.en' => 'sometimes|string',
-            'title.ar' => 'sometimes|string',
-            'description.en' => 'sometimes|string',
-            'description.ar' => 'sometimes|string',
-            'points' => 'sometimes|integer',
-            'duration' => 'sometimes|integer',
-            'number_of_books' => 'sometimes|integer',
-            'size_category_id' => 'sometimes|exists:size_categories,id',
-            'category_id' => 'sometimes|exists:categories,id',
-        ]);
+
         $challenge = Challenge::select('id', 'title', 'description', 'points', 'duration', 'number_of_books', 'size_category_id', 'category_id')->with('sizeCategory')->with('category')->findOrFail($id);
-        if ($request->has('title')) {
-            $challenge->title = [
-                'en' => $request->input('title')['en'] ?? $challenge->title['en'],
-                'ar' => $request->input('title')['ar'] ?? $challenge->title['ar'],
-            ];
+        if ($request->has('title.en')) {
+            $challenge->setTranslation('title', 'en', $request->input('title.en'));
         }
-        if ($request->has('description')) {
-            $challenge->description = [
-                'en' => $request->input('description')['en'] ?? $challenge->description['en'],
-                'ar' => $request->input('description')['ar'] ?? $challenge->description['ar'],
-            ];
+        if ($request->has('title.ar')) {
+            $challenge->setTranslation('title', 'ar', $request->input('title.ar'));
+        }
+
+        if ($request->has('description.en')) {
+            $challenge->setTranslation('description', 'en', $request->input('description.en'));
+        }
+        if ($request->has('description.ar')) {
+            $challenge->setTranslation('description', 'ar', $request->input('description.ar'));
         }
         if ($request->has('points')) {
             $challenge->points = $request->input('points');
@@ -134,13 +127,13 @@ class ChallengesController extends Controller
         $challenge->load('category');
         $challenge->save();
         return response()->json([
-            'title' => $challenge->title,
-            'description' => $challenge->description,
+            'title' => $challenge->getTranslations('title'),
+            'description' => $challenge->getTranslations('description'),
             'points' => $challenge->points,
             'duration' => $challenge->duration,
             'number_of_books' => $challenge->number_of_books,
-            'size_category' => $challenge->sizeCategory->name,
-            'category' => $challenge->category->name,
+            'size_category' => $challenge->sizeCategory->getTranslations('name'),
+            'category' => $challenge->category->getTranslations('name'),
         ]);
     }
     public function show($id)
@@ -157,28 +150,14 @@ class ChallengesController extends Controller
             });
 
         return response()->json([
-            'description' => $challenge->description,
+            'description' => $challenge->getTranslations('description'),
             'number_of_books' => $challenge->number_of_books,
             'books_pdfs' => $books,
         ]);
     }
-    public function store(Request $request)
+    public function store(StoreChallengeRequest $request)
     {
         $user = Auth::user();
-
-        $validated = $request->validate([
-            'title.en' => 'required|string',
-            'title.ar' => 'required|string',
-            'description.en' => 'required|string',
-            'description.ar' => 'required|string',
-            'points' => 'required|integer',
-            'number_of_books' => 'required|integer',
-            'duration' => 'required|integer',
-            'category_id' => 'required|integer|exists:categories,id',
-            'size_category_id' => 'required|integer|exists:size_categories,id',
-            'ids_books' => 'sometimes|array',
-            'ids_books.*' => 'integer|exists:books,id'
-        ]);
 
         DB::transaction(function () use ($request) {
             $challenge = Challenge::create([
@@ -196,9 +175,17 @@ class ChallengesController extends Controller
                 'category_id' => $request->category_id,
                 'size_category_id' => $request->size_category_id,
             ]);
+            $number_of_books = $request->number_of_books;
+            $ids_books = $request->ids_books;
 
             if ($request->has('ids_books')) {
-                foreach ($request->ids_books as $book_id) {
+                $bookIds = $request->ids_books;
+
+                if (count($bookIds) > $number_of_books) {
+                    abort(400, 'The number of entered books is more than the number of challenge books.');
+                }
+
+                foreach ($bookIds as $book_id) {
                     DB::table('challenge_books')->insert([
                         'challenge_id' => $challenge->id,
                         'book_id' => $book_id,
@@ -209,6 +196,8 @@ class ChallengesController extends Controller
             }
         });
     }
+
+
     public function GetBookChallenge($bookId)
     {
         $user = Auth::user();
