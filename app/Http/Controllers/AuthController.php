@@ -5,23 +5,32 @@ namespace App\Http\Controllers;
 use App\Events\ProfileUpdated;
 use App\Http\Requests\StoreProfileRequest;
 use App\Http\Requests\UpdateProfileRequest;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterRequest;
 use App\Mail\WelcomeMail;
 use App\Models\Reader;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Auth;
+use App\Services\PermissionService;
+
 
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
+
+    protected $permissionService;
+
+    public function __construct(PermissionService $permissionService)
     {
-        $request->validate([
-            'email' => 'required|string|email|max:255|unique:users,email',
-            'password' => 'required|string|min:8'
-        ]);
+        $this->permissionService = $permissionService;
+    }
+
+    public function register(RegisterRequest $request)
+    {
+        $validated = $request->validated();
         $user = User::create([
             'email' => $request->email,
             'password' => Hash::make($request->password)
@@ -35,13 +44,8 @@ class AuthController extends Controller
         ], 201);
     }
 
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $request->validate([
-            'email' => 'required|string|email',
-            'password' => 'required|string',
-        ]);
-
         if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json([
                 'message' => 'Invalid email or password'
@@ -54,7 +58,7 @@ class AuthController extends Controller
 
         if (!$reader) {
             return response()->json([
-                'message' => 'Login successfully But Profile not found for this user.',
+                'message' => 'Login successfully but profile not found for this user.',
                 'token' => $token
             ], 200);
         }
@@ -69,24 +73,23 @@ class AuthController extends Controller
         ], 200);
     }
 
-    public function webLogin(Request $request)
+    public function webLogin(LoginRequest $request)
     {
-        $request->validate([
-            'email' => 'required|string|email',
-            'password' => 'required|string'
-        ]);
         if (!Auth::attempt($request->only('email', 'password'))) {
-            return response()->json(
-                ['message' => 'invalid email or password'],
-                401
-            );
+            return response()->json([
+                'message' => 'Invalid email or password'
+            ], 401);
         }
-        $user = User::where('email', $request->email)->FirstOrFail();
-        $token = $user->createToken('auth_Token')->plainTextToken;
+
+        $user = User::where('email', $request->email)->firstOrFail();
+        $token = $user->createToken('auth_token')->plainTextToken;
+        $permissions = $this->permissionService->getUserPermissionMap($user);
+
         return response()->json([
-            'message' => 'Login Successfully',
-            'token' => $token
-        ], 201);
+            'message' => 'Login successfully',
+            'token' => $token,
+            'permissions' => $permissions,
+        ], 200);
     }
 
     public function setupProfile(StoreProfileRequest $request)

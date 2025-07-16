@@ -23,6 +23,9 @@ class UpdateCountryRequest extends FormRequest
     {
         return [
             'name' => 'sometimes|required|array',
+            'name' => ['sometimes', 'array'],
+            'name.ar' => ['sometimes', 'string', 'max:255'],
+            'name.en' => ['sometimes', 'string', 'max:255'],
             'code' => 'sometimes|nullable|string|size:2',
         ];
     }
