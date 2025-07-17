@@ -35,7 +35,7 @@ class CategoryController extends Controller
 
         return response()->json([
        'success'=>true,
-       'date'=>$categories
+       'data'=>$categories
         ]);
     }
     public function index()
