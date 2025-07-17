@@ -28,7 +28,10 @@ class AuthorController extends Controller
             ];
         });
 
-        return response()->json($Authors);
+        return response()->json([
+        'success'=>true,
+        'data'=>$Authors,
+        ]);
     }
 
     public function index()

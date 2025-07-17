@@ -46,7 +46,11 @@ class ChallengesController extends Controller
                 'percentage' => $challenge->percentage,
             ];
         });
-        return response()->json($challenges);
+
+        return response()->json([
+        'success'=>true,
+        'data'=>$challenges
+        ]);
     }
 
     public function index()

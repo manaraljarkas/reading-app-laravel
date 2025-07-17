@@ -33,7 +33,10 @@ class CategoryController extends Controller
             ];
         });
 
-        return response()->json($categories);
+        return response()->json([
+       'success'=>true,
+       'date'=>$categories
+        ]);
     }
     public function index()
     {
