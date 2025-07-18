@@ -23,9 +23,11 @@ class UserController extends Controller
     {
         $user = Auth::user();
 
-        $admins = User::select('email', 'name', 'role')->where('role', '=', 'admin')->where('id', $adminId)->get();
+        $admins = User::select('email', 'name', 'role')->where('role', '=', 'admin')->where('id', $adminId)->first();
 
-        return response()->json($admins);
+        return response()->json([
+        'success'=>true,
+        'data'=> $admins]);
     }
 
     public function store(StoreAdminRequest $request)
