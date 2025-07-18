@@ -144,8 +144,8 @@ class BookController extends Controller
         $user = Auth::user();
         DB::transaction(function () use ($request) {
 
-            $filepath = $request->file('book_file')->store('storage/books/pdfs', 'public');
-            $coverpath = $request->file('cover_image')->store('storage/books/covers', 'public');
+            $filepath = $request->file('book_file')->store('books/pdfs', 'public');
+            $coverpath = $request->file('cover_image')->store('books/covers', 'public');
             $book = Book::create([
                 'title' => [
                     'en' => $request->input('title')['en'],
