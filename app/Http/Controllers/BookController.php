@@ -46,16 +46,13 @@ class BookController extends Controller
 
         $currentPage = ($readerBook && $readerBook->progress > 0) ? $readerBook->progress : 1;
 
-        $fileUrl = asset('storage/images/books/pdfs/' . $book->book_pdf);
+        $fileUrl = asset('storage/books/pdfs/' . $book->book_pdf);
 
         return response()->json([
             'pdf_url' => $fileUrl,
             'current_page' => $currentPage
         ]);
     }
-
-
-
 
     public function getBooksComments($BookId)
     {
@@ -183,8 +180,8 @@ class BookController extends Controller
                 'description_BookChallenge.en' => 'required|string',
                 'description_BookChallenge.ar' => 'required|string',
             ]);
-            $filepath = $request->file('book_file')->store('storage/books/pdfs', 'public');
-            $coverpath = $request->file('cover_image')->store('storage/books/covers', 'public');
+            $filepath = $request->file('book_file')->store('books/pdfs', 'public');
+            $coverpath = $request->file('cover_image')->store('books/covers', 'public');
             $book = Book::create([
                 'title' => [
                     'en' => $request->input('title')['en'],
