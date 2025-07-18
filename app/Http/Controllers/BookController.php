@@ -42,17 +42,8 @@ class BookController extends Controller
             return response()->json(['message' => 'Book file not found.'], 404);
         }
 
-        $readerBook = ReaderBook::where('reader_id', $reader->id)
-            ->where('book_id', $book->id)
-            ->first();
-
-        $currentPage = $readerBook && $readerBook->progress > 0
-            ? $readerBook->progress
-            : 1;
-
         return response()->json([
-            'pdf_url' => asset('storage/' . $book->book_pdf),
-            'current_page' => $currentPage,
+            'pdf_url' => asset('storage/' . $book->book_pdf)
         ]);
     }
 
