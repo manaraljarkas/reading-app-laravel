@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use \Exception;
+use App\Http\Requests\StoreBadgeRequest;
 use App\Models\Badge;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,9 +18,9 @@ class BagdeController extends Controller
             ->paginate(10)
             ->through(function ($badge) {
                 return [
-                    'image' => asset('storage/' . $badge->image),
-                    'title' => $badge->title,
-                    'description' => $badge->achievment,
+                    'image' => asset('storage/images/badges/' . $badge->image),
+                    'title' => $badge->getTranslations('title'),
+                    'description' => $badge->getTranslations('achievment'),
                     'number_of_earnes' => $badge->readers_count,
                 ];
             });
@@ -38,16 +39,10 @@ class BagdeController extends Controller
         return response()->json(['message' => 'Badge deleted successfully']);
     }
 
-    public function store(Request $request)
+    public function store(StoreBadgeRequest $request)
     {
         $user = Auth::user();
-        $validated = $request->validate([
-            'title.en' => 'required|string',
-            'title.ar' => 'required|string',
-            'achievment.en' => 'required|string',
-            'achievment.ar' => 'required|string',
-            'image' => 'image|required',
-        ]);
+
         $imagePath = $request->file('image')->store('images/badges', 'public');
         $badges = Badge::create([
             'title' => [
@@ -66,25 +61,18 @@ class BagdeController extends Controller
     {
         $user = Auth::user();
         $badge = Badge::findOrFail($id);
-        $validate = $request->validate([
-            'title.en' => 'sometimes|string',
-            'title.ar' => 'sometimes|string',
-            'achievment.en' => 'sometimes|string',
-            'achievment.ar' => 'sometimes|string',
-            'image' => 'sometimes|image',
-        ]);
 
-        if ($request->has('title')) {
-            $badge->title = [
-                'en' => $request->input('title')['en'] ?? $badge->title['en'],
-                'ar' => $request->input('title')['ar'] ?? $badge->title['ar'],
-            ];
+        if ($request->has('title_en')) {
+            $badge->setTranslation('title', 'en', $request->input('title_en'));
         }
-        if ($request->has('achievment')) {
-            $badge->achievment = [
-                'en' => $request->input('achievment')['en'] ?? $badge->achievment['en'],
-                'ar' => $request->input('achievment')['ar'] ?? $badge->achievment['ar'],
-            ];
+        if ($request->has('title_ar')) {
+            $badge->setTranslation('title', 'ar', $request->input('title_ar'));
+        }
+        if ($request->has('achievment_en')) {
+            $badge->setTranslation('achievment', 'en', $request->input('achievment_en'));
+        }
+        if ($request->has('achievment_ar')) {
+            $badge->setTranslation('achievment', 'ar', $request->input('achievment_ar'));
         }
 
         if ($request->hasFile('image')) {
@@ -97,9 +85,9 @@ class BagdeController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
         return response()->json([
-            'title' => $badge->title,
-            'achievment' => $badge->achievment,
-            'image' => asset('storage/' . $badge->image),
+            'title' => $badge->getTranslations('title'),
+            'achievment' => $badge->getTranslations('achievment'),
+            'image' => asset('storage/images/badges/' . $badge->image),
         ]);
     }
     public function show($id)
@@ -107,9 +95,9 @@ class BagdeController extends Controller
     $badge = Badge::findOrFail($id);
 
     return response()->json([
-        'title' => $badge->title,
-        'achievment' => $badge->achievment,
-        'image' => asset('storage/' . $badge->image),
+        'title' => $badge->getTranslations('title'),
+        'achievment' => $badge->getTranslations('achievment'),
+        'image' => asset('storage/images/badges/' . $badge->image),
     ]);
 }
 }

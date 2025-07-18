@@ -9,7 +9,7 @@ use Spatie\Translatable\HasTranslations;
 class Book extends Model
 {
     use SoftDeletes, HasTranslations;
-    public $translatable = ['title', 'description'];
+    public $translatable = ['title', 'description','summary'];
     protected $casts = [
         'title' => 'array',
         'description' => 'array',
