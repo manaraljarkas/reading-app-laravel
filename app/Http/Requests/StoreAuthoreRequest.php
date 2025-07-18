@@ -24,7 +24,7 @@ class StoreAuthoreRequest extends FormRequest
         return [
             'name.en' => 'required|string',
             'name.ar' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
             'country_id' => 'required|exists:countries,id',
         ];
     }
