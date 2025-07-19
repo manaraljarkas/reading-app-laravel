@@ -27,7 +27,7 @@ class BookController extends Controller
         $this->service = $service;
     }
 
-    public function getBookFile($BookId)
+    public function getBookFile($bookId)
     {
         $user = Auth::user();
         $reader = $user->reader;
@@ -36,22 +36,14 @@ class BookController extends Controller
             return response()->json(['message' => 'Reader profile not found.'], 404);
         }
 
-        $book = Book::select('book_pdf')->where('id', $BookId)->first();
+        $book = Book::select('id', 'book_pdf')->find($bookId);
+
         if (!$book || !$book->book_pdf) {
             return response()->json(['message' => 'Book file not found.'], 404);
         }
 
-        $readerBook = ReaderBook::where('reader_id', $reader->id)
-            ->where('book_id', $BookId)
-            ->first();
-
-        $currentPage = ($readerBook && $readerBook->progress > 0) ? $readerBook->progress : 1;
-
-        $fileUrl = asset('storage/images/books/pdfs/' . $book->book_pdf);
-
         return response()->json([
-            'pdf_url' => $fileUrl,
-            'current_page' => $currentPage
+            'pdf_url' => asset('storage/' . $book->book_pdf)
         ]);
     }
 
@@ -144,8 +136,8 @@ class BookController extends Controller
         $user = Auth::user();
         DB::transaction(function () use ($request) {
 
-            $filepath = $request->file('book_file')->store('storage/books/pdfs', 'public');
-            $coverpath = $request->file('cover_image')->store('storage/books/covers', 'public');
+            $filepath = $request->file('book_file')->store('images/books/pdfs', 'public');
+            $coverpath = $request->file('cover_image')->store('images/books/covers', 'public');
             $book = Book::create([
                 'title' => [
                     'en' => $request->input('title')['en'],
@@ -158,7 +150,7 @@ class BookController extends Controller
                 'author_id' => $request->author_id,
                 'publish_date' => $request->publish_date,
                 'number_of_pages' => $request->number_of_pages,
-                 'summary' => [
+                'summary' => [
                     'en' => $request->input('summary')['en'],
                     'ar' => $request->input('summary')['ar'],
                 ],

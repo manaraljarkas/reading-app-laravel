@@ -90,9 +90,6 @@ class UserController extends Controller
         if ($request->has('password')) {
             $admin->password = Hash::make($request->password);
         }
-        if ($request->has('role')) {
-            $admin->role = $request->role;
-        }
 
         $admin->save();
         return response()->json([
@@ -100,7 +97,6 @@ class UserController extends Controller
             'data' => [
                 'name' => $admin->name,
                 'email' => $admin->email,
-                'role' => $admin->role
             ]
         ]);
     }
