@@ -23,7 +23,8 @@ class ChallengesController extends Controller
         if (!$readerId) {
             return response()->json(['message' => 'Reader profile not found.'], 404);
         }
-        $challenges = Challenge::select('challenges.id', 'challenges.title', 'description', 'points', 'challenges.created_at', 'duration', 'reader_challenges.percentage')->join('reader_challenges', 'challenges.id', '=', 'reader_challenges.challenge_id')
+        $challenges = Challenge::select('challenges.id', 'challenges.title', 'description', 'points', 'challenges.created_at', 'duration', 'reader_challenges.percentage')->
+        join('reader_challenges', 'challenges.id', '=', 'reader_challenges.challenge_id')
             ->where('reader_challenges.reader_id', '=', $readerId)->get();
 
         $now = now();
