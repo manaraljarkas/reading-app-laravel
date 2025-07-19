@@ -124,7 +124,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     //----------------------------Admin--------------------------------------
-    Route::apiResource('admins', UserController::class)->except(['update']);
+    Route::apiResource('admins', UserController::class);
+    Route::get('/admin/getAdmin', [UserController::class, 'getAdmin']);
+    Route::post('/admin/update/{id}', [UserController::class, 'update']);
 
 
 

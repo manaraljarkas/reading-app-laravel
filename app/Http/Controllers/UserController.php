@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreAdminRequest;
+use App\Http\Requests\UpdateAdminRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -52,5 +53,55 @@ class UserController extends Controller
         }
         $admin->delete();
         return response()->json(['message' => 'Admin deleted successfully']);
+    }
+
+    public function getAdmin()
+    {
+        $user = Auth::user();
+        if ($user->role == 'admin' || $user->role == 'superAdmin') {
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $user->id,
+                    'name' => $user?->name,
+                    'email' => $user->email,
+                    'role' => $user->role,
+                ]
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Unauthorized: You are not an admin or superAdmin.'
+        ], 403);
+    }
+
+    public function update(UpdateAdminRequest $request, $id)
+    {
+        $user = Auth::user();
+        $admin = User::findOrFail($id);
+
+        if ($request->has('name')) {
+            $admin->name = $request->name;
+        }
+        if ($request->has('email')) {
+            $admin->email = $request->email;
+        }
+        if ($request->has('password')) {
+            $admin->password = Hash::make($request->password);
+        }
+        if ($request->has('role')) {
+            $admin->role = $request->role;
+        }
+
+        $admin->save();
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'name' => $admin->name,
+                'email' => $admin->email,
+                'role' => $admin->role
+            ]
+        ]);
     }
 }
