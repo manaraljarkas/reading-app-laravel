@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreBookRequest;
+use App\Http\Requests\UpdateBookRequest;
+use App\Models\Badge;
 use App\Models\Book;
 use App\Models\BookChallenge;
 use App\Models\Category;
@@ -55,14 +57,19 @@ class BookController extends Controller
         $books = Book::Count();
         $challenges = Challenge::Count();
         $categories = Category::Count();
+        $badges = Badge::Count();
         $admins = User::where('role', '=', 'admin')->count();
 
         return response()->json([
-            'number_of_readers' => $readers,
-            'number_of_admins' => $admins,
-            'number_of_books' => $books,
-            'number_of_challenges' => $challenges,
-            'number_of_categories' => $categories,
+            'success' => true,
+            'data' => [
+                'number_of_readers' => $readers,
+                'number_of_admins' => $admins,
+                'number_of_books' => $books,
+                'number_of_challenges' => $challenges,
+                'number_of_categories' => $categories,
+                'number_of_badges' => $badges
+            ]
         ]);
     }
 
@@ -316,4 +323,6 @@ class BookController extends Controller
         ]);
         return response()->json(['message' => 'Book rated successfully']);
     }
+
+
 }
