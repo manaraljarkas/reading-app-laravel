@@ -11,13 +11,15 @@ use App\Models\Category;
 use App\Models\Challenge;
 use App\Models\Comment;
 use App\Models\Reader;
-use App\Models\ReaderBook;
 use App\Models\User;
 use App\Services\BookService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+
+
 
 class BookController extends Controller
 {
@@ -45,7 +47,7 @@ class BookController extends Controller
         }
 
         return response()->json([
-            'pdf_url' => asset('storage/' . $book->book_pdf)
+            'pdf_url' => $book->book_pdf,
         ]);
     }
 
@@ -140,11 +142,22 @@ class BookController extends Controller
 
     public function store(StoreBookRequest $request)
     {
-        $user = Auth::user();
         DB::transaction(function () use ($request) {
+            // Upload cover image
+            $coverUpload = Cloudinary::uploadApi()->upload(
+                $request->file('cover_image')->getRealPath(),
+                ['folder' => 'reading-app/covers']
+            );
+            $coverUrl = $coverUpload['secure_url'];
 
-            $filepath = $request->file('book_file')->store('images/books/pdfs', 'public');
-            $coverpath = $request->file('cover_image')->store('images/books/covers', 'public');
+            // Upload PDF
+            $pdfUpload = Cloudinary::uploadApi()->upload(
+                $request->file('book_file')->getRealPath(),
+                ['folder' => 'reading-app/pdfs', 'resource_type' => 'raw']
+            );
+            $pdfUrl = $pdfUpload['secure_url'];
+
+            // Save book and challenge
             $book = Book::create([
                 'title' => [
                     'en' => $request->input('title')['en'],
@@ -161,8 +174,8 @@ class BookController extends Controller
                     'en' => $request->input('summary')['en'],
                     'ar' => $request->input('summary')['ar'],
                 ],
-                'book_pdf' => $filepath,
-                'cover_image' => $coverpath,
+                'book_pdf' => $pdfUrl,
+                'cover_image' => $coverUrl,
                 'size_category_id' => $request->size_category_id,
                 'category_id' => $request->category_id,
             ]);
