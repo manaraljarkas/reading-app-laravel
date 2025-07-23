@@ -136,21 +136,19 @@ class BookController extends Controller
     public function store(StoreBookRequest $request)
     {
         DB::transaction(function () use ($request) {
-            // Upload cover image
+
             $coverUpload = Cloudinary::uploadApi()->upload(
                 $request->file('cover_image')->getRealPath(),
                 ['folder' => 'reading-app/covers']
             );
             $coverUrl = $coverUpload['secure_url'];
 
-            // Upload PDF
             $pdfUpload = Cloudinary::uploadApi()->upload(
                 $request->file('book_file')->getRealPath(),
                 ['folder' => 'reading-app/pdfs', 'resource_type' => 'raw']
             );
             $pdfUrl = $pdfUpload['secure_url'];
 
-            // Save book and challenge
             $book = Book::create([
                 'title' => [
                     'en' => $request->input('title')['en'],
