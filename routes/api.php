@@ -61,12 +61,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/books/GetBookChallenge/{Id}', [ChallengesController::class, 'GetBookChallenge']);
     });
 
-
-
     Route::get('book/getBookFile/{BookId}', [BookController::class, 'getBookFile']);
     Route::get('book/getNumbers', [BookController::class, 'getNumbers']);
     Route::get('book/getCategoryBooks/{categoryId}', [BookController::class, 'getCategoryBooks']);
-    Route::apiResource('books', BookController::class)->except(['update']);
+    Route::apiResource('books', BookController::class);
+    Route::post('/book/update/{id}', [BookController::class, 'update']);
     Route::get('book/AddBookToFavorite/{id}', [BookController::class, 'AddBookToFavorite']);
     Route::get('book/getBookComments/{id}', [BookController::class, 'getBookComments']);
     Route::get('book/AddBookToDoList/{id}', [BookController::class, 'AddBookToDoList']);
