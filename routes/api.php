@@ -39,9 +39,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('authors', AuthorController::class)->except(['show', 'update']);
 
 
-         //---------------------------APIs using language middleware------------------------------
+    //---------------------------APIs using language middleware------------------------------
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
-    Route::get('/author/getAuthors', [AuthorController::class, 'getAuthors']);
+        Route::get('/author/getAuthors', [AuthorController::class, 'getAuthors']);
     });
 
 
@@ -75,9 +75,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     // //----------------------------Category----------------------------
-        //---------------------------APIs using language middleware------------------------------
+    //---------------------------APIs using language middleware------------------------------
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
-     Route::get('/category/getCategories', [CategoryController::class, 'getCategories']);
+        Route::get('/category/getCategories', [CategoryController::class, 'getCategories']);
     });
 
     Route::post('/category/update/{id}', [CategoryController::class, 'update']);
@@ -95,20 +95,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('challenges', ChallengesController::class)->except(['update']);
     Route::get('/challenge/JoinToBookChallenge/{id}', [ChallengesController::class, 'JoinToBookChallenge']);
 
-            //---------------------------APIs using language middleware------------------------------
+    //---------------------------APIs using language middleware------------------------------
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
-     Route::get('/challenge/getchallenges', [ChallengesController::class, 'getchallenges']);
+        Route::get('/challenge/getchallenges', [ChallengesController::class, 'getchallenges']);
     });
 
 
     //----------------------------Suggestion----------------------------
     Route::post('/suggestion/Update/{id}', [SuggestionController::class, 'update']);
-    Route::apiResource('suggestions', SuggestionController::class)->except(['store']);
-
-
-
-    //----------------------------Complaint-------------------------------
-    Route::get('/complaint/getComplaints', [ComplaintController::class, 'getComplaints']);
 
 
     //------------------------------------Country-------------------------------------
@@ -122,27 +116,23 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/size-category/update/{size_category_id}', [SizeCategoryController::class, 'update']);
 
 
-    //----------------------------Admin--------------------------------------
-    Route::apiResource('admins', UserController::class);
+
+    Route::middleware(['auth:sanctum', 'role:super_admin'])->group(function () {
+        //----------------------------Admin--------------------------------------
+        Route::apiResource('admins', UserController::class);
+        Route::post('/admin/update/{id}', [UserController::class, 'update']);
+        //-----------------------------Reader-------------------------------------
+        Route::apiResource('readers', ReaderController::class)->except(['store', 'update']);
+        //------------------------------Permissions------------------------------------
+        Route::get('/admin-permissions/{admin}', [AdminPermissionController::class, 'show']);
+        Route::post('/admin-permissions/{admin}', [AdminPermissionController::class, 'update']);
+        //----------------------------Complaints & Suggestions-------------------------------
+        Route::get('/complaint/getComplaints', [ComplaintController::class, 'getComplaints']);
+        Route::apiResource('suggestions', SuggestionController::class)->except(['store']);
+    });
     Route::get('/admin/getAdmin', [UserController::class, 'getAdmin']);
-    Route::post('/admin/update/{id}', [UserController::class, 'update']);
-
-
-
-    //-----------------------------Reader-------------------------------------
-    Route::apiResource('readers', ReaderController::class)->except(['store', 'update']);
-
-
-
 
     //-----------------------------Badge-------------------------------------
     Route::post('/badge/update/{id}', [BagdeController::class, 'update']);
     Route::apiResource('badges', BagdeController::class);
-
-
-
-    //------------------------------Permissions------------------------------------
-        Route::get('/admin-permissions/{admin}', [AdminPermissionController::class, 'show']);
-        Route::post('/admin-permissions/{admin}', [AdminPermissionController::class, 'update']);
-
 });
