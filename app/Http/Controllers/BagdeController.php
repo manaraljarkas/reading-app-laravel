@@ -96,8 +96,8 @@ class BagdeController extends Controller
         ]);
     }
     public function show($id)
-{
-    $badge = Badge::findOrFail($id);
+    {
+        $badge = Badge::findOrFail($id);
 
     return response()->json([
         'title' => $badge->getTranslations('title'),
