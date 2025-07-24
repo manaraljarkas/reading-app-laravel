@@ -36,7 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     //--------------------------Author------------------------
     Route::post('/author/update/{id}', [AuthorController::class, 'update']);
-    Route::apiResource('authors', AuthorController::class)->except(['show', 'update']);
+    Route::apiResource('authors', AuthorController::class);
 
 
          //---------------------------APIs using language middleware------------------------------
@@ -81,7 +81,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::post('/category/update/{id}', [CategoryController::class, 'update']);
-    Route::apiResource('categories', CategoryController::class)->except(['show', 'destroy']);
+    Route::apiResource('categories', CategoryController::class);
     Route::get('/category/getCategories', [CategoryController::class, 'getCategories']);
     Route::post('/category/update/{id}', [CategoryController::class, 'update']);
     Route::apiResource('categories', CategoryController::class)->except(['show', 'destroy']);

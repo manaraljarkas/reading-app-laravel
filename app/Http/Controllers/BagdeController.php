@@ -7,7 +7,7 @@ use App\Http\Requests\StoreBadgeRequest;
 use App\Models\Badge;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 class BagdeController extends Controller
 {
     public function index()
@@ -18,7 +18,7 @@ class BagdeController extends Controller
             ->paginate(10)
             ->through(function ($badge) {
                 return [
-                    'image' => asset('storage/images/badges/' . $badge->image),
+                    'image' => $badge->image,
                     'title' => $badge->getTranslations('title'),
                     'description' => $badge->getTranslations('achievment'),
                     'number_of_earnes' => $badge->readers_count,
@@ -43,7 +43,12 @@ class BagdeController extends Controller
     {
         $user = Auth::user();
 
-        $imagePath = $request->file('image')->store('images/badges', 'public');
+        // Upload image to Cloudinary
+        $imageUpload = Cloudinary::uploadApi()->upload(
+            $request->file('image')->getRealPath(),
+            ['folder' => 'reading-app/badges']
+        );
+        $imageUrl = $imageUpload['secure_url'];
         $badges = Badge::create([
             'title' => [
                 'en' => $request->input('title.en'),
@@ -53,7 +58,7 @@ class BagdeController extends Controller
                 'en' => $request->input('achievment.en'),
                 'ar' => $request->input('achievment.ar'),
             ],
-            'image' => $imagePath,
+            'image' => $imageUrl,
         ]);
     }
 
@@ -97,7 +102,7 @@ class BagdeController extends Controller
     return response()->json([
         'title' => $badge->getTranslations('title'),
         'achievment' => $badge->getTranslations('achievment'),
-        'image' => asset('storage/images/badges/' . $badge->image),
+        'image' => $badge->image,
     ]);
 }
 }

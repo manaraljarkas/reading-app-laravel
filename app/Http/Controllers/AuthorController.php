@@ -8,7 +8,7 @@ use App\Models\Author;
 use App\Models\Country;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 class AuthorController extends Controller
 {
     public function getAuthors()
@@ -23,7 +23,7 @@ class AuthorController extends Controller
                 'name' => $author->getTranslation('name',$locale),
                 'id' => $author->id,
                 'country_name' => $author->country?->getTranslation('name',$locale),
-                'image' => $author->image ? asset('storage/images/authors/' . $author->image) : null,
+                'image' => $author->image ,
                 'number_of_books' => $author->books_count,
             ];
         });
@@ -43,7 +43,7 @@ class AuthorController extends Controller
             ->through(function ($author) {
                 return [
                     'id' => $author->id,
-                    'image' => $author->image ? asset('storage/images/authors/' . $author->image) : null,
+                    'image' => $author->image ,
                     'name' => $author->getTranslations('name'),
                     'country' => $author->country->getTranslations('name'),
                     'number_of_books' => $author->books_count,
@@ -55,19 +55,25 @@ class AuthorController extends Controller
     public function store(StoreAuthoreRequest $request)
     {
         $user = Auth::user();
-
-        $imagePath = null;
+        $imageUrl = null;
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('images/authors', 'public');
-         $author = Author::create([
-            'name' => [
-                'en' => $request->input('name.en'),
-                'ar' => $request->input('name.ar'),
-            ],
-            'image' => $imagePath,
-            'country_id' => $request->country_id,
-        ]);
-    }}
+          // Upload image to Cloudinary
+            $imageUpload = Cloudinary::uploadApi()->upload(
+                $request->file('image')->getRealPath(),
+                ['folder' => 'reading-app/authors']
+            );
+            $imageUrl = $imageUpload['secure_url'];
+        }
+            $author = Author::create([
+                'name' => [
+                    'en' => $request->input('name.en'),
+                    'ar' => $request->input('name.ar'),
+                ],
+                'image' => $imageUrl,
+                'country_id' => $request->country_id,
+            ]);
+
+    }
 
     public function destroy($AuthorId)
     {
@@ -114,4 +120,20 @@ class AuthorController extends Controller
             'country' => $author->country->getTranslations('name'),
         ]);
     }
+
+    public function show($id){
+        $user = Auth::user();
+        $author = Author::with('country')->findOrFail($id);
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $author ->id,
+                'name' => $author ->getTranslations('name'),
+                'image' =>  $author->image,
+                'country'=>$author->country?->getTranslations('name'),
+            ]
+        ]);
+    }
+
+
 }

@@ -109,9 +109,7 @@ class BookController extends Controller
             ->get()
             ->map(function ($comment) {
                 return [
-                    'image' => $comment->reader?->image
-                        ? asset('storage/images/readers/' . $comment->reader->image)
-                        : null,
+                    'image' => $comment->reader?->picture,
                     'name' => $comment->reader?->first_name,
                     'comment' => $comment->comment,
                 ];

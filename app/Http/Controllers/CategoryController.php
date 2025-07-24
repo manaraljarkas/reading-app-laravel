@@ -9,6 +9,7 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class CategoryController extends Controller
 {
@@ -19,23 +20,21 @@ class CategoryController extends Controller
         $readerId = $user->reader?->id;
 
         $categories = $categories->map(function ($category) use ($readerId) {
-            $locale=app()->getLocale();
-            $is_followed = DB::table('reader_categories')->
-            where('reader_categories.reader_id', '=', $readerId)->
-            where('reader_categories.category_id', '=', $category->id)
-            ->exists();
+            $locale = app()->getLocale();
+            $is_followed = DB::table('reader_categories')->where('reader_categories.reader_id', '=', $readerId)->where('reader_categories.category_id', '=', $category->id)
+                ->exists();
 
             return [
                 'id' => $category->id,
-                'name' => $category->getTranslation('name',$locale),
-                'icon' => asset('storage/images/categories/' . $category->icon),
+                'name' => $category->getTranslation('name', $locale),
+                'icon' => $category->icon,
                 'is_followed' => $is_followed,
             ];
         });
 
         return response()->json([
-       'success'=>true,
-       'data'=>$categories
+            'success' => true,
+            'data' => $categories
         ]);
     }
     public function index()
@@ -46,7 +45,7 @@ class CategoryController extends Controller
             ->through(function ($category) {
                 return [
                     'id' => $category->id,
-                    'icon' => asset('storage/images/categories/' . $category->icon),
+                    'icon' =>  $category->icon,
                     'name' => $category->getTranslations('name'),
                     'number_of_books' => $category->books_count,
                 ];
@@ -57,16 +56,23 @@ class CategoryController extends Controller
     {
         $user = Auth::user();
 
-        $imagePath = $request->file('icon')->store('images/ccategories', 'public');
+        // Upload icon image to Cloudinary
+        $imageUpload = Cloudinary::uploadApi()->upload(
+            $request->file('icon')->getRealPath(),
+            ['folder' => 'reading-app/categories']
+        );
+        $imageUrl = $imageUpload['secure_url'];
+
+        // Create category
         $category = Category::create([
             'name' => [
                 'en' => $request->input('name.en'),
                 'ar' => $request->input('name.ar'),
             ],
-            'icon' => $imagePath ?? null,
+            'icon' => $imageUrl,
         ]);
 
-        return response()->json(['message' => 'category added successufly']);
+        return response()->json(['message' => 'Category added successfully']);
     }
 
     public function update(UpdateCategoryRequest $request, $id)
@@ -118,5 +124,37 @@ class CategoryController extends Controller
         $reader->categories()->attach($categoryId);
 
         return response()->json(['message' => 'Category followed successfully.'], 201);
+    }
+
+    public function show($id)
+    {
+        $user = Auth::user();
+        $category = Category::findOrFail($id);
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $category->id,
+                'name' => $category->getTranslations('name'),
+                'icon' =>  $category->icon,
+            ]
+        ]);
+    }
+
+    public function destroy($id)
+    {
+        $user = Auth::user();
+        $category = Category::find($id);
+
+        if (!$category) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Category not found'
+            ], 404);
+        }
+        $category->delete();
+        return response()->json([
+            'success' => true,
+            'message' => 'Category deleted successfully'
+        ]);
     }
 }

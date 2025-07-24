@@ -151,7 +151,7 @@ class ChallengesController extends Controller
             ->select('books.book_pdf')
             ->get()
             ->map(function ($book) {
-                return asset('storage/' . $book->book_pdf);
+                return  $book->book_pdf;
             });
 
         return response()->json([
