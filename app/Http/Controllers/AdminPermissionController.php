@@ -8,7 +8,6 @@ use App\Services\PermissionService;
 
 class AdminPermissionController extends Controller
 {
-
     protected $permissionService;
 
     public function __construct(PermissionService $permissionService)
@@ -21,6 +20,7 @@ class AdminPermissionController extends Controller
         $permissions = $this->permissionService->getUserPermissionMap($admin);
 
         return response()->json([
+            'message' => 'Permissions retrieved successfully.',
             'permissions' => $permissions,
         ]);
     }
