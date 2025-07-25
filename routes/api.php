@@ -131,6 +131,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('suggestions', SuggestionController::class)->except(['store']);
     });
     Route::get('/admin/getAdmin', [UserController::class, 'getAdmin']);
+    Route::get('/admin-permissions', [AdminPermissionController::class, 'showCurrent']);
 
     //-----------------------------Badge-------------------------------------
     Route::post('/badge/update/{id}', [BagdeController::class, 'update']);

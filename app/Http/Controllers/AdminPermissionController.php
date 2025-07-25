@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Services\PermissionService;
+use Illuminate\Support\Facades\Auth;
 
 class AdminPermissionController extends Controller
 {
@@ -13,6 +14,18 @@ class AdminPermissionController extends Controller
     public function __construct(PermissionService $permissionService)
     {
         $this->permissionService = $permissionService;
+    }
+
+    public function showCurrent()
+    {
+        $user = Auth::user();
+
+        $permissions = $this->permissionService->getUserPermissionMap($user);
+
+        return response()->json([
+            'message' => 'Permissions retrieved successfully.',
+            'permissions' => $permissions,
+        ]);
     }
 
     public function show(User $admin)
