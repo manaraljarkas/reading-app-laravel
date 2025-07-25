@@ -24,7 +24,7 @@ class UpdateAuthorRequest extends FormRequest
         return [
             'name.en' => 'sometimes|string',
             'name.ar' => 'sometimes|string',
-            'image' => 'sometimes|image',
+            'image' => 'sometimes|image|mimes:jpg,jpeg,png,gif|max:2048',
             'country_id' => 'sometimes|exists:countries,id',
         ];
     }

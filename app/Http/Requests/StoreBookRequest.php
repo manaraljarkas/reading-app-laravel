@@ -34,7 +34,7 @@ class StoreBookRequest extends FormRequest
             'summary.en' => 'sometimes|string',
             'summary.ar' => 'sometimes|string',
             'book_file' => 'required|file',
-            'cover_image' => 'required|image',
+            'cover_image' => 'required|image|mimes:jpg,jpeg,png,gif|max:2048',
             'challenge_duration' => 'required|integer',
             'challenge_points' => 'required|integer',
             'description_BookChallenge.en' => 'required|string',

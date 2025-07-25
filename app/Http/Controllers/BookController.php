@@ -140,6 +140,7 @@ class BookController extends Controller
 
     public function store(StoreBookRequest $request)
     {
+        ini_set('max_execution_time', 180);
         DB::transaction(function () use ($request) {
 
             $coverUpload = Cloudinary::uploadApi()->upload(
@@ -186,6 +187,85 @@ class BookController extends Controller
                 'book_id' => $book->id,
             ]);
         });
+    }
+
+    public function update(UpdateBookRequest $request, string $id): JsonResponse
+    {
+        ini_set('max_execution_time', 180);
+        $book = Book::find($id);
+
+        if (!$book) {
+            return response()->json(['message' => 'Book not found.'], 404);
+        }
+
+        $data = $request->only([
+            'author_id',
+            'publish_date',
+            'number_of_pages',
+            'size_category_id',
+            'category_id',
+        ]);
+
+        if ($request->filled('title')) {
+            $data['title'] = $request->input('title');
+        }
+
+        if ($request->filled('description')) {
+            $data['description'] = $request->input('description');
+        }
+
+        if ($request->filled('summary')) {
+            $data['summary'] = $request->input('summary');
+        }
+
+        if ($request->hasFile('cover_image')) {
+            $coverUpload = Cloudinary::uploadApi()->upload(
+                $request->file('cover_image')->getRealPath(),
+                ['folder' => 'reading-app/covers']
+            );
+            $data['cover_image'] = $coverUpload['secure_url'];
+        }
+
+        if ($request->hasFile('book_file')) {
+            $pdfUpload = Cloudinary::uploadApi()->upload(
+                $request->file('book_file')->getRealPath(),
+                ['folder' => 'reading-app/pdfs', 'resource_type' => 'raw']
+            );
+            $data['book_pdf'] = $pdfUpload['secure_url'];
+        }
+
+        if (empty($data) && !$request->hasAny([
+            'challenge_duration',
+            'challenge_points',
+            'description_BookChallenge'
+        ])) {
+            return response()->json(['message' => 'No update data provided.'], 422);
+        }
+
+        $book->update($data);
+
+        if ($book->bookChallenges) {
+            $challengeData = [];
+
+            if ($request->filled('challenge_duration')) {
+                $challengeData['duration'] = $request->input('challenge_duration');
+            }
+            if ($request->filled('challenge_points')) {
+                $challengeData['points'] = $request->input('challenge_points');
+            }
+            if ($request->filled('description_BookChallenge')) {
+                $challengeData['description'] = $request->input('description_BookChallenge');
+            }
+
+            if (!empty($challengeData)) {
+                $book->bookChallenges->update($challengeData);
+            }
+        }
+
+        return response()->json([
+            'message' => 'Book updated successfully.',
+            'data' => $book->fresh()->load('bookChallenges'),
+        ]);
     }
 
     public function getMostRatedBooks(): JsonResponse
@@ -332,6 +412,4 @@ class BookController extends Controller
         ]);
         return response()->json(['message' => 'Book rated successfully']);
     }
-
-
 }

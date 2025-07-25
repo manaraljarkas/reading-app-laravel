@@ -8,6 +8,7 @@
     "require": {
         "php": "^8.2",
         "cloudinary-labs/cloudinary-laravel": "^3.0",
+        "cloudinary/cloudinary_php": "*",
         "google/apiclient": "^2.18",
         "laravel/framework": "^11.31",
         "laravel/sanctum": "^4.0",

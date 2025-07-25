@@ -24,7 +24,7 @@ class StoreCategoryRequest extends FormRequest
         return [
             'name.en' => 'required|string',
             'name.ar' => 'required|string',
-            'icon' => 'image|required',
+            'icon' => 'image|required|mimes:jpg,jpeg,png,gif|max:2048',
         ];
     }
 }

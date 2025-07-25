@@ -8,6 +8,7 @@ use App\Models\Badge;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+
 class BagdeController extends Controller
 {
     public function index()
@@ -99,10 +100,10 @@ class BagdeController extends Controller
     {
         $badge = Badge::findOrFail($id);
 
-    return response()->json([
-        'title' => $badge->getTranslations('title'),
-        'achievment' => $badge->getTranslations('achievment'),
-        'image' => $badge->image,
-    ]);
-}
+        return response()->json([
+            'title' => $badge->getTranslations('title'),
+            'achievment' => $badge->getTranslations('achievment'),
+            'image' => $badge->image,
+        ]);
+    }
 }

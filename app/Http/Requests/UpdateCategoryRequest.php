@@ -24,7 +24,7 @@ class UpdateCategoryRequest extends FormRequest
         return [
             'name.en' => 'sometimes|string',
             'name.ar' => 'sometimes|string',
-            'icon' => 'sometimes|image',
+            'icon' => 'sometimes|image|mimes:jpg,jpeg,png,gif|max:2048',
         ];
     }
 }
