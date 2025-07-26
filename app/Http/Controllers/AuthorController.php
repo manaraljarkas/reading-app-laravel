@@ -39,7 +39,7 @@ class AuthorController extends Controller
         $user = Auth::user();
         $authors = Author::with('country')
             ->withCount('books')
-            ->paginate(10)
+            ->paginate(6)
             ->through(function ($author) {
                 return [
                     'id' => $author->id,
@@ -91,23 +91,18 @@ class AuthorController extends Controller
         $user = Auth::user();
         $author = Author::select('id', 'name', 'image', 'country_id')->with('country')->findOrFail($id);
 
-
-        // if ($request->has('name')) {
-        //     $author->name = [
-        //         'en' => $request->input('name')['en'] ?? $author->name['en'],
-        //         'ar' => $request->input('name')['ar'] ?? $author->name['ar'],
-        //     ];
-        // }
-        if ($request->has('name')) {
-            $newTranslations = $request->input('name', []);
-            $oldTranslations = $author->getTranslations('name');
-
-            $author->setTranslations('name', array_merge($oldTranslations, $newTranslations));
+        if ($request->has('name.ar')) {
+            $author->setTranslation('name', 'ar', $request->input('name.ar'));
         }
-
+         if ($request->has('name.en')) {
+            $author->setTranslation('name', 'en', $request->input('name.en'));
+        }
         if ($request->hasFile('image')) {
-            $imagepath = $request->file('image')->store('images/authors', 'public');
-            $author->image = $imagepath;
+            $imageUpload = Cloudinary::uploadApi()->upload(
+                $request->file('image')->getRealPath(),
+                ['folder' => 'reading-app/authors']
+            );
+          $author->image = $imageUpload['secure_url'];
         }
         if ($request->has('country_id')) {
             $author->country_id = $request->country_id;
@@ -115,22 +110,27 @@ class AuthorController extends Controller
         $author->save();
         $author->load('country');
         return response()->json([
+            'success'=>true,
+            'message'=>'Author Updated successfully.',
+            'data'=>[
             'name' => $author->getTranslations('name'),
-            'image' => asset('storage/images/authors/' . $author->image),
-            'country' => $author->country->getTranslations('name'),
+            'image' => $author->image,
+            'country' => $author->country->getTranslations('name'),]
         ]);
     }
 
-    public function show($id){
+    public function show($id)
+    {
         $user = Auth::user();
         $author = Author::with('country')->findOrFail($id);
         return response()->json([
             'success' => true,
+            'message' => 'Author profile fetched successfully.',
             'data' => [
-                'id' => $author ->id,
-                'name' => $author ->getTranslations('name'),
+                'id' => $author->id,
+                'name' => $author->getTranslations('name'),
                 'image' =>  $author->image,
-                'country'=>$author->country?->getTranslations('name'),
+                'country' => $author->country?->getTranslations('name'),
             ]
         ]);
     }

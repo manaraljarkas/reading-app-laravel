@@ -27,7 +27,7 @@ class UpdateProfileRequest extends FormRequest
             'bio'        => 'sometimes|nullable|string',
             'nickname'   => 'sometimes|nullable|string|max:255',
             'quote'      => 'sometimes|nullable|string',
-            'picture'    => 'sometimes|nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+            'picture'    => 'sometimes|nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
         ];
     }
 }

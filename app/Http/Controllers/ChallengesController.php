@@ -61,7 +61,7 @@ class ChallengesController extends Controller
         $challenges = Challenge::with('category')
             ->with('sizeCategory')
             ->withCount('readers')
-            ->paginate(10)
+            ->paginate(6)
             ->through(function ($challenge) {
                 return [
                     'id' => $challenge->id,
@@ -132,13 +132,16 @@ class ChallengesController extends Controller
         $challenge->load('category');
         $challenge->save();
         return response()->json([
+            'succes'=>true,
+            'message'=>'Challenge Updated Successful.',
+            'data'=>[
             'title' => $challenge->getTranslations('title'),
             'description' => $challenge->getTranslations('description'),
             'points' => $challenge->points,
             'duration' => $challenge->duration,
             'number_of_books' => $challenge->number_of_books,
-            'size_category' => $challenge->sizeCategory->getTranslations('name'),
-            'category' => $challenge->category->getTranslations('name'),
+            'size_category' => $challenge->sizeCategory?->getTranslations('name'),
+            'category' => $challenge->category?->getTranslations('name'),]
         ]);
     }
     public function show($id)
@@ -155,9 +158,12 @@ class ChallengesController extends Controller
             });
 
         return response()->json([
+            'success'=>true,
+            'message'=>'Challenge details retrieved successfully.',
+            'data'=>[
             'description' => $challenge->getTranslations('description'),
             'number_of_books' => $challenge->number_of_books,
-            'books_pdfs' => $books,
+            'books_pdfs' => $books,]
         ]);
     }
     public function store(StoreChallengeRequest $request)

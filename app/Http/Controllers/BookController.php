@@ -325,8 +325,7 @@ class BookController extends Controller
             ->map(function ($comment) use ($bookId) {
                 return [
                     'reader_name' => $comment->reader?->first_name,
-                    'reader_image' => $comment->reader?->picture ? asset('storage/images/readers/' . $comment->reader->picture)
-                        : null,
+                    'reader_image' => $comment->reader?->picture,
                     'reader_nickname' => $comment->reader?->nickname,
                     'comment' => $comment->comment
                 ];
