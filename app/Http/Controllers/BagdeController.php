@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use \Exception;
 use App\Http\Requests\StoreBadgeRequest;
+use App\Http\Resources\BadgeResource;
 use App\Models\Badge;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class BagdeController extends Controller
 {
@@ -16,7 +17,7 @@ class BagdeController extends Controller
         $user = Auth::user();
         $badges = Badge::select('title', 'image', 'achievment')
             ->withcount('readers')
-            ->paginate(10)
+            ->paginate(6)
             ->through(function ($badge) {
                 return [
                     'image' => $badge->image,
@@ -61,6 +62,10 @@ class BagdeController extends Controller
             ],
             'image' => $imageUrl,
         ]);
+        return response()->json([
+            'success' => true,
+            'message' => 'Badge created successfully.',
+        ]);
     }
 
     public function update(Request $request, $id)
@@ -82,8 +87,11 @@ class BagdeController extends Controller
         }
 
         if ($request->hasFile('image')) {
-            $imagepath = $request->file('image')->store('images/badges', 'public');
-            $badge->image = $imagepath;
+            $imageUpload = Cloudinary::uploadApi()->upload(
+                $request->file('image')->getRealPath(),
+                ['folder' => 'reading-app/badges']
+            );
+            $badge->image = $imageUpload['secure_url'];
         }
         try {
             $badge->save();
@@ -91,9 +99,12 @@ class BagdeController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
         return response()->json([
+            'success'=>true,
+            'message'=>'Badge updated successfully.',
+            'data'=>[
             'title' => $badge->getTranslations('title'),
             'achievment' => $badge->getTranslations('achievment'),
-            'image' => asset('storage/images/badges/' . $badge->image),
+            'image' => $badge->image,]
         ]);
     }
     public function show($id)
@@ -101,9 +112,13 @@ class BagdeController extends Controller
         $badge = Badge::findOrFail($id);
 
         return response()->json([
-            'title' => $badge->getTranslations('title'),
-            'achievment' => $badge->getTranslations('achievment'),
-            'image' => $badge->image,
+            'success' => true,
+            'message' => 'Badge retrieved successfully.',
+            'data' => [
+                'title' => $badge->getTranslations('title'),
+                'achievment' => $badge->getTranslations('achievment'),
+                'image' => $badge->image,
+            ]
         ]);
     }
 }

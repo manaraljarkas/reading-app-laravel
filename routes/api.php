@@ -130,6 +130,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/complaint/getComplaints', [ComplaintController::class, 'getComplaints']);
         Route::apiResource('suggestions', SuggestionController::class)->except(['store']);
     });
+    
     Route::get('/admin/getAdmin', [UserController::class, 'getAdmin']);
     Route::get('/admin-permissions', [AdminPermissionController::class, 'showCurrent']);
 

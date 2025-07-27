@@ -43,7 +43,9 @@ class SuggestionController extends Controller
             return response()->json(['message' => 'Suggestion not found'], 404);
         }
         $suggestion->delete();
-        return response()->json(['message' => 'Suggestion deleted successfully']);
+        return response()->json([
+            'message' => 'Suggestion deleted successfully'
+        ]);
     }
 
     public function Update(Request $request, $suggestionId)
@@ -52,11 +54,16 @@ class SuggestionController extends Controller
 
         $suggestion = BookSuggestion::FindOrFail($suggestionId);
         $validate = $request->validate([
-            'status' => 'required|in:[Pending,Accepted,Denied]',
+            'status' => 'required|in:Pending,Accepted,Denied',
         ]);
 
         $suggestion->status = $request->input('status');
         $suggestion->save();
-        return response()->json(['status' => $suggestion->status]);
+        return response()->json([
+            'success' => true,
+            'message' => 'Suggestion status updated successfully.',
+            'status' => $suggestion->status
+        ]);
     }
+
 }

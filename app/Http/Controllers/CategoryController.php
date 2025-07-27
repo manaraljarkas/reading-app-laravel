@@ -41,7 +41,7 @@ class CategoryController extends Controller
     {
         $user = Auth::user();
         $categories = Category::withcount('books')
-            ->paginate(10)
+            ->paginate(6)
             ->through(function ($category) {
                 return [
                     'id' => $category->id,
@@ -72,30 +72,39 @@ class CategoryController extends Controller
             'icon' => $imageUrl,
         ]);
 
-        return response()->json(['message' => 'Category added successfully']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Category added successfully'
+        ]);
     }
 
     public function update(UpdateCategoryRequest $request, $id)
     {
         $user = Auth::user();
         $category = Category::select('id', 'name', 'icon')->findOrFail($id);
-
+         // Update name translations
         if ($request->has('name_en')) {
             $category->setTranslation('name', 'en', $request->input('name_en'));
         }
         if ($request->has('name_ar')) {
             $category->setTranslation('name', 'ar', $request->input('name_ar'));
         }
-
+        // Upload icon
         if ($request->hasFile('icon')) {
-            $imagepath = $request->file('icon')->store('images/categories', 'public');
-            $category->icon = $imagepath;
+            $imageUpload = Cloudinary::uploadApi()->upload(
+                $request->file('icon')->getRealPath(),
+                ['folder' => 'reading-app/categories']
+            );
+            $category->icon = $imageUpload['secure_url'];
         }
         $category->save();
         return response()->json([
+            'success'=>true,
+            'message'=>'Category Updated Successfuly.',
+            'data'=>[
             'id' => $category->id,
             'name' => $category->getTranslations('name'),
-            'icon' => asset('storage/images/categories/' . $category->icon),
+            'icon' =>  $category->icon, ]
         ]);
     }
 
