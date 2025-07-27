@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreAuthoreRequest;
 use App\Http\Requests\UpdateAuthorRequest;
+use App\Http\Resources\AuthorResource;
 use App\Models\Author;
 use App\Models\Country;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+
 class AuthorController extends Controller
 {
     public function getAuthors()
@@ -66,13 +68,16 @@ class AuthorController extends Controller
         }
             $author = Author::create([
                 'name' => [
-                    'en' => $request->input('name.en'),
-                    'ar' => $request->input('name.ar'),
-                ],
-                'image' => $imageUrl,
-                'country_id' => $request->country_id,
-            ]);
-
+                'en' => $request->input('name.en'),
+                'ar' => $request->input('name.ar'),
+            ],
+            'image' => $imageUrl,
+            'country_id' => $request->country_id,
+        ]);
+        return response()->json([
+            'success' => true,
+            'message' => 'Author created successfully.',
+        ]);
     }
 
     public function destroy($AuthorId)

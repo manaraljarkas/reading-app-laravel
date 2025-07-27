@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreBookRequest;
 use App\Http\Requests\UpdateBookRequest;
+use App\Http\Resources\BookResource;
 use App\Models\Badge;
 use App\Models\Book;
 use App\Models\BookChallenge;
@@ -13,11 +14,11 @@ use App\Models\Comment;
 use App\Models\Reader;
 use App\Models\User;
 use App\Services\BookService;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 
 
@@ -141,6 +142,7 @@ class BookController extends Controller
     public function store(StoreBookRequest $request)
     {
         ini_set('max_execution_time', 180);
+
         DB::transaction(function () use ($request) {
 
             $coverUpload = Cloudinary::uploadApi()->upload(
@@ -187,6 +189,10 @@ class BookController extends Controller
                 'book_id' => $book->id,
             ]);
         });
+        return response()->json([
+            'success' => true,
+            'message' => 'Book added successfully'
+        ]);
     }
 
     public function update(UpdateBookRequest $request, string $id): JsonResponse

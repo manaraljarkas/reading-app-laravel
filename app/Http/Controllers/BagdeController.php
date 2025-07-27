@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use \Exception;
 use App\Http\Requests\StoreBadgeRequest;
+use App\Http\Resources\BadgeResource;
 use App\Models\Badge;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class BagdeController extends Controller
 {
@@ -60,6 +61,10 @@ class BagdeController extends Controller
                 'ar' => $request->input('achievment.ar'),
             ],
             'image' => $imageUrl,
+        ]);
+        return response()->json([
+            'success' => true,
+            'message' => 'Badge created successfully.',
         ]);
     }
 

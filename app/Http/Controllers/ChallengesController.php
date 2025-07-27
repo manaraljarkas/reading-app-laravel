@@ -206,6 +206,10 @@ class ChallengesController extends Controller
                 }
             }
         });
+        return response()->json([
+            'success' => true,
+            'message' => 'Challenge added successfully'
+        ]);
     }
 
 

@@ -72,7 +72,10 @@ class CategoryController extends Controller
             'icon' => $imageUrl,
         ]);
 
-        return response()->json(['message' => 'Category added successfully']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Category added successfully'
+        ]);
     }
 
     public function update(UpdateCategoryRequest $request, $id)
