@@ -39,6 +39,7 @@ class StoreBookRequest extends FormRequest
             'challenge_points' => 'required|integer',
             'description_BookChallenge.en' => 'required|string',
             'description_BookChallenge.ar' => 'required|string',
+            'points' => 'integer|required'
         ];
     }
 }

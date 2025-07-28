@@ -34,7 +34,12 @@ class UpdateBookRequest extends FormRequest
         'size_category_id'=>'sometimes|integer|exists:size_categories,id',
         'author_id'=>'sometimes|integer|exists:authors,id',
         'book_pdf'=>'sometimes|file',
-        'cover_image'=>'sometimes|image|mimes:jpg,jpeg,png,gif,webp|max:2048'
+        'cover_image'=>'sometimes|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
+        'challenge_duration' => 'sometimes|integer',
+        'challenge_points' => 'sometimes|integer',
+        'description_BookChallenge.en' => 'sometimes|string',
+        'description_BookChallenge.ar' => 'sometimes|string',
+        'points' => 'sometimes|required'
 
         ];
     }
