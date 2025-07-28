@@ -201,39 +201,46 @@ class BookController extends Controller
 
         if (!$book) {
             return response()->json([
-                'success' => false,
                 'message' => 'Book not found.'
             ], 404);
         }
 
-        ini_set('max_execution_time', 360);
+        $data = $request->only([
+            'publish_date',
+            'number_of_pages',
+            'category_id',
+            'size_category_id',
+            'author_id'
+        ]);
+
+        if ($request->hasFile('cover_image')) {
+            $upload = Cloudinary::uploadApi()->upload(
+                $request->file('cover_image')->getRealPath(),
+                ['folder' => 'reading-app/covers']
+            );
+            $data['cover_image'] = $upload['secure_url'];
+        }
+
+        if ($request->hasFile('book_file')) {
+            $upload = Cloudinary::uploadApi()->upload(
+                $request->file('book_file')->getRealPath(),
+                ['folder' => 'reading-app/pdfs', 'resource_type' => 'raw']
+            );
+            $data['book_pdf'] = $upload['secure_url'];
+        }
+
+        if (
+            empty($data)
+            && !$request->hasAny(['title', 'description', 'summary', 'challenge_duration', 'challenge_points', 'description_BookChallenge'])
+        ) {
+            return response()->json([
+                'message' => 'No update data provided.'
+            ], 422);
+        }
 
         try {
-            DB::transaction(function () use ($request, $book) {
-
-                if ($request->hasFile('cover_image')) {
-                    $upload = Cloudinary::uploadApi()->upload(
-                        $request->file('cover_image')->getRealPath(),
-                        ['folder' => 'reading-app/covers']
-                    );
-                    $book->cover_image = $upload['secure_url'];
-                }
-
-                if ($request->hasFile('book_file')) {
-                    $upload = Cloudinary::uploadApi()->upload(
-                        $request->file('book_file')->getRealPath(),
-                        ['folder' => 'reading-app/pdfs', 'resource_type' => 'raw']
-                    );
-                    $book->book_pdf = $upload['secure_url'];
-                }
-
-                $book->update($request->only([
-                    'publish_date',
-                    'number_of_pages',
-                    'category_id',
-                    'size_category_id',
-                    'author_id'
-                ]));
+            DB::transaction(function () use ($book, $request, $data) {
+                $book->update($data);
 
                 foreach (['title', 'description', 'summary'] as $field) {
                     if ($request->has($field)) {
@@ -253,10 +260,13 @@ class BookController extends Controller
                 ) {
                     $challenge = $book->challenge ?? new BookChallenge(['book_id' => $book->id]);
 
-                    $challenge->fill([
-                        'duration' => $request->challenge_duration ?? $challenge->duration,
-                        'points' => $request->challenge_points ?? $challenge->points,
-                    ]);
+                    if ($request->filled('challenge_duration')) {
+                        $challenge->duration = $request->challenge_duration;
+                    }
+
+                    if ($request->filled('challenge_points')) {
+                        $challenge->points = $request->challenge_points;
+                    }
 
                     if ($request->has('description_BookChallenge')) {
                         $challenge->description = array_merge(
@@ -270,7 +280,6 @@ class BookController extends Controller
             });
 
             return response()->json([
-                'success' => true,
                 'message' => 'Book updated successfully.',
                 'data' => $book->refresh()
             ]);
@@ -281,12 +290,12 @@ class BookController extends Controller
             ]);
 
             return response()->json([
-                'success' => false,
-                'message' => 'An unexpected error occurred.',
+                'message' => 'Failed to update book.',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
+
 
 
     public function getMostRatedBooks(): JsonResponse
