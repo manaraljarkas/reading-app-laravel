@@ -195,93 +195,99 @@ class BookController extends Controller
         ]);
     }
 
-    public function update(Request $request, string $id): JsonResponse
+    public function update(UpdateBookRequest $request, string $id): JsonResponse
     {
         $book = Book::find($id);
 
         if (!$book) {
             return response()->json([
+                'success' => false,
                 'message' => 'Book not found.'
             ], 404);
         }
 
         ini_set('max_execution_time', 360);
 
-        DB::transaction(function () use ($request, $book) {
-            if ($request->hasFile('cover_image')) {
-                $coverUpload = Cloudinary::uploadApi()->upload(
-                    $request->file('cover_image')->getRealPath(),
-                    ['folder' => 'reading-app/covers']
-                );
-                $book->cover_image = $coverUpload['secure_url'];
-            }
+        try {
+            DB::transaction(function () use ($request, $book) {
 
-            if ($request->hasFile('book_pdf')) {
-                $pdfUpload = Cloudinary::uploadApi()->upload(
-                    $request->file('book_pdf')->getRealPath(),
-                    ['folder' => 'reading-app/pdfs', 'resource_type' => 'raw']
-                );
-                $book->book_pdf = $pdfUpload['secure_url'];
-            }
-
-            foreach (['title', 'description', 'summary'] as $field) {
-                if ($request->has($field)) {
-                    $book->$field = array_replace(
-                        $book->$field ?? [],
-                        $request->input($field)
+                if ($request->hasFile('cover_image')) {
+                    $upload = Cloudinary::uploadApi()->upload(
+                        $request->file('cover_image')->getRealPath(),
+                        ['folder' => 'reading-app/covers']
                     );
+                    $book->cover_image = $upload['secure_url'];
                 }
-            }
 
-            foreach (
-                [
+                if ($request->hasFile('book_file')) {
+                    $upload = Cloudinary::uploadApi()->upload(
+                        $request->file('book_file')->getRealPath(),
+                        ['folder' => 'reading-app/pdfs', 'resource_type' => 'raw']
+                    );
+                    $book->book_pdf = $upload['secure_url'];
+                }
+
+                $book->update($request->only([
                     'publish_date',
                     'number_of_pages',
                     'category_id',
                     'size_category_id',
-                    'author_id',
-                    'points'
-                ] as $field
-            ) {
-                if ($request->filled($field)) {
-                    $book->$field = $request->input($field);
-                }
-            }
+                    'author_id'
+                ]));
 
-            $book->save();
-
-            if (
-                $request->filled('challenge_duration') ||
-                $request->filled('challenge_points') ||
-                $request->has('description_BookChallenge')
-            ) {
-                $challenge = $book->challenge ?? new BookChallenge(['book_id' => $book->id]);
-
-                if ($request->filled('challenge_duration')) {
-                    $challenge->duration = $request->challenge_duration;
+                foreach (['title', 'description', 'summary'] as $field) {
+                    if ($request->has($field)) {
+                        $book->$field = array_merge(
+                            (array) $book->$field,
+                            $request->input($field)
+                        );
+                    }
                 }
 
-                if ($request->filled('challenge_points')) {
-                    $challenge->points = $request->challenge_points;
+                $book->save();
+
+                if (
+                    $request->filled('challenge_duration') ||
+                    $request->filled('challenge_points') ||
+                    $request->has('description_BookChallenge')
+                ) {
+                    $challenge = $book->challenge ?? new BookChallenge(['book_id' => $book->id]);
+
+                    $challenge->fill([
+                        'duration' => $request->challenge_duration ?? $challenge->duration,
+                        'points' => $request->challenge_points ?? $challenge->points,
+                    ]);
+
+                    if ($request->has('description_BookChallenge')) {
+                        $challenge->description = array_merge(
+                            (array) $challenge->description,
+                            $request->input('description_BookChallenge')
+                        );
+                    }
+
+                    $challenge->save();
                 }
+            });
 
-                if ($request->has('description_BookChallenge')) {
-                    $challenge->description = array_replace(
-                        $challenge->description ?? [],
-                        $request->input('description_BookChallenge')
-                    );
-                }
+            return response()->json([
+                'success' => true,
+                'message' => 'Book updated successfully.',
+                'data' => $book->refresh()
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Book update failed', [
+                'error' => $e->getMessage(),
+                'request' => $request->all()
+            ]);
 
-                $challenge->save();
-            }
-        });
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Book updated successfully.',
-            'data' => $book->refresh()
-        ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
+
 
     public function getMostRatedBooks(): JsonResponse
     {

@@ -17,7 +17,8 @@ class Reader extends Model
         'bio',
         'nickname',
         'quote',
-        'user_id'
+        'user_id',
+        'total_points'
     ];
 
     public function complaints()

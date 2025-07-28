@@ -15,7 +15,8 @@ class ReaderBook extends Model
         'is_challenged',
         'book_id',
         'reader_id',
-        'rating'
+        'rating',
+        'earned_points'
     ];
-    
+
 }
