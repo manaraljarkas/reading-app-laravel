@@ -195,13 +195,19 @@ class BookController extends Controller
         ]);
     }
 
-    public function update(UpdateBookRequest $request, Book $book)
+    public function update(Request $request, string $id): JsonResponse
     {
+        $book = Book::find($id);
+
+        if (!$book) {
+            return response()->json([
+                'message' => 'Book not found.'
+            ], 404);
+        }
+
         ini_set('max_execution_time', 360);
 
         DB::transaction(function () use ($request, $book) {
-
-            // Update cover image if uploaded
             if ($request->hasFile('cover_image')) {
                 $coverUpload = Cloudinary::uploadApi()->upload(
                     $request->file('cover_image')->getRealPath(),
@@ -210,7 +216,6 @@ class BookController extends Controller
                 $book->cover_image = $coverUpload['secure_url'];
             }
 
-            // Update PDF file if uploaded
             if ($request->hasFile('book_pdf')) {
                 $pdfUpload = Cloudinary::uploadApi()->upload(
                     $request->file('book_pdf')->getRealPath(),
@@ -219,27 +224,25 @@ class BookController extends Controller
                 $book->book_pdf = $pdfUpload['secure_url'];
             }
 
-            // Update localized fields
             foreach (['title', 'description', 'summary'] as $field) {
                 if ($request->has($field)) {
-                    $book->$field = [
-                        'en' => $request->input("$field.en", $book->$field['en'] ?? null),
-                        'ar' => $request->input("$field.ar", $book->$field['ar'] ?? null),
-                    ];
+                    $book->$field = array_replace(
+                        $book->$field ?? [],
+                        $request->input($field)
+                    );
                 }
             }
 
-            // Update scalar fields if present
-            $scalarFields = [
-                'publish_date',
-                'number_of_pages',
-                'category_id',
-                'size_category_id',
-                'author_id',
-                'points',
-            ];
-
-            foreach ($scalarFields as $field) {
+            foreach (
+                [
+                    'publish_date',
+                    'number_of_pages',
+                    'category_id',
+                    'size_category_id',
+                    'author_id',
+                    'points'
+                ] as $field
+            ) {
                 if ($request->filled($field)) {
                     $book->$field = $request->input($field);
                 }
@@ -247,41 +250,38 @@ class BookController extends Controller
 
             $book->save();
 
-            // If BookChallenge data exists, update or create
             if (
-                $request->has('challenge_duration') ||
-                $request->has('challenge_points') ||
+                $request->filled('challenge_duration') ||
+                $request->filled('challenge_points') ||
                 $request->has('description_BookChallenge')
             ) {
-                $bookChallenge = $book->challenge ?? new \App\Models\BookChallenge(['book_id' => $book->id]);
+                $challenge = $book->challenge ?? new BookChallenge(['book_id' => $book->id]);
 
                 if ($request->filled('challenge_duration')) {
-                    $bookChallenge->duration = $request->input('challenge_duration');
+                    $challenge->duration = $request->challenge_duration;
                 }
 
                 if ($request->filled('challenge_points')) {
-                    $bookChallenge->points = $request->input('challenge_points');
+                    $challenge->points = $request->challenge_points;
                 }
 
                 if ($request->has('description_BookChallenge')) {
-                    $bookChallenge->description = [
-                        'en' => $request->input('description_BookChallenge.en', $bookChallenge->description['en'] ?? null),
-                        'ar' => $request->input('description_BookChallenge.ar', $bookChallenge->description['ar'] ?? null),
-                    ];
+                    $challenge->description = array_replace(
+                        $challenge->description ?? [],
+                        $request->input('description_BookChallenge')
+                    );
                 }
 
-                $bookChallenge->save();
+                $challenge->save();
             }
         });
 
         return response()->json([
             'success' => true,
-            'message' => 'Book updated successfully',
+            'message' => 'Book updated successfully.',
+            'data' => $book->refresh()
         ]);
     }
-
-
-
 
     public function getMostRatedBooks(): JsonResponse
     {
