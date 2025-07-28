@@ -7,7 +7,7 @@ return [
         'badge' => ['create', 'read', 'update', 'delete'],
         'country' => ['create', 'read', 'update', 'delete'],
         'category' => ['create', 'read', 'update', 'delete'],
-        'size_category' => ['create', 'read', 'update', 'delete'],
+        //'size_category' => ['create', 'read', 'update', 'delete'],
         'challenge' => ['create', 'read', 'update', 'delete'],
         'complaint' => ['read', 'delete'],
         'book_suggestion' => ['read', 'delete', 'accept'],

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreBookRequest;
 use App\Http\Requests\UpdateBookRequest;
-use App\Http\Resources\BookResource;
 use App\Models\Badge;
 use App\Models\Book;
 use App\Models\BookChallenge;
@@ -83,7 +82,7 @@ class BookController extends Controller
         $books = Book::with('category', 'author')
             ->withcount('readers')
             ->withAvg('readers as average_rating', 'reader_books.rating')
-            ->paginate(10)
+            ->paginate(5)
             ->through(function ($book) {
                 return [
                     'id' => $book->id,

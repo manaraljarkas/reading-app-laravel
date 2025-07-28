@@ -41,7 +41,7 @@ class CategoryController extends Controller
     {
         $user = Auth::user();
         $categories = Category::withcount('books')
-            ->paginate(6)
+            ->paginate(5)
             ->through(function ($category) {
                 return [
                     'id' => $category->id,

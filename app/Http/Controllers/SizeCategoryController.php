@@ -14,7 +14,7 @@ class SizeCategoryController extends Controller
      */
     public function index(): JsonResponse
     {
-        $sizeCategories = SizeCategory::paginate(10);
+        $sizeCategories = SizeCategory::paginate(5);
 
         return response()->json([
             'message' => 'Size categories retrieved successfully.',

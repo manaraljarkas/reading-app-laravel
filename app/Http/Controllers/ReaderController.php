@@ -13,7 +13,7 @@ class ReaderController extends Controller
         $user = Auth::user();
         $readers = Reader::select('id', 'first_name', 'picture', 'user_id')
             ->with('user')
-            ->paginate(6)
+            ->paginate(5)
             ->through(function ($reader) {
                 return [
                     'id' => $reader->id,

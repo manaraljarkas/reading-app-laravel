@@ -41,7 +41,7 @@ class AuthorController extends Controller
         $user = Auth::user();
         $authors = Author::with('country')
             ->withCount('books')
-            ->paginate(6)
+            ->paginate(5)
             ->through(function ($author) {
                 return [
                     'id' => $author->id,

@@ -25,6 +25,7 @@ class AdminPermissionController extends Controller
         return response()->json([
             'message' => 'Permissions retrieved successfully.',
             'permissions' => $permissions,
+            'role' => $user->role
         ]);
     }
 
@@ -34,7 +35,7 @@ class AdminPermissionController extends Controller
 
         return response()->json([
             'message' => 'Permissions retrieved successfully.',
-            'permissions' => $permissions,
+            'permissions' => $permissions
         ]);
     }
 

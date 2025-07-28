@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreAdminRequest;
 use App\Http\Requests\UpdateAdminRequest;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
@@ -13,12 +12,23 @@ class UserController extends Controller
 {
     public function index()
     {
-        $user = Auth::user();
-        $admins = User::where('role', '=', 'admin')->
-        select('id', 'name', 'email')->paginate(10);
+        $admins = User::where('role', 'admin')
+            ->select('id', 'name', 'email')
+            ->paginate(5);
 
-        return response()->json([$admins]);
+        if ($admins->count() > 0) {
+            return response()->json([
+                'message' => 'Admins retrieved successfully.',
+                'data' => $admins
+            ]);
+        } else {
+            return response()->json([
+                'message' => 'No admins found.',
+                'data' => $admins
+            ]);
+        }
     }
+
 
     public function show($adminId)
     {
@@ -27,8 +37,9 @@ class UserController extends Controller
         $admins = User::select('email', 'name', 'role')->where('role', '=', 'admin')->where('id', $adminId)->first();
 
         return response()->json([
-        'success'=>true,
-        'data'=> $admins]);
+            'success' => true,
+            'data' => $admins
+        ]);
     }
 
     public function store(StoreAdminRequest $request)

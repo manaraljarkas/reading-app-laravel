@@ -61,7 +61,7 @@ class ChallengesController extends Controller
         $challenges = Challenge::with('category')
             ->with('sizeCategory')
             ->withCount('readers')
-            ->paginate(6)
+            ->paginate(5)
             ->through(function ($challenge) {
                 return [
                     'id' => $challenge->id,

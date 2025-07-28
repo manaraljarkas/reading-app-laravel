@@ -17,7 +17,7 @@ class BagdeController extends Controller
         $user = Auth::user();
         $badges = Badge::select('title', 'image', 'achievment')
             ->withcount('readers')
-            ->paginate(6)
+            ->paginate(5)
             ->through(function ($badge) {
                 return [
                     'image' => $badge->image,

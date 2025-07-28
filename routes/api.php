@@ -13,6 +13,7 @@ use App\Http\Controllers\SuggestionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminPermissionController;
 use App\Http\Controllers\SizeCategoryController;
+use App\Http\Controllers\ReaderBookController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -71,6 +72,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('book/AddBookToDoList/{id}', [BookController::class, 'AddBookToDoList']);
     Route::post('book/RateBook/{id}', [BookController::class, 'RateBook']);
     Route::post('book/AddCommentToTheBook/{id}', [BookController::class, 'AddCommentToTheBook']);
+    Route::post('book/update-reading-progress', [ReaderBookController::class, 'updateReadingProgress']);
 
 
 
@@ -130,7 +132,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/complaint/getComplaints', [ComplaintController::class, 'getComplaints']);
         Route::apiResource('suggestions', SuggestionController::class)->except(['store']);
     });
-    
+
     Route::get('/admin/getAdmin', [UserController::class, 'getAdmin']);
     Route::get('/admin-permissions', [AdminPermissionController::class, 'showCurrent']);
 

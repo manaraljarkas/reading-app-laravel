@@ -17,7 +17,7 @@ class CountryController extends Controller
      */
     public function index(): JsonResponse
     {
-        $countries = Country::paginate(10);
+        $countries = Country::paginate(5);
 
         return response()->json([
             'message' => 'Countries retrieved successfully.',
