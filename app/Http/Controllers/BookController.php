@@ -258,24 +258,39 @@ class BookController extends Controller
                     $request->filled('challenge_points') ||
                     $request->has('description_BookChallenge')
                 ) {
-                    $challenge = $book->challenge ?? new BookChallenge(['book_id' => $book->id]);
+                    $challenge = $book->challenge;
 
-                    if ($request->filled('challenge_duration')) {
-                        $challenge->duration = $request->challenge_duration;
+                    if (!$challenge) {
+                        if (
+                            $request->filled('challenge_duration') &&
+                            $request->filled('challenge_points') &&
+                            $request->has('description_BookChallenge')
+                        ) {
+                            $challenge = BookChallenge::create([
+                                'book_id' => $book->id,
+                                'duration' => $request->challenge_duration,
+                                'points' => $request->challenge_points,
+                                'description' => [
+                                    'en' => $request->input('description_BookChallenge')['en'],
+                                    'ar' => $request->input('description_BookChallenge')['ar'],
+                                ],
+                            ]);
+                        } else {return;}
+                    } else {
+                        if ($request->filled('challenge_duration')) {
+                            $challenge->duration = $request->challenge_duration;
+                        }
+                        if ($request->filled('challenge_points')) {
+                            $challenge->points = $request->challenge_points;
+                        }
+                        if ($request->has('description_BookChallenge')) {
+                            $challenge->description = array_merge(
+                                (array) $challenge->description,
+                                $request->input('description_BookChallenge')
+                            );
+                        }
+                        $challenge->save();
                     }
-
-                    if ($request->filled('challenge_points')) {
-                        $challenge->points = $request->challenge_points;
-                    }
-
-                    if ($request->has('description_BookChallenge')) {
-                        $challenge->description = array_merge(
-                            (array) $challenge->description,
-                            $request->input('description_BookChallenge')
-                        );
-                    }
-
-                    $challenge->save();
                 }
             });
 
@@ -295,8 +310,6 @@ class BookController extends Controller
             ], 500);
         }
     }
-
-
 
     public function getMostRatedBooks(): JsonResponse
     {
