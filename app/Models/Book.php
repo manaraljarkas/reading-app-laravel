@@ -26,6 +26,7 @@ class Book extends Model
         'category_id',
         'author_id',
         'size_category_id',
+        'points'
     ];
 
 
