@@ -140,7 +140,7 @@ class BookController extends Controller
 
     public function store(StoreBookRequest $request)
     {
-        ini_set('max_execution_time', 180);
+        ini_set('max_execution_time', 360);
 
         DB::transaction(function () use ($request) {
 
@@ -196,7 +196,7 @@ class BookController extends Controller
 
     public function update(UpdateBookRequest $request, string $id): JsonResponse
     {
-        ini_set('max_execution_time', 180);
+        ini_set('max_execution_time', 360);
         $book = Book::find($id);
 
         if (!$book) {
