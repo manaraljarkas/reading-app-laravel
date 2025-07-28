@@ -16,6 +16,7 @@ use App\Services\BookService;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -204,99 +205,106 @@ class BookController extends Controller
             return response()->json(['message' => 'Book not found.'], 404);
         }
 
-        DB::transaction(function () use ($request, $book) {
-            $data = [];
+        try {
+            DB::transaction(function () use ($request, $book) {
+                $data = [];
 
-            if ($request->filled('title.en') || $request->filled('title.ar')) {
-                $data['title'] = [
-                    'en' => $request->input('title.en', $book->title['en'] ?? null),
-                    'ar' => $request->input('title.ar', $book->title['ar'] ?? null),
-                ];
-            }
-
-            if ($request->filled('description.en') || $request->filled('description.ar')) {
-                $data['description'] = [
-                    'en' => $request->input('description.en', $book->description['en'] ?? null),
-                    'ar' => $request->input('description.ar', $book->description['ar'] ?? null),
-                ];
-            }
-
-            if ($request->filled('summary.en') || $request->filled('summary.ar')) {
-                $data['summary'] = [
-                    'en' => $request->input('summary.en', $book->summary['en'] ?? null),
-                    'ar' => $request->input('summary.ar', $book->summary['ar'] ?? null),
-                ];
-            }
-
-            foreach (
-                [
-                    'author_id',
-                    'publish_date',
-                    'number_of_pages',
-                    'size_category_id',
-                    'category_id',
-                ] as $field
-            ) {
-                if ($request->filled($field)) {
-                    $data[$field] = $request->input($field);
-                }
-            }
-
-            if ($request->hasFile('cover_image')) {
-                $coverUpload = Cloudinary::uploadApi()->upload(
-                    $request->file('cover_image')->getRealPath(),
-                    ['folder' => 'reading-app/covers']
-                );
-                $data['cover_image'] = $coverUpload['secure_url'];
-            }
-
-            if ($request->hasFile('book_file')) {
-                $pdfUpload = Cloudinary::uploadApi()->upload(
-                    $request->file('book_file')->getRealPath(),
-                    ['folder' => 'reading-app/pdfs', 'resource_type' => 'raw']
-                );
-                $data['book_pdf'] = $pdfUpload['secure_url'];
-            }
-
-            if (
-                empty($data) &&
-                !$request->hasAny(['challenge_duration', 'challenge_points', 'description_BookChallenge.en', 'description_BookChallenge.ar'])
-            ) {
-                throw new \Exception('No update data provided.');
-            }
-
-            $book->update($data);
-
-            if ($book->bookChallenges) {
-                $challengeData = [];
-
-                if ($request->filled('challenge_duration')) {
-                    $challengeData['duration'] = $request->input('challenge_duration');
+                // Translatable fields
+                foreach (['title', 'description', 'summary'] as $field) {
+                    if ($request->filled("$field.en") || $request->filled("$field.ar")) {
+                        $data[$field] = [
+                            'en' => $request->input("$field.en", $book->$field['en'] ?? null),
+                            'ar' => $request->input("$field.ar", $book->$field['ar'] ?? null),
+                        ];
+                    }
                 }
 
-                if ($request->filled('challenge_points')) {
-                    $challengeData['points'] = $request->input('challenge_points');
+                // Simple fields
+                foreach (
+                    [
+                        'author_id',
+                        'publish_date',
+                        'number_of_pages',
+                        'size_category_id',
+                        'category_id',
+                        'points'
+                    ] as $field
+                ) {
+                    if ($request->filled($field)) {
+                        $data[$field] = $request->input($field);
+                    }
                 }
 
-                if ($request->filled('description_BookChallenge.en') || $request->filled('description_BookChallenge.ar')) {
-                    $challengeData['description'] = [
-                        'en' => $request->input('description_BookChallenge.en', $book->bookChallenges->description['en'] ?? null),
-                        'ar' => $request->input('description_BookChallenge.ar', $book->bookChallenges->description['ar'] ?? null),
-                    ];
+                // Files
+                if ($request->hasFile('cover_image')) {
+                    $coverUpload = Cloudinary::uploadApi()->upload(
+                        $request->file('cover_image')->getRealPath(),
+                        ['folder' => 'reading-app/covers']
+                    );
+                    $data['cover_image'] = $coverUpload['secure_url'];
                 }
 
-                if (!empty($challengeData)) {
-                    $book->bookChallenges->update($challengeData);
+                if ($request->hasFile('book_file')) {
+                    $pdfUpload = Cloudinary::uploadApi()->upload(
+                        $request->file('book_file')->getRealPath(),
+                        ['folder' => 'reading-app/pdfs', 'resource_type' => 'raw']
+                    );
+                    $data['book_pdf'] = $pdfUpload['secure_url'];
                 }
-            }
-        });
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Book updated successfully',
-            'data' => Book::with('bookChallenges')->find($id),
-        ]);
+                if (
+                    empty($data) &&
+                    !$request->hasAny([
+                        'challenge_duration',
+                        'challenge_points',
+                        'description_BookChallenge.en',
+                        'description_BookChallenge.ar'
+                    ])
+                ) {
+                    throw new \Exception('No update data provided.');
+                }
+
+                $book->update($data);
+
+                // BookChallenge relation update
+                if ($book->bookChallenges) {
+                    $challengeData = [];
+
+                    if ($request->filled('challenge_duration')) {
+                        $challengeData['duration'] = $request->input('challenge_duration');
+                    }
+
+                    if ($request->filled('challenge_points')) {
+                        $challengeData['points'] = $request->input('challenge_points');
+                    }
+
+                    if ($request->filled('description_BookChallenge.en') || $request->filled('description_BookChallenge.ar')) {
+                        $challengeData['description'] = [
+                            'en' => $request->input('description_BookChallenge.en', $book->bookChallenges->description['en'] ?? null),
+                            'ar' => $request->input('description_BookChallenge.ar', $book->bookChallenges->description['ar'] ?? null),
+                        ];
+                    }
+
+                    if (!empty($challengeData)) {
+                        $book->bookChallenges->update($challengeData);
+                    }
+                }
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Book updated successfully',
+                'data' => Book::with('bookChallenges')->find($id),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Book update failed', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Book update failed. ' . $e->getMessage(),
+            ], 500);
+        }
     }
+
 
 
     public function getMostRatedBooks(): JsonResponse
