@@ -9,7 +9,7 @@ use Spatie\Translatable\HasTranslations;
 class Book extends Model
 {
     use SoftDeletes, HasTranslations;
-    public $translatable = ['title', 'description','summary'];
+    public $translatable = ['title', 'description', 'summary'];
     protected $casts = [
         'title' => 'array',
         'description' => 'array',
@@ -67,5 +67,18 @@ class Book extends Model
     public function bookSuggestions()
     {
         return $this->hasMany(BookSuggestion::class);
+    }
+
+    public function setBookChallengesAttribute($values)
+    {
+        if (!$this->bookChallenges) {
+            if (!isset($values['duration'], $values['points'], $values['description'])) {
+                throw new \Exception('Missing required fields to create BookChallenge.');
+            }
+
+            $this->bookChallenges()->create($values);
+        } else {
+            $this->bookChallenges->update($values);
+        }
     }
 }

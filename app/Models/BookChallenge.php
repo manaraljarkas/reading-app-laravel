@@ -8,10 +8,10 @@ use Spatie\Translatable\HasTranslations;
 
 class BookChallenge extends Model
 {
-    use SoftDeletes,HasTranslations;
+    use SoftDeletes, HasTranslations;
     protected $fillable = ['duration', 'points', 'description', 'book_id'];
     protected $casts = [
-    'description' => 'array',
-];
+        'description' => 'array',
+    ];
     protected $translatable = ['description'];
 }
