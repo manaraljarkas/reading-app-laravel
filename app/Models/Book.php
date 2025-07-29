@@ -68,17 +68,4 @@ class Book extends Model
     {
         return $this->hasMany(BookSuggestion::class);
     }
-
-    public function setBookChallengesAttribute($values)
-    {
-        if (!$this->bookChallenges) {
-            if (!isset($values['duration'], $values['points'], $values['description'])) {
-                throw new \Exception('Missing required fields to create BookChallenge.');
-            }
-
-            $this->bookChallenges()->create($values);
-        } else {
-            $this->bookChallenges->update($values);
-        }
-    }
 }

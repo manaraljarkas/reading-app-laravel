@@ -213,6 +213,7 @@ class BookController extends Controller
                     'author_id'
                 ]);
 
+                // Handle file uploads
                 if ($request->hasFile('cover_image')) {
                     $upload = Cloudinary::uploadApi()->upload(
                         $request->file('cover_image')->getRealPath(),
@@ -229,26 +230,47 @@ class BookController extends Controller
                     $data['book_pdf'] = $upload['secure_url'];
                 }
 
+                // multilingual field update
                 foreach (['title', 'description', 'summary'] as $field) {
                     if ($request->has($field)) {
-                        $book->$field = array_merge((array) $book->$field, $request->input($field));
+                        $current = (array) $book->$field;
+                        $incoming = (array) $request->input($field);
+                        $book->$field = array_merge($current, $incoming);
                     }
                 }
 
-                if (
-                    $request->filled('challenge_duration') &&
-                    $request->filled('challenge_points') &&
-                    $request->has('description_BookChallenge')
-                ) {
-                    $book->book_challenges = [
-                        'duration' => $request->challenge_duration,
-                        'points' => $request->challenge_points,
-                        'description' => $request->input('description_BookChallenge')
-                    ];
-                }
-
+                // Save basic book data
                 $book->fill($data);
                 $book->save();
+
+                // Handle challenge creation/update
+                if (
+                    $request->filled('challenge_duration') ||
+                    $request->filled('challenge_points') ||
+                    $request->has('description_BookChallenge')
+                ) {
+                    $challengeData = [];
+
+                    if ($request->filled('challenge_duration')) {
+                        $challengeData['duration'] = $request->challenge_duration;
+                    }
+
+                    if ($request->filled('challenge_points')) {
+                        $challengeData['points'] = $request->challenge_points;
+                    }
+
+                    if ($request->has('description_BookChallenge')) {
+                        $current = (array) optional($book->bookChallenges)->description;
+                        $incoming = (array) $request->input('description_BookChallenge');
+                        $challengeData['description'] = array_merge($current, $incoming);
+                    }
+
+                    // Create or update challenge manually
+                    $book->bookChallenges()->updateOrCreate(
+                        ['book_id' => $book->id],
+                        $challengeData
+                    );
+                }
             });
 
             return response()->json([
