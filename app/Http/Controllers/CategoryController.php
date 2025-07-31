@@ -82,7 +82,7 @@ class CategoryController extends Controller
     {
         $user = Auth::user();
         $category = Category::select('id', 'name', 'icon')->findOrFail($id);
-         // Update name translations
+        // Update name translations
         if ($request->has('name_en')) {
             $category->setTranslation('name', 'en', $request->input('name_en'));
         }
@@ -99,12 +99,13 @@ class CategoryController extends Controller
         }
         $category->save();
         return response()->json([
-            'success'=>true,
-            'message'=>'Category Updated Successfuly.',
-            'data'=>[
-            'id' => $category->id,
-            'name' => $category->getTranslations('name'),
-            'icon' =>  $category->icon, ]
+            'success' => true,
+            'message' => 'Category Updated Successfuly.',
+            'data' => [
+                'id' => $category->id,
+                'name' => $category->getTranslations('name'),
+                'icon' =>  $category->icon,
+            ]
         ]);
     }
 
@@ -133,6 +134,33 @@ class CategoryController extends Controller
         $reader->categories()->attach($categoryId);
 
         return response()->json(['message' => 'Category followed successfully.'], 201);
+    }
+
+    public function unfollowCategory($categoryId)
+    {
+        $reader = Auth::user()->reader;
+
+        if (!$reader) {
+            return response()->json(['message' => 'Reader not found.'], 404);
+        }
+
+        $category = Category::find($categoryId);
+
+        if (!$category) {
+            return response()->json(['message' => 'Category not found.'], 404);
+        }
+
+        $isFollowing = $reader->categories()
+            ->where('category_id', $categoryId)
+            ->exists();
+
+        if (!$isFollowing) {
+            return response()->json(['message' => 'You are not following this category.'], 200);
+        }
+
+        $reader->categories()->detach($categoryId);
+
+        return response()->json(['message' => 'Category unfollowed successfully.'], 200);
     }
 
     public function show($id)

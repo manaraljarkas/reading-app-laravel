@@ -12,7 +12,6 @@ use App\Models\Challenge;
 use App\Models\Comment;
 use App\Models\Reader;
 use App\Models\User;
-use App\Services\BookService;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -24,14 +23,6 @@ use Illuminate\Support\Facades\DB;
 
 class BookController extends Controller
 {
-
-    protected BookService $service;
-
-    public function __construct(BookService $service)
-    {
-        $this->service = $service;
-    }
-
     public function getBookFile($bookId)
     {
         $user = Auth::user();
@@ -288,56 +279,6 @@ class BookController extends Controller
         }
     }
 
-    public function getMostRatedBooks(): JsonResponse
-    {
-        $books = $this->service->getTopRatedBooks();
-        return $this->respond($books);
-    }
-
-    public function getAuthorBooks($authorId): JsonResponse
-    {
-        $books = $this->service->getBooksByAuthor($authorId);
-        return $this->respond($books);
-    }
-
-    public function getCategoryBooks($categoryId): JsonResponse
-    {
-        $books = $this->service->getBooksByCategory($categoryId);
-        return $this->respond($books);
-    }
-
-    public function getFavoriteBooks(): JsonResponse
-    {
-        $books = $this->service->getFavoriteBooks();
-        return $this->respond($books);
-    }
-
-    public function getToReadBooks(): JsonResponse
-    {
-        $books = $this->service->getBooksByStatus('to_read');
-        return $this->respond($books);
-    }
-
-    public function getInReadBooks(): JsonResponse
-    {
-        $books = $this->service->getBooksByStatus('in_read');
-        return $this->respond($books);
-    }
-
-    public function getCompletedBooks(): JsonResponse
-    {
-        $books = $this->service->getBooksByStatus('completed');
-        return $this->respond($books);
-    }
-
-    private function respond($books)
-    {
-        return response()->json([
-            'success' => true,
-            'data' => $this->service->transformBooks($books),
-        ]);
-    }
-
     public function getBookComments($bookId)
     {
         $user = Auth::user();
@@ -373,62 +314,5 @@ class BookController extends Controller
         return response()->json([
             'message' => 'comment added successfully'
         ]);
-    }
-
-    public function AddBookToFavorite($bookId)
-    {
-        $user = Auth::user();
-        $reader = $user->reader;
-
-        if (!$reader) {
-            return response()->json(['message' => 'Reader profile not found.'], 404);
-        }
-        $book = Book::findOrFail($bookId);
-        if (!$book) {
-            return response()->json(['message' => 'Book not found.'], 404);
-        }
-        $reader->books()->syncWithoutDetaching([
-            $bookId => ['is_favourite' => true]
-        ]);
-        return response()->json(['message' => 'Book added to favorite successufly']);
-    }
-
-    public function AddBookToDoList($bookId)
-    {
-        $user = Auth::user();
-        $reader = $user->reader;
-        if (!$reader) {
-            return response()->json(['message' => 'Reader profile not found.'], 404);
-        }
-        $book = Book::findOrFail($bookId);
-        if (!$book) {
-            return response()->json(['message' => 'Book not found'], 404);
-        }
-        $reader->books()->syncWithoutDetaching([
-            $bookId => ['status' => 'to_read']
-        ]);
-        return response()->json(['message' => 'Book added to To-Do List']);
-    }
-
-    public function RateBook($bookId, Request $request)
-    {
-        $user = Auth::user();
-        $reader = $user->reader;
-
-        $book = Book::findOrFail($bookId);
-        if (!$reader) {
-            return response()->json(['message' => 'Reader not found.'], 404);
-        }
-        if (!$book) {
-            return response()->json(['message' => 'Book not Found']);
-        }
-        $validated = $request->validate([
-            'rate' => 'integer|required|min:1|max:5'
-        ]);
-
-        $reader->books()->syncWithoutDetaching([
-            $bookId => ['rating' => $request->rate]
-        ]);
-        return response()->json(['message' => 'Book rated successfully']);
     }
 }

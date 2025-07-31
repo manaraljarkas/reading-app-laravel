@@ -24,8 +24,6 @@ Route::post('login', [AuthController::class, 'login']);
 Route::post('/dashboard/login', [AuthController::class, 'webLogin']);
 
 
-    Route::post('/book/update/{id}', [BookController::class, 'update']);
-
 
 //---------------------Authenticated  routes---------------------------
 Route::middleware('auth:sanctum')->group(function () {
@@ -51,28 +49,28 @@ Route::middleware('auth:sanctum')->group(function () {
 
     //---------------------------APIs using language middleware------------------------------
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
-        Route::get('/books/most-rated', [BookController::class, 'getMostRatedBooks']);
-        Route::get('/books/author-books/{authorId}', [BookController::class, 'getAuthorBooks']);
-        Route::get('/books/category-books/{categoryId}', [BookController::class, 'getCategoryBooks']);
-        Route::get('/books/favorites', [BookController::class, 'getFavoriteBooks']);
-        Route::get('/books/toread', [BookController::class, 'getToReadBooks']);
-        Route::get('/books/inread', [BookController::class, 'getInReadBooks']);
-        Route::get('/books/completed', [BookController::class, 'getCompletedBooks']);
+        Route::get('/books/most-rated', [ReaderBookController::class, 'getMostRatedBooks']);
+        Route::get('/books/author-books/{authorId}', [ReaderBookController::class, 'getAuthorBooks']);
+        Route::get('/books/category-books/{categoryId}', [ReaderBookController::class, 'getCategoryBooks']);
+        Route::get('/books/favorites', [ReaderBookController::class, 'getFavoriteBooks']);
+        Route::get('/books/toread', [ReaderBookController::class, 'getToReadBooks']);
+        Route::get('/books/inread', [ReaderBookController::class, 'getInReadBooks']);
+        Route::get('/books/completed', [ReaderBookController::class, 'getCompletedBooks']);
 
         Route::get('/books/GetBookChallenge/{Id}', [ChallengesController::class, 'GetBookChallenge']);
     });
 
     Route::get('book/getBookFile/{BookId}', [BookController::class, 'getBookFile']);
     Route::get('book/getNumbers', [BookController::class, 'getNumbers']);
-    Route::get('book/getCategoryBooks/{categoryId}', [BookController::class, 'getCategoryBooks']);
     Route::apiResource('books', BookController::class);
-//    Route::post('/book/update/{id}', [BookController::class, 'update']);
-    Route::get('book/AddBookToFavorite/{id}', [BookController::class, 'AddBookToFavorite']);
+    Route::post('/book/update/{id}', [BookController::class, 'update']);
+    Route::get('book/AddBookToFavorite/{id}', [ReaderBookController::class, 'AddBookToFavorite']);
     Route::get('book/getBookComments/{id}', [BookController::class, 'getBookComments']);
-    Route::get('book/AddBookToDoList/{id}', [BookController::class, 'AddBookToDoList']);
-    Route::post('book/RateBook/{id}', [BookController::class, 'RateBook']);
+    Route::get('book/AddBookToDoList/{id}', [ReaderBookController::class, 'AddBookToDoList']);
+    Route::post('book/RateBook/{id}', [ReaderBookController::class, 'RateBook']);
     Route::post('book/AddCommentToTheBook/{id}', [BookController::class, 'AddCommentToTheBook']);
-    Route::post('book/update-reading-progress', [ReaderBookController::class, 'updateReadingProgress']);
+    Route::post('book/update-reading-progress/{id}', [ReaderBookController::class, 'updateReadingProgress']);
+    Route::post('book/remove-from-favorites/{id}', [ReaderBookController::class, 'removeFromFavorites']);
 
 
 
@@ -87,8 +85,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/category/getCategories', [CategoryController::class, 'getCategories']);
     Route::post('/category/update/{id}', [CategoryController::class, 'update']);
     Route::apiResource('categories', CategoryController::class)->except(['show', 'destroy']);
-    Route::post('/categories/{category}/follow', [CategoryController::class, 'followCategory']);
-    Route::delete('/categories/{category}/unfollow', [CategoryController::class, 'unfollowCategory']);
+    Route::post('/categories/follow/{category}', [CategoryController::class, 'followCategory']);
+    Route::delete('/categories/unfollow/{category}', [CategoryController::class, 'unfollowCategory']);
 
 
 
