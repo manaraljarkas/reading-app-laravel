@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use App\Services\PermissionService;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 
 
@@ -98,38 +99,45 @@ class AuthController extends Controller
         $userId = Auth::user()->id;
         $validated = $request->validated();
         $validated['user_id'] = $userId;
+
         if ($request->hasFile('picture')) {
-            $path = $request->file('picture')->store('images/readers', 'public');
-            $validated['picture'] = $path;
+            $uploadResult = Cloudinary::uploadApi()->upload(
+                $request->file('picture')->getRealPath(),
+                ['folder' => 'reading-app/profiles']
+            );
+            $validated['picture'] = $uploadResult['secure_url'];
         }
+
         $profile = Reader::create($validated);
+
         return response()->json(['message' => 'Profile created successfully.'], 201);
     }
 
     public function editProfile(UpdateProfileRequest $request)
     {
         $userId = Auth::id();
-
         $reader = Reader::where('user_id', $userId)->firstOrFail();
 
         if ($reader->user_id != $userId) {
-            return response()->json(['message' => 'Unauthurized'], 403);
+            return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $validated = $request->validated();
-
         $reader->fill($validated);
 
         if ($request->hasFile('picture')) {
-            $path = $request->file('picture')->store('images/readers', 'public');
-            $reader->picture = $path;
+            $uploadResult = Cloudinary::uploadApi()->upload(
+                $request->file('picture')->getRealPath(),
+                ['folder' => 'reading-app/profiles']
+            );
+            $reader->picture = $uploadResult['secure_url'];
         }
 
         if ($reader->save()) {
             event(new ProfileUpdated($userId, array_keys($validated)));
             return response()->json(['message' => 'Profile updated successfully.'], 200);
         } else {
-            return response()->json(['message' => 'some error happened.'], 500);
+            return response()->json(['message' => 'Some error happened.'], 500);
         }
     }
 

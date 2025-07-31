@@ -213,7 +213,6 @@ class BookController extends Controller
                     'author_id'
                 ]);
 
-                // Handle file uploads
                 if ($request->hasFile('cover_image')) {
                     $upload = Cloudinary::uploadApi()->upload(
                         $request->file('cover_image')->getRealPath(),
@@ -230,20 +229,19 @@ class BookController extends Controller
                     $data['book_pdf'] = $upload['secure_url'];
                 }
 
-                // multilingual field update
+                // Just merge translated fields as JSON
                 foreach (['title', 'description', 'summary'] as $field) {
                     if ($request->has($field)) {
-                        $current = (array) $book->$field;
-                        $incoming = (array) $request->input($field);
-                        $book->$field = array_merge($current, $incoming);
+                        $book->$field = array_merge(
+                            (array) $book->$field,
+                            (array) $request->input($field)
+                        );
                     }
                 }
 
-                // Save basic book data
-                $book->fill($data);
-                $book->save();
+                $book->fill($data)->save();
 
-                // Handle challenge creation/update
+                // Update or create related challenge
                 if (
                     $request->filled('challenge_duration') ||
                     $request->filled('challenge_points') ||
@@ -260,12 +258,12 @@ class BookController extends Controller
                     }
 
                     if ($request->has('description_BookChallenge')) {
-                        $current = (array) optional($book->bookChallenges)->description;
-                        $incoming = (array) $request->input('description_BookChallenge');
-                        $challengeData['description'] = array_merge($current, $incoming);
+                        $challengeData['description'] = array_merge(
+                            (array) optional($book->bookChallenges)->description,
+                            (array) $request->input('description_BookChallenge')
+                        );
                     }
 
-                    // Create or update challenge manually
                     $book->bookChallenges()->updateOrCreate(
                         ['book_id' => $book->id],
                         $challengeData
