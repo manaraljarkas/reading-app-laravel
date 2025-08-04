@@ -25,12 +25,14 @@ Route::post('/dashboard/login', [AuthController::class, 'webLogin']);
 
 
 
+
 //---------------------Authenticated  routes---------------------------
 Route::middleware('auth:sanctum')->group(function () {
     //--------------------------Auth--------------------------
     Route::post('logout', [AuthController::class, 'logout']);
     Route::post('auth/setup-profile', [AuthController::class, 'setupProfile']);
     Route::post('auth/edit-profile', [AuthController::class, 'editProfile']);
+    Route::get('reader/getAllProfiles', [ReaderController::class,'getAllProfiles']);
 
 
     //--------------------------Author------------------------
@@ -78,6 +80,7 @@ Route::middleware('auth:sanctum')->group(function () {
     //---------------------------APIs using language middleware------------------------------
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
         Route::get('/category/getCategories', [CategoryController::class, 'getCategories']);
+        Route::get('/reader/showProfile',[ReaderController::class ,'showProfile']);
     });
 
     Route::post('/category/update/{id}', [CategoryController::class, 'update']);
@@ -123,6 +126,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/admin/update/{id}', [UserController::class, 'update']);
         //-----------------------------Reader-------------------------------------
         Route::apiResource('readers', ReaderController::class)->except(['store', 'update']);
+
+
         //------------------------------Permissions------------------------------------
         Route::get('/admin-permissions/{admin}', [AdminPermissionController::class, 'show']);
         Route::post('/admin-permissions/{admin}', [AdminPermissionController::class, 'update']);

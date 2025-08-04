@@ -43,7 +43,7 @@ class UpdateBookRequest extends FormRequest
         'description_BookChallenge' => 'sometimes|array',
         'description_BookChallenge.en' => 'sometimes|string',
         'description_BookChallenge.ar' => 'sometimes|string',
-        'points' => 'sometimes|required'
+        'points' => 'sometimes|integer'
 
         ];
     }

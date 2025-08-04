@@ -46,7 +46,7 @@ class CategoryController extends Controller
                 return [
                     'id' => $category->id,
                     'icon' =>  $category->icon,
-                    'name' => $category->getTranslations('name'),
+                    'name' => $category->getTranslation('name','en'),
                     'number_of_books' => $category->books_count,
                 ];
             });

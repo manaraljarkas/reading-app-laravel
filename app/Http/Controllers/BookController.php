@@ -78,9 +78,9 @@ class BookController extends Controller
             ->through(function ($book) {
                 return [
                     'id' => $book->id,
-                    'title' => $book->getTranslations('title'),
-                    'author_name' => $book->author?->getTranslations('name'),
-                    'category' => $book->category?->getTranslations('name'),
+                    'title' => $book->getTranslation('title','en'),
+                    'author_name' => $book->author?->getTranslation('name','en'),
+                    'category' => $book->category?->getTranslation('name','en'),
                     'publish_date' => $book->publish_date,
                     'star_rate' => round($book->average_rating, 2),
                     'number_of_readers' => $book->readers_count,
@@ -95,6 +95,10 @@ class BookController extends Controller
         $user = Auth::user();
         $book = Book::where('id', '=', $bookId)->with('sizecategory')->with('bookChallenges')->first();
         $number_of_participants = DB::table('reader_books')->where('reader_books.book_id', '=', $bookId)->count();
+        $book_challenge_points = DB::table('reader_books')
+            ->where('book_id', $bookId)
+            ->where('reader_id', $user->reader->id)
+            ->value('earned_points');
 
         $comments = Comment::where('book_id', '=', $bookId)
             ->with('reader')
@@ -112,7 +116,7 @@ class BookController extends Controller
             'description' => $book->getTranslations('description'),
             'summary' => $book->getTranslations('summary'),
             'book_challenge_duration' => $book->bookChallenges?->duration,
-            'book_challenge_points' => $book->bookChallenges?->points,
+            'book_challenge_points' => $book_challenge_points ,
             'book_challenge_participants' => $number_of_participants,
             'comments' => $comments,
         ]);
@@ -168,6 +172,7 @@ class BookController extends Controller
                 'cover_image' => $coverUrl,
                 'size_category_id' => $request->size_category_id,
                 'category_id' => $request->category_id,
+                'points'=>$request->points,
             ]);
 
             BookChallenge::create([
@@ -201,7 +206,8 @@ class BookController extends Controller
                     'number_of_pages',
                     'category_id',
                     'size_category_id',
-                    'author_id'
+                    'author_id',
+                    'points'
                 ]);
 
                 if ($request->hasFile('cover_image')) {
