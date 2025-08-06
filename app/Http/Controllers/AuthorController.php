@@ -46,8 +46,8 @@ class AuthorController extends Controller
                 return [
                     'id' => $author->id,
                     'image' => $author->image ,
-                    'name' => $author->getTranslations('name'),
-                    'country' => $author->country->getTranslations('name'),
+                    'name' => $author->getTranslation('name','en'),
+                    'country' => $author->country->getTranslation('name','en'),
                     'number_of_books' => $author->books_count,
                 ];
             });

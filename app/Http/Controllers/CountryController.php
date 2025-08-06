@@ -17,11 +17,17 @@ class CountryController extends Controller
      */
     public function index(): JsonResponse
     {
-        $countries = Country::paginate(5);
+        $countries = Country::paginate(5)->through(function ($country) {
+            return [
+                'id' => $country->id,
+                'name' => $country->getTranslation('name', 'en'),
+                'code' => $country->code,
+            ];
+        });
 
         return response()->json([
             'message' => 'Countries retrieved successfully.',
-            'data' => $countries,
+            'data' =>$countries
         ]);
     }
 

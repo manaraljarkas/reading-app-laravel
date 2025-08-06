@@ -21,8 +21,8 @@ class BagdeController extends Controller
             ->through(function ($badge) {
                 return [
                     'image' => $badge->image,
-                    'title' => $badge->getTranslations('title'),
-                    'description' => $badge->getTranslations('achievment'),
+                    'title' => $badge->getTranslation('title','en'),
+                    'description' => $badge->getTranslation('achievment','en'),
                     'number_of_earnes' => $badge->readers_count,
                 ];
             });

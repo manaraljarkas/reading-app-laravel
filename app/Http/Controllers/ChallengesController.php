@@ -65,10 +65,10 @@ class ChallengesController extends Controller
             ->through(function ($challenge) {
                 return [
                     'id' => $challenge->id,
-                    'title' => $challenge->getTranslations('title'),
+                    'title' => $challenge->getTranslation('title','en'),
                     'points' => $challenge->points,
-                    'category' => $challenge->category?->getTranslations('name') ?? 'No category',
-                    'size_category' => $challenge->sizeCategory?->getTranslations('name'),
+                    'category' => $challenge->category?->getTranslation('name','en') ?? 'No category',
+                    'size_category' => $challenge->sizeCategory?->getTranslation('name','en'),
                     'duration' => $challenge->duration,
                     'number_of_participants' => $challenge->readers_count,
                 ];
