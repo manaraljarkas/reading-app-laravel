@@ -15,11 +15,12 @@ class BagdeController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $badges = Badge::select('title', 'image', 'achievment')
+        $badges = Badge::select('id','title', 'image', 'achievment')
             ->withcount('readers')
             ->paginate(5)
             ->through(function ($badge) {
                 return [
+                    'id'=>$badge->id,
                     'image' => $badge->image,
                     'title' => $badge->getTranslation('title','en'),
                     'description' => $badge->getTranslation('achievment','en'),
