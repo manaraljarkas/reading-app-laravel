@@ -98,7 +98,21 @@ class AuthController extends Controller
     public function saveProfile(ProfileRequest $request)
     {
         $userId = Auth::id();
+        if (!$userId) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
+
+        $hasProfile = Reader::where('user_id', $userId)->exists();
+
         $validated = $request->validated();
+
+        if (!$hasProfile) {
+            if (empty($validated['first_name']) || empty($validated['last_name'])) {
+                return response()->json([
+                    'message' => 'First name and last name are required for new profile.'
+                ], 422);
+            }
+        }
 
         if ($request->hasFile('picture')) {
             $uploadResult = Cloudinary::uploadApi()->upload(
@@ -115,12 +129,11 @@ class AuthController extends Controller
 
         if ($reader->wasRecentlyCreated) {
             return response()->json(['message' => 'Profile created successfully.'], 201);
-        } else {
-            event(new ProfileUpdated($userId, array_keys($validated)));
-            return response()->json(['message' => 'Profile updated successfully.'], 200);
         }
-    }
 
+        event(new ProfileUpdated($userId, array_keys($validated)));
+        return response()->json(['message' => 'Profile updated successfully.'], 200);
+    }
 
     public function logout(Request $request)
     {

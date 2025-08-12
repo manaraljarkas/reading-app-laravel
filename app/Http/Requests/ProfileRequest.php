@@ -27,12 +27,12 @@ class ProfileRequest extends FormRequest
         $hasProfile = Reader::where('user_id', $userId)->exists();
 
         return [
-            'first_name' => ($hasProfile ? 'sometimes' : 'required') . '|string|max:255',
-            'last_name'  => ($hasProfile ? 'sometimes' : 'required') . '|string|max:255',
+            'first_name' => 'sometimes|string|max:255',
+            'last_name'  => 'sometimes|string|max:255',
             'bio'        => 'nullable|string',
             'nickname'   => 'nullable|string|max:255',
             'quote'      => 'nullable|string',
-            'picture'    => ($hasProfile ? 'sometimes' : 'nullable') . '|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
+            'picture'    => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
         ];
     }
 }
