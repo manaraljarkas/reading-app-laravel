@@ -131,7 +131,7 @@ class AuthController extends Controller
             return response()->json(['message' => 'Profile created successfully.'], 201);
         }
 
-        event(new ProfileUpdated($userId, array_keys($validated)));
+        //event(new ProfileUpdated($userId, array_keys($validated)));
         return response()->json(['message' => 'Profile updated successfully.'], 200);
     }
 
