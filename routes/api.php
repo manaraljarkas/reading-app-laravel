@@ -80,6 +80,7 @@ Route::middleware('auth:sanctum')->group(function () {
     //---------------------------APIs using language middleware------------------------------
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
         Route::get('/category/getCategories', [CategoryController::class, 'getCategories']);
+        Route::get('/reader/showProfile/{id}',[ReaderController::class ,'showProfile']);
         Route::get('/reader/showProfile',[ReaderController::class ,'showProfile']);
     });
 

@@ -24,7 +24,8 @@ class ReaderController extends Controller
                 ];
             });
         return response()->json(
-            $readers);
+            $readers
+        );
     }
 
     public function show($readerId)
@@ -71,39 +72,56 @@ class ReaderController extends Controller
         return response()->json(['message' => 'Reader deleted successfully']);
     }
 
-    public function showProfile()
+    public function showProfile(Request $request, $readerId = null)
     {
-        $user = Auth::user();
-        $readerId = $user->reader->id;
-        $reader = Reader::where('id', $readerId)->first();
-        $CountService = new \App\Services\CountService($readerId);
+        if ($readerId) {
+            $reader = Reader::findOrFail($readerId);
+        } else {
+            $user = Auth::user();
+            if (! $user || ! $user->reader) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No authenticated reader found'
+                ], 404);
+            }
+            $reader = $user->reader;
+            $readerId = $reader->id;
+        }
+
+        $countService = new \App\Services\CountService($readerId);
+
         $locale = app()->getLocale();
-        $badges = DB::table('reader_badges')->join('badges', 'badges.id', '=', 'reader_badges.badge_id')
-            ->where('reader_badges.reader_id', $readerId)->get()->map(function ($badge) use ($locale) {
+        $badges = DB::table('reader_badges')
+            ->join('badges', 'badges.id', '=', 'reader_badges.badge_id')
+            ->where('reader_badges.reader_id', $readerId)
+            ->get()
+            ->map(function ($badge) use ($locale) {
                 $title = json_decode($badge->title, true);
                 return [
                     'title' => $title[$locale] ?? '',
-                    'icon' => $badge->image
+                    'icon'  => $badge->image
                 ];
             });
 
         return response()->json([
             'success' => true,
-            'message' => 'profile reader retuierned successfully',
+            'message' => 'Profile returned successfully',
             'data' => [
-                'name' => $reader->first_name . ' ' . $reader->last_name,
-                'picture' => $reader->picture,
-                'nickname' => $reader->nickname,
-                'bio' => $reader->bio,
-                'quote' => $reader->quote,
-                'books_number' => $CountService->countBooks(),
-                'countries_number' => $CountService->countCountries(),
-                'challenges_number' => $CountService->countChallenges(),
-                'total_points' => $reader->total_points,
-                'badges' => $badges,
+                'name'              => $reader->first_name . ' ' . $reader->last_name,
+                'picture'           => $reader->picture,
+                'nickname'          => $reader->nickname,
+                'bio'               => $reader->bio,
+                'quote'             => $reader->quote,
+                'books_number'      => $countService->countBooks(),
+                'countries_number'  => $countService->countCountries(),
+                'challenges_number' => $countService->countChallenges(),
+                'total_points'      => $reader->total_points,
+                'badges'            => $badges,
             ]
         ]);
     }
+
+
     public function getAllProfiles(Request $request)
     {
         $user = Auth::user();

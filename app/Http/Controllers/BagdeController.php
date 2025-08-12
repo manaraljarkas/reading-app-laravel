@@ -24,7 +24,7 @@ class BagdeController extends Controller
                     'image' => $badge->image,
                     'title' => $badge->getTranslation('title','en'),
                     'description' => $badge->getTranslation('achievment','en'),
-                    'number_of_earnes' => $badge->readers_count,
+                    'number_of_earners' => $badge->readers_count,
                 ];
             });
 
