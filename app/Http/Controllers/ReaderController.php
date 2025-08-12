@@ -107,7 +107,8 @@ class ReaderController extends Controller
             'success' => true,
             'message' => 'Profile returned successfully',
             'data' => [
-                'name'              => $reader->first_name . ' ' . $reader->last_name,
+                'first_name'        => $reader->first_name,
+                'last_name'        => $reader->last_name,
                 'picture'           => $reader->picture,
                 'nickname'          => $reader->nickname,
                 'bio'               => $reader->bio,
