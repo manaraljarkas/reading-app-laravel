@@ -97,42 +97,29 @@ class AuthController extends Controller
 
     public function saveProfile(ProfileRequest $request)
     {
-        try {
-            $userId = Auth::id();
-            if (!$userId) {
-                return response()->json(['message' => 'Unauthenticated'], 401);
-            }
+        $userId = Auth::id();
+        $validated = $request->validated();
 
-            $validated = $request->validated();
-            $validated['user_id'] = $userId;
-
-            if ($request->hasFile('picture')) {
-                $uploadResult = Cloudinary::uploadApi()->upload(
-                    $request->file('picture')->getRealPath(),
-                    ['folder' => 'reading-app/profiles']
-                );
-                $validated['picture'] = $uploadResult['secure_url'];
-            }
-
-            $reader = Reader::updateOrCreate(
-                ['user_id' => $userId],
-                $validated
+        if ($request->hasFile('picture')) {
+            $uploadResult = Cloudinary::uploadApi()->upload(
+                $request->file('picture')->getRealPath(),
+                ['folder' => 'reading-app/profiles']
             );
+            $validated['picture'] = $uploadResult['secure_url'];
+        }
 
-            if ($reader->wasRecentlyCreated) {
-                return response()->json(['message' => 'Profile created successfully.'], 201);
-            } else {
-                event(new ProfileUpdated($userId, array_keys($validated)));
-                return response()->json(['message' => 'Profile updated successfully.'], 200);
-            }
-        } catch (\Throwable $e) {
-            return response()->json([
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ], 500);
+        $reader = Reader::updateOrCreate(
+            ['user_id' => $userId],
+            $validated
+        );
+
+        if ($reader->wasRecentlyCreated) {
+            return response()->json(['message' => 'Profile created successfully.'], 201);
+        } else {
+            event(new ProfileUpdated($userId, array_keys($validated)));
+            return response()->json(['message' => 'Profile updated successfully.'], 200);
         }
     }
-
 
 
     public function logout(Request $request)
