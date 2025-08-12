@@ -23,9 +23,6 @@ class ProfileRequest extends FormRequest
      */
     public function rules(): array
     {
-        $userId = Auth::id();
-        $hasProfile = Reader::where('user_id', $userId)->exists();
-
         return [
             'first_name' => 'sometimes|string|max:255',
             'last_name'  => 'sometimes|string|max:255',
