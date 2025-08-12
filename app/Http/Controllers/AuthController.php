@@ -7,6 +7,7 @@ use App\Http\Requests\StoreProfileRequest;
 use App\Http\Requests\UpdateProfileRequest;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
+use App\http\Requests\ProfileRequest;
 use App\Mail\WelcomeMail;
 use App\Models\Reader;
 use App\Models\User;
@@ -94,9 +95,9 @@ class AuthController extends Controller
         ], 200);
     }
 
-    public function setupProfile(StoreProfileRequest $request)
+    public function saveProfile(ProfileRequest $request)
     {
-        $userId = Auth::user()->id;
+        $userId = Auth::id();
         $validated = $request->validated();
         $validated['user_id'] = $userId;
 
@@ -108,42 +109,72 @@ class AuthController extends Controller
             $validated['picture'] = $uploadResult['secure_url'];
         }
 
-        $profile = Reader::create($validated);
+        $reader = Reader::updateOrCreate(
+            ['user_id' => $userId],
+            $validated
+        );
 
-        return response()->json(['message' => 'Profile created successfully.'], 201);
-    }
-
-    public function editProfile(UpdateProfileRequest $request)
-    {
-        $userId = Auth::id();
-        $reader = Reader::where('user_id', $userId)->firstOrFail();
-
-        if ($reader->user_id != $userId) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
-        $validated = $request->validated();
-        $reader->fill($validated);
-
-        if ($request->hasFile('picture')) {
-            $uploadResult = Cloudinary::uploadApi()->upload(
-                $request->file('picture')->getRealPath(),
-                ['folder' => 'reading-app/profiles']
-            );
-            $reader->picture = $uploadResult['secure_url'];
-        }
-
-        if ($reader->save()) {
+        if ($reader->wasRecentlyCreated) {
+            return response()->json(['message' => 'Profile created successfully.'], 201);
+        } else {
             event(new ProfileUpdated($userId, array_keys($validated)));
             return response()->json(['message' => 'Profile updated successfully.'], 200);
-        } else {
-            return response()->json(['message' => 'Some error happened.'], 500);
         }
     }
+
 
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
         return response()->json(['message' => 'Logout Successfully']);
     }
+
+    // public function setupProfile(StoreProfileRequest $request)
+    // {
+    //     $userId = Auth::user()->id;
+    //     $validated = $request->validated();
+    //     $validated['user_id'] = $userId;
+
+    //     if ($request->hasFile('picture')) {
+    //         $uploadResult = Cloudinary::uploadApi()->upload(
+    //             $request->file('picture')->getRealPath(),
+    //             ['folder' => 'reading-app/profiles']
+    //         );
+    //         $validated['picture'] = $uploadResult['secure_url'];
+    //     }
+
+    //     $profile = Reader::create($validated);
+
+    //     return response()->json(['message' => 'Profile created successfully.'], 201);
+    // }
+
+    // public function editProfile(UpdateProfileRequest $request)
+    // {
+    //     $userId = Auth::id();
+    //     $reader = Reader::where('user_id', $userId)->firstOrFail();
+
+    //     if ($reader->user_id != $userId) {
+    //         return response()->json(['message' => 'Unauthorized'], 403);
+    //     }
+
+    //     $validated = $request->validated();
+    //     $reader->fill($validated);
+
+    //     if ($request->hasFile('picture')) {
+    //         $uploadResult = Cloudinary::uploadApi()->upload(
+    //             $request->file('picture')->getRealPath(),
+    //             ['folder' => 'reading-app/profiles']
+    //         );
+    //         $reader->picture = $uploadResult['secure_url'];
+    //     }
+
+    //     if ($reader->save()) {
+    //         event(new ProfileUpdated($userId, array_keys($validated)));
+    //         return response()->json(['message' => 'Profile updated successfully.'], 200);
+    //     } else {
+    //         return response()->json(['message' => 'Some error happened.'], 500);
+    //     }
+    // }
+
+
 }
