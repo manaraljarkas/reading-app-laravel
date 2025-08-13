@@ -97,41 +97,45 @@ class AuthController extends Controller
 
     public function saveProfile(ProfileRequest $request)
     {
-        $userId = Auth::id();
-        $validated = $request->validated();
+        try {
+            $userId = Auth::id();
+            $validated = $request->validated();
 
-        $reader = Reader::where('user_id', $userId)->first();
+            $reader = Reader::where('user_id', $userId)->first();
 
-        if ($reader) {
-            $reader->fill($validated);
-            if ($request->hasFile('picture')) {
-                $uploadResult = Cloudinary::uploadApi()->upload(
-                    $request->file('picture')->getRealPath(),
-                    ['folder' => 'reading-app/profiles']
-                );
-                $reader->picture = $uploadResult['secure_url'];
-            }
+            if ($reader) {
+                $reader->fill($validated);
+                if ($request->hasFile('picture')) {
+                    $uploadResult = Cloudinary::uploadApi()->upload(
+                        $request->file('picture')->getRealPath(),
+                        ['folder' => 'reading-app/profiles']
+                    );
+                    $reader->picture = $uploadResult['secure_url'];
+                }
 
-            if ($reader->save()) {
-                event(new ProfileUpdated($userId, array_keys($validated)));
-                return response()->json(['message' => 'Profile updated successfully.'], 200);
+                if ($reader->save()) {
+                    event(new ProfileUpdated($userId, array_keys($validated)));
+                    return response()->json(['message' => 'Profile updated successfully.'], 200);
+                } else {
+                    return response()->json(['message' => 'Some error occurred while updating.'], 500);
+                }
             } else {
-                return response()->json(['message' => 'Some error occurred while updating.'], 500);
+                $validated['user_id'] = $userId;
+
+                if ($request->hasFile('picture')) {
+                    $uploadResult = Cloudinary::uploadApi()->upload(
+                        $request->file('picture')->getRealPath(),
+                        ['folder' => 'reading-app/profiles']
+                    );
+                    $validated['picture'] = $uploadResult['secure_url'];
+                }
+
+                $profile = Reader::create($validated);
+
+                return response()->json(['message' => 'Profile created successfully.'], 201);
             }
-        } else {
-            $validated['user_id'] = $userId;
-
-            if ($request->hasFile('picture')) {
-                $uploadResult = Cloudinary::uploadApi()->upload(
-                    $request->file('picture')->getRealPath(),
-                    ['folder' => 'reading-app/profiles']
-                );
-                $validated['picture'] = $uploadResult['secure_url'];
-            }
-
-            $profile = Reader::create($validated);
-
-            return response()->json(['message' => 'Profile created successfully.'], 201);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'An error occurred: ' . $e->getMessage()], 500);
         }
     }
 
