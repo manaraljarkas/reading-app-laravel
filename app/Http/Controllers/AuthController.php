@@ -144,6 +144,11 @@ class AuthController extends Controller
     public function setupProfile(StoreProfileRequest $request)
     {
         $userId = Auth::user()->id;
+
+        if (Reader::where('user_id', $userId)->exists()) {
+            return response()->json(['message' => 'Profile already exists.'], 409);
+        }
+
         $validated = $request->validated();
         $validated['user_id'] = $userId;
 
@@ -187,6 +192,4 @@ class AuthController extends Controller
             return response()->json(['message' => 'Some error happened.'], 500);
         }
     }
-
-
 }
