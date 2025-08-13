@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use App\Services\PermissionService;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use Illuminate\Support\Facades\Log;
 
 
 
@@ -99,7 +100,10 @@ class AuthController extends Controller
     {
         try {
             $userId = Auth::id();
+            Log::info('User ID:', [$userId]);
+
             $validated = $request->validated();
+            Log::info('Validated data:', [$validated]);
 
             $reader = Reader::where('user_id', $userId)->first();
 
@@ -117,6 +121,7 @@ class AuthController extends Controller
                     event(new ProfileUpdated($userId, array_keys($validated)));
                     return response()->json(['message' => 'Profile updated successfully.'], 200);
                 } else {
+                    Log::error('Error while saving reader:', [$reader->getErrors()]);
                     return response()->json(['message' => 'Some error occurred while updating.'], 500);
                 }
             } else {
@@ -131,10 +136,12 @@ class AuthController extends Controller
                 }
 
                 $profile = Reader::create($validated);
+                Log::info('Profile created:', [$profile]);
 
                 return response()->json(['message' => 'Profile created successfully.'], 201);
             }
         } catch (\Exception $e) {
+            Log::error('Exception occurred:', ['message' => $e->getMessage()]);
             return response()->json(['message' => 'An error occurred: ' . $e->getMessage()], 500);
         }
     }
