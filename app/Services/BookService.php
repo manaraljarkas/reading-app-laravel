@@ -77,12 +77,14 @@ class BookService
                     : null,
                 'publish_date' => $book->publish_date,
                 'cover_image' => $book->cover_image,
+                'points' => $book->points,
                 'star_rate' => round($book->star_rate),
                 'readers_count' => $book->readers_count,
                 'category_name' => optional($book->category)->getTranslation('name', $locale),
                 'size_category_name' => optional($book->sizecategory)->getTranslation('name', $locale),
                 'number_of_pages' => $book->number_of_pages,
                 'is_favourite' => (bool) optional($readerBook)->is_favourite,
+                'is_challenged' => (bool) optional($readerBook)->is_challenged,
                 'is_in_library' => !is_null($readerBook),
             ];
         });

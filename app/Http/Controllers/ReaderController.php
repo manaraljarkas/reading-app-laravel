@@ -32,7 +32,7 @@ class ReaderController extends Controller
     {
         $reader = Auth::user();
         // Get the reader information
-        $readerinfo = Reader::select('first_name', 'picture', 'total_points', 'bio', 'nickname')->where('id', '=', $readerId)->first();
+        $readerinfo = Reader::select('first_name', 'picture', 'total_points', 'bio', 'nickname', 'quote')->where('id', '=', $readerId)->first();
 
         if (!$readerinfo) {
             return response()->json([
@@ -50,6 +50,7 @@ class ReaderController extends Controller
                 'name' => $readerinfo->first_name,
                 'nickname' => $readerinfo->nickname,
                 'bio' => $readerinfo->bio,
+                'quote' => $readerinfo->quote,
                 'total_points' => $readerinfo->total_points,
                 'picture' => $readerinfo->picture,
                 'number_of_challenges' => $CountService->countChallenges(),
