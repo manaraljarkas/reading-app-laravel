@@ -14,6 +14,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminPermissionController;
 use App\Http\Controllers\SizeCategoryController;
 use App\Http\Controllers\ReaderBookController;
+use Illuminate\Support\Facades\DB as FacadesDB;
 use Illuminate\Support\Facades\Route;
 
 
@@ -33,7 +34,16 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route::post('auth/setup-profile', [AuthController::class, 'setupProfile']);
     // Route::post('auth/edit-profile', [AuthController::class, 'editProfile']);
     Route::post('/profile', [AuthController::class, 'saveProfile']);
-    Route::get('reader/getAllProfiles', [ReaderController::class,'getAllProfiles']);
+    Route::get('reader/getAllProfiles', [ReaderController::class, 'getAllProfiles']);
+
+    Route::get('/test-db', function () {
+        try {
+            FacadesDB::connection()->getPdo();
+            return response()->json(['message' => 'Database connection is active.']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Database connection failed: ' . $e->getMessage()], 500);
+        }
+    });
 
 
     //--------------------------Author------------------------
@@ -81,8 +91,8 @@ Route::middleware('auth:sanctum')->group(function () {
     //---------------------------APIs using language middleware------------------------------
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
         Route::get('/category/getCategories', [CategoryController::class, 'getCategories']);
-        Route::get('/reader/showProfile/{id}',[ReaderController::class ,'showProfile']);
-        Route::get('/reader/showProfile',[ReaderController::class ,'showProfile']);
+        Route::get('/reader/showProfile/{id}', [ReaderController::class, 'showProfile']);
+        Route::get('/reader/showProfile', [ReaderController::class, 'showProfile']);
     });
 
     Route::post('/category/update/{id}', [CategoryController::class, 'update']);
