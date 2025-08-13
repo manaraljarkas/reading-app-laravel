@@ -98,6 +98,7 @@ class AuthController extends Controller
 
     public function saveProfile(ProfileRequest $request)
     {
+        dump('Reached here');
         try {
             $userId = Auth::id();
             Log::info('User ID:', [$userId]);
