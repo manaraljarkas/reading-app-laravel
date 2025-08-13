@@ -127,7 +127,7 @@ class ReaderController extends Controller
         $user = Auth::user();
         $search = $request->input('search');
 
-        $readers = Reader::select('first_name', 'last_name', 'picture', 'nickname', 'total_points');
+        $readers = Reader::select('id','first_name', 'last_name', 'picture', 'nickname', 'total_points');
 
         if ($search) {
             $readers->where(function ($query) use ($search) {
