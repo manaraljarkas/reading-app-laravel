@@ -72,7 +72,7 @@ class ReaderController extends Controller
         return response()->json(['message' => 'Reader deleted successfully']);
     }
 
-    public function showProfile(Request $request, $readerId = null)
+    public function showProfile($readerId = null)
     {
         if ($readerId) {
             $reader = Reader::findOrFail($readerId);
@@ -122,18 +122,25 @@ class ReaderController extends Controller
         ]);
     }
 
-
     public function getAllProfiles(Request $request)
     {
         $user = Auth::user();
         $search = $request->input('search');
+
         $readers = Reader::select('first_name', 'last_name', 'picture', 'nickname', 'total_points');
+
         if ($search) {
             $readers->where(function ($query) use ($search) {
-                $query->where('first_name', 'like', "%{$search}%")->orWhere('last_name', 'like', "%{$search}%")->orWhere('picture', 'like', "%{$search}%")->orWhere('nickname', 'like', "%{$search}%")->orWhere('total_points', 'like', "%{$search}%");
+                $query->where('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('picture', 'like', "%{$search}%")
+                    ->orWhere('nickname', 'like', "%{$search}%")
+                    ->orWhere('total_points', 'like', "%{$search}%");
             });
         }
-        $results = $readers->get();
+
+        $results = $readers->orderBy('total_points', 'desc')->get();
+
         return response()->json([
             'success' => true,
             'message' => 'return profiles',
