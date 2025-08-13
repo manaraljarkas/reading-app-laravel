@@ -31,9 +31,9 @@ Route::post('/dashboard/login', [AuthController::class, 'webLogin']);
 Route::middleware('auth:sanctum')->group(function () {
     //--------------------------Auth--------------------------
     Route::post('logout', [AuthController::class, 'logout']);
-    // Route::post('auth/setup-profile', [AuthController::class, 'setupProfile']);
-    // Route::post('auth/edit-profile', [AuthController::class, 'editProfile']);
-    Route::post('/profile', [AuthController::class, 'saveProfile']);
+    Route::post('auth/setup-profile', [AuthController::class, 'setupProfile']);
+    Route::post('auth/edit-profile', [AuthController::class, 'editProfile']);
+    // Route::post('/profile', [AuthController::class, 'saveProfile']);
     Route::get('reader/getAllProfiles', [ReaderController::class, 'getAllProfiles']);
 
     Route::get('/test-db', function () {
