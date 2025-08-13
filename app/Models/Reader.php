@@ -10,7 +10,6 @@ class Reader extends Model
 {
     use SoftDeletes;
     protected $fillable = [
-        'points',
         'first_name',
         'last_name',
         'picture',

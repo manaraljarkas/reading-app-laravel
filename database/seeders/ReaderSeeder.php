@@ -58,7 +58,7 @@ class ReaderSeeder extends Seeder
             if ($user) {
                 DB::table('readers')->insert([
                     'user_id' => $user->id,
-                    'points' => rand(0, 500),
+                    'total_points' => rand(0, 100),
                     'first_name' => $reader['first_name'],
                     'last_name' => $reader['last_name'],
                     'nickname' => $reader['nickname'],
