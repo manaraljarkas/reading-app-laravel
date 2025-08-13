@@ -23,11 +23,9 @@ class ProfileRequest extends FormRequest
      */
     public function rules(): array
     {
-        $isUpdate = $this->isMethod('put') || $this->isMethod('patch');
-
         return [
-            'first_name' => [$isUpdate ? 'sometimes' : 'required', 'string', 'max:255'],
-            'last_name'  => [$isUpdate ? 'sometimes' : 'required', 'string', 'max:255'],
+            'first_name' => 'sometimes|string|max:255',
+            'last_name'  => 'sometimes|string|max:255',
             'bio'        => 'nullable|string',
             'nickname'   => 'nullable|string|max:255',
             'quote'      => 'nullable|string',
