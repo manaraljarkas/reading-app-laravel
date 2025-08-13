@@ -17,7 +17,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use App\Services\PermissionService;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
-use Illuminate\Support\Facades\Log;
 
 
 
@@ -96,19 +95,24 @@ class AuthController extends Controller
         ], 200);
     }
 
-    public function saveProfile(Request $request)
+    public function saveProfile(ProfileRequest $request)
     {
-        $validated = $request->validate([
-            'first_name' => 'sometimes|string|max:255',
-            'last_name'  => 'sometimes|string|max:255',
-            'bio'        => 'nullable|string',
-            'nickname'   => 'nullable|string|max:255',
-            'quote'      => 'nullable|string',
-            'picture'    => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
-        ]);
         $userId = Auth::id();
+        if (!$userId) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
+
+        $hasProfile = Reader::where('user_id', $userId)->exists();
+
         $validated = $request->validated();
-        $validated['user_id'] = $userId;
+
+        if (!$hasProfile) {
+            if (empty($validated['first_name']) || empty($validated['last_name'])) {
+                return response()->json([
+                    'message' => 'First name and last name are required for new profile.'
+                ], 422);
+            }
+        }
 
         if ($request->hasFile('picture')) {
             $uploadResult = Cloudinary::uploadApi()->upload(
@@ -118,21 +122,17 @@ class AuthController extends Controller
             $validated['picture'] = $uploadResult['secure_url'];
         }
 
-        $reader = Reader::where('user_id', $userId)->first();
+        $reader = Reader::updateOrCreate(
+            ['user_id' => $userId],
+            $validated
+        );
 
-        if ($reader) {
-            $reader->fill($validated);
-
-            if ($reader->save()) {
-                event(new ProfileUpdated($userId, array_keys($validated)));
-                return response()->json(['message' => 'Profile updated successfully.'], 200);
-            }
-
-            return response()->json(['message' => 'Some error happened.'], 500);
-        } else {
-            $profile = Reader::create($validated);
+        if ($reader->wasRecentlyCreated) {
             return response()->json(['message' => 'Profile created successfully.'], 201);
         }
+
+        event(new ProfileUpdated($userId, array_keys($validated)));
+        return response()->json(['message' => 'Profile updated successfully.'], 200);
     }
 
     public function logout(Request $request)
@@ -187,4 +187,6 @@ class AuthController extends Controller
     //         return response()->json(['message' => 'Some error happened.'], 500);
     //     }
     // }
+
+
 }
