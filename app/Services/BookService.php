@@ -83,6 +83,7 @@ class BookService
                 'category_name' => optional($book->category)->getTranslation('name', $locale),
                 'size_category_name' => optional($book->sizecategory)->getTranslation('name', $locale),
                 'number_of_pages' => $book->number_of_pages,
+                'progress' => $readerBook->progress,
                 'is_favourite' => (bool) optional($readerBook)->is_favourite,
                 'is_challenged' => (bool) optional($readerBook)->is_challenged,
                 'is_in_library' => !is_null($readerBook),
