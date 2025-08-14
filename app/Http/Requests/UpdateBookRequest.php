@@ -22,29 +22,23 @@ class UpdateBookRequest extends FormRequest
     public function rules(): array
     {
         return [
-        'title' => 'sometimes|array',
-        'title.en'=>'sometimes|string',
-        'title.ar'=>'sometimes|string',
-        'description' => 'sometimes|array',
-        'description.en'=>'sometimes|string',
-        'description.ar'=>'sometimes|string',
-        'publish_date'=>'sometimes|date',
-        'number_of_pages'=>'sometimes|integer',
-        'summary' => 'sometimes|array',
-        'summary.en'=>'sometimes|string',
-        'summary.ar'=>'sometimes|string',
-        'category_id'=>'sometimes|integer|exists:categories,id',
-        'size_category_id'=>'sometimes|integer|exists:size_categories,id',
-        'author_id'=>'sometimes|integer|exists:authors,id',
-        'book_pdf'=>'sometimes|file',
-        'cover_image'=>'sometimes|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
-        'challenge_duration' => 'sometimes|integer',
-        'challenge_points' => 'sometimes|integer',
-        'description_BookChallenge' => 'sometimes|array',
-        'description_BookChallenge.en' => 'sometimes|string',
-        'description_BookChallenge.ar' => 'sometimes|string',
-        'points' => 'sometimes|integer'
-
+            'title' => 'sometimes|array',
+            'title.en' => 'sometimes|string',
+            'title.ar' => 'sometimes|string',
+            'description' => 'sometimes|array',
+            'description.en' => 'sometimes|string',
+            'description.ar' => 'sometimes|string',
+            'publish_date' => 'sometimes|date',
+            'number_of_pages' => 'sometimes|integer',
+            'summary' => 'sometimes|array',
+            'summary.en' => 'sometimes|string',
+            'summary.ar' => 'sometimes|string',
+            'category_id' => 'sometimes|integer|exists:categories,id',
+            'size_category_id' => 'sometimes|integer|exists:size_categories,id',
+            'author_id' => 'sometimes|integer|exists:authors,id',
+            'book_file' => 'sometimes|file',
+            'cover_image' => 'sometimes|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
+            'points' => 'sometimes|integer'
         ];
     }
 }

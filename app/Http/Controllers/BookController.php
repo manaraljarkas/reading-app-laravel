@@ -6,16 +6,13 @@ use App\Http\Requests\StoreBookRequest;
 use App\Http\Requests\UpdateBookRequest;
 use App\Models\Badge;
 use App\Models\Book;
-use App\Models\BookChallenge;
 use App\Models\Category;
 use App\Models\Challenge;
 use App\Models\Comment;
 use App\Models\Reader;
 use App\Models\User;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -78,9 +75,9 @@ class BookController extends Controller
             ->through(function ($book) {
                 return [
                     'id' => $book->id,
-                    'title' => $book->getTranslation('title','en'),
-                    'author_name' => $book->author?->getTranslation('name','en'),
-                    'category' => $book->category?->getTranslation('name','en'),
+                    'title' => $book->getTranslation('title', 'en'),
+                    'author_name' => $book->author?->getTranslation('name', 'en'),
+                    'category' => $book->category?->getTranslation('name', 'en'),
                     'publish_date' => $book->publish_date,
                     'star_rate' => round($book->average_rating, 2),
                     'number_of_readers' => $book->readers_count,
@@ -116,7 +113,7 @@ class BookController extends Controller
             'description' => $book->getTranslations('description'),
             'summary' => $book->getTranslations('summary'),
             'book_challenge_duration' => $book->bookChallenges?->duration,
-            'book_challenge_points' => $book_challenge_points ,
+            'book_challenge_points' => $book_challenge_points,
             'book_challenge_participants' => $number_of_participants,
             'comments' => $comments,
         ]);
@@ -136,150 +133,70 @@ class BookController extends Controller
 
     public function store(StoreBookRequest $request)
     {
-        ini_set('max_execution_time', 360);
+        ini_set('max_execution_time', 600);
+        try {
+            $validated = $request->validated();
 
-        DB::transaction(function () use ($request) {
+            if ($request->hasFile('cover_image')) {
+                $validated['cover_image'] = Cloudinary::uploadApi()->upload(
+                    $request->file('cover_image')->getRealPath(),
+                    ['folder' => 'reading-app/covers']
+                )['secure_url'];
+            }
 
-            $coverUpload = Cloudinary::uploadApi()->upload(
-                $request->file('cover_image')->getRealPath(),
-                ['folder' => 'reading-app/covers']
-            );
-            $coverUrl = $coverUpload['secure_url'];
+            if ($request->hasFile('book_file')) {
+                $validated['book_pdf'] = Cloudinary::uploadApi()->upload(
+                    $request->file('book_file')->getRealPath(),
+                    ['folder' => 'reading-app/pdfs', 'resource_type' => 'raw']
+                )['secure_url'];
+            }
 
-            $pdfUpload = Cloudinary::uploadApi()->upload(
-                $request->file('book_file')->getRealPath(),
-                ['folder' => 'reading-app/pdfs', 'resource_type' => 'raw']
-            );
-            $pdfUrl = $pdfUpload['secure_url'];
+            $book = Book::create($validated);
 
-            $book = Book::create([
-                'title' => [
-                    'en' => $request->input('title')['en'],
-                    'ar' => $request->input('title')['ar'],
-                ],
-                'description' => [
-                    'en' => $request->input('description')['en'],
-                    'ar' => $request->input('description')['ar'],
-                ],
-                'author_id' => $request->author_id,
-                'publish_date' => $request->publish_date,
-                'number_of_pages' => $request->number_of_pages,
-                'summary' => [
-                    'en' => $request->input('summary')['en'],
-                    'ar' => $request->input('summary')['ar'],
-                ],
-                'book_pdf' => $pdfUrl,
-                'cover_image' => $coverUrl,
-                'size_category_id' => $request->size_category_id,
-                'category_id' => $request->category_id,
-                'points'=>$request->points,
-            ]);
-
-            BookChallenge::create([
-                'duration' => $request->challenge_duration,
-                'points' => $request->challenge_points,
-                'description' => [
-                    'en' => $request->input('description_BookChallenge')['en'],
-                    'ar' => $request->input('description_BookChallenge')['ar'],
-                ],
-                'book_id' => $book->id,
-            ]);
-        });
-        return response()->json([
-            'success' => true,
-            'message' => 'Book added successfully'
-        ]);
+            return response()->json([
+                'message' => 'Book created successfully',
+                'data' => $book
+            ], 201);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Failed to create book',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    public function update(UpdateBookRequest $request, string $id): JsonResponse
+    public function update(UpdateBookRequest $request, $id)
     {
-        $book = Book::find($id);
-
-        if (!$book) {
-            return response()->json(['message' => 'Book not found.'], 404);
-        }
-
+        ini_set('max_execution_time', 600);
         try {
-            DB::transaction(function () use ($book, $request) {
-                $data = $request->only([
-                    'publish_date',
-                    'number_of_pages',
-                    'category_id',
-                    'size_category_id',
-                    'author_id',
-                    'points'
-                ]);
+            $book = Book::findOrFail($id);
+            $validated = $request->validated();
 
-                if ($request->hasFile('cover_image')) {
-                    $upload = Cloudinary::uploadApi()->upload(
-                        $request->file('cover_image')->getRealPath(),
-                        ['folder' => 'reading-app/covers']
-                    );
-                    $data['cover_image'] = $upload['secure_url'];
-                }
+            if ($request->hasFile('cover_image')) {
+                $validated['cover_image'] = Cloudinary::uploadApi()->upload(
+                    $request->file('cover_image')->getRealPath(),
+                    ['folder' => 'reading-app/covers']
+                )['secure_url'];
+            }
 
-                if ($request->hasFile('book_file')) {
-                    $upload = Cloudinary::uploadApi()->upload(
-                        $request->file('book_file')->getRealPath(),
-                        ['folder' => 'reading-app/pdfs', 'resource_type' => 'raw']
-                    );
-                    $data['book_pdf'] = $upload['secure_url'];
-                }
+            if ($request->hasFile('book_file')) {
+                $validated['book_pdf'] = Cloudinary::uploadApi()->upload(
+                    $request->file('book_file')->getRealPath(),
+                    ['folder' => 'reading-app/pdfs', 'resource_type' => 'raw']
+                )['secure_url'];
+            }
 
-                // Just merge translated fields as JSON
-                foreach (['title', 'description', 'summary'] as $field) {
-                    if ($request->has($field)) {
-                        $book->$field = array_merge(
-                            (array) $book->$field,
-                            (array) $request->input($field)
-                        );
-                    }
-                }
-
-                $book->fill($data)->save();
-
-                // Update or create related challenge
-                if (
-                    $request->filled('challenge_duration') ||
-                    $request->filled('challenge_points') ||
-                    $request->has('description_BookChallenge')
-                ) {
-                    $challengeData = [];
-
-                    if ($request->filled('challenge_duration')) {
-                        $challengeData['duration'] = $request->challenge_duration;
-                    }
-
-                    if ($request->filled('challenge_points')) {
-                        $challengeData['points'] = $request->challenge_points;
-                    }
-
-                    if ($request->has('description_BookChallenge')) {
-                        $challengeData['description'] = array_merge(
-                            (array) optional($book->bookChallenges)->description,
-                            (array) $request->input('description_BookChallenge')
-                        );
-                    }
-
-                    $book->bookChallenges()->updateOrCreate(
-                        ['book_id' => $book->id],
-                        $challengeData
-                    );
-                }
-            });
+            $book->update($validated);
 
             return response()->json([
-                'message' => 'Book updated successfully.',
-                'data' => $book->refresh()
-            ]);
+                'message' => 'Book updated successfully',
+                'data' => $book
+            ], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['message' => 'Book not found'], 404);
         } catch (\Throwable $e) {
-            Log::error('Book update failed', [
-                'error' => $e->getMessage(),
-                'request' => $request->all()
-            ]);
-
             return response()->json([
-                'message' => 'Failed to update book.',
+                'message' => 'Failed to update book',
                 'error' => $e->getMessage()
             ], 500);
         }
