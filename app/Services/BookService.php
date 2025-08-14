@@ -11,7 +11,9 @@ class BookService
     public function getTopRatedBooks(int $limit = 10)
     {
         return $this->baseQuery()
-            ->whereHas('readers')
+            ->whereHas('readerBooks', function ($q) {
+                $q->whereNotNull('rating')->where('rating', '>', 0);
+            })
             ->orderByDesc('star_rate')
             ->take($limit)
             ->get();
@@ -83,7 +85,7 @@ class BookService
                 'category_name' => optional($book->category)->getTranslation('name', $locale),
                 'size_category_name' => optional($book->sizecategory)->getTranslation('name', $locale),
                 'number_of_pages' => $book->number_of_pages,
-                'progress' => $readerBook->progress,
+                'progress' => optional($readerBook)->progress ?? 0,
                 'is_favourite' => (bool) optional($readerBook)->is_favourite,
                 'is_challenged' => (bool) optional($readerBook)->is_challenged,
                 'is_in_library' => !is_null($readerBook),
@@ -93,23 +95,25 @@ class BookService
 
     private function baseQuery()
     {
+        $readerId = $this->getReaderId();
+
         return Book::with([
             'author.country',
             'category',
             'sizecategory',
-            'readerBooks' => function ($q) {
-                $q->where('reader_id', $this->getReaderId());
+            'readerBooks' => function ($q) use ($readerId) {
+                if ($readerId) {
+                    $q->where('reader_id', $readerId);
+                }
             }
         ])
             ->select('books.*')
             ->addSelect([
-                // Average star rating across all readers
                 'star_rate' => function ($query) {
                     $query->from('reader_books')
-                        ->selectRaw('AVG(rating)')
+                        ->selectRaw('COALESCE(AVG(rating), 0)')
                         ->whereColumn('reader_books.book_id', 'books.id');
                 },
-                // Count only readers with progress > 0
                 'readers_count' => function ($query) {
                     $query->from('reader_books')
                         ->selectRaw('COUNT(*)')
