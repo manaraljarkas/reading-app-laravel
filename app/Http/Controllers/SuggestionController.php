@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AddSuggestionRequest;
 use App\Models\BookSuggestion;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -66,4 +67,17 @@ class SuggestionController extends Controller
         ]);
     }
 
+    public function store(\App\Http\Requests\AddSuggestionRequest $request)
+    {
+        $user = Auth::user();
+        $suggestion = BookSuggestion::create([
+            'title' => $request->title,
+            'author_name' => $request->author_name,
+            'note' => $request->note,
+            'reader_id' => $user->reader->id
+        ]);
+        return response()->json([
+            'message' => 'Thank you! Your suggestion has been submitted successfully.',
+        ]);
+    }
 }

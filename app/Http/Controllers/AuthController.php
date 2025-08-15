@@ -3,20 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Events\ProfileUpdated;
+use App\Http\Requests\LoginRequest;
+use App\http\Requests\ProfileRequest;
+use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\StoreProfileRequest;
 use App\Http\Requests\UpdateProfileRequest;
-use App\Http\Requests\LoginRequest;
-use App\Http\Requests\RegisterRequest;
-use App\http\Requests\ProfileRequest;
 use App\Mail\WelcomeMail;
 use App\Models\Reader;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use App\Services\PermissionService;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 
 
@@ -193,3 +194,4 @@ class AuthController extends Controller
         }
     }
 }
+
