@@ -29,17 +29,13 @@ class StoreBookRequest extends FormRequest
             'description.ar' => 'required|string',
             'category_id' => 'required|integer|exists:categories,id',
             'publish_date' => 'required|date',
-            'number_of_pages' => 'integer|required',
-            'size_category_id' => 'integer|required|exists:size_categories,id',
+            'number_of_pages' => 'required|integer',
+            'size_category_id' => 'required|integer|exists:size_categories,id',
             'summary.en' => 'sometimes|string',
             'summary.ar' => 'sometimes|string',
             'book_file' => 'required|file',
             'cover_image' => 'required|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
-            'challenge_duration' => 'required|integer',
-            'challenge_points' => 'required|integer',
-            'description_BookChallenge.en' => 'required|string',
-            'description_BookChallenge.ar' => 'required|string',
-            'points' => 'integer|required'
+            'points' => 'required|integer'
         ];
     }
 }

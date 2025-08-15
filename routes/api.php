@@ -12,6 +12,7 @@ use App\Http\Controllers\ReaderController;
 use App\Http\Controllers\SuggestionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminPermissionController;
+use App\Http\Controllers\BookChallengeController;
 use App\Http\Controllers\SizeCategoryController;
 use App\Http\Controllers\ReaderBookController;
 use Illuminate\Support\Facades\DB as FacadesDB;
@@ -32,9 +33,9 @@ Route::post('/dashboard/login', [AuthController::class, 'webLogin']);
 Route::middleware('auth:sanctum')->group(function () {
     //--------------------------Auth--------------------------
     Route::post('logout', [AuthController::class, 'logout']);
-    // Route::post('auth/setup-profile', [AuthController::class, 'setupProfile']);
-    // Route::post('auth/edit-profile', [AuthController::class, 'editProfile']);
-    Route::post('/profile', [AuthController::class, 'saveProfile']);
+    Route::post('auth/setup-profile', [AuthController::class, 'setupProfile']);
+    Route::post('auth/edit-profile', [AuthController::class, 'editProfile']);
+    // Route::post('/profile', [AuthController::class, 'saveProfile']);
     Route::get('reader/getAllProfiles', [ReaderController::class, 'getAllProfiles']);
 
     Route::get('/test-db', function () {
@@ -85,7 +86,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('book/AddCommentToTheBook/{id}', [BookController::class, 'AddCommentToTheBook']);
     Route::post('book/update-reading-progress/{id}', [ReaderBookController::class, 'updateReadingProgress']);
     Route::post('book/remove-from-favorites/{id}', [ReaderBookController::class, 'removeFromFavorites']);
-
+    Route::post('/bookchallenge/update/{id}', [BookChallengeController::class, 'update']);
+    Route::post('/bookchallenge/create', [BookChallengeController::class, 'store']);
 
 
 
