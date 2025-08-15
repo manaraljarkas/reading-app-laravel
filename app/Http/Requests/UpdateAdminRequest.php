@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateAdminRequest extends FormRequest
@@ -23,7 +24,11 @@ class UpdateAdminRequest extends FormRequest
     {
         return [
             'name' => 'sometimes|string',
-            'email' => 'sometimes|email|unique:users,email',
+            'email' => [
+                'sometimes',
+                'email',
+                Rule::unique('users', 'email')->ignore($this->route('id')),
+            ],
             'password' => 'sometimes|string',
             'role' => 'sometimes|string',
         ];
