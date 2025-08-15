@@ -29,7 +29,6 @@ class UserController extends Controller
         }
     }
 
-
     public function show($adminId)
     {
         $user = Auth::user();
@@ -89,26 +88,23 @@ class UserController extends Controller
 
     public function update(UpdateAdminRequest $request, $id)
     {
-        $user = Auth::user();
-        $admin = User::findOrFail($id);
+        $admin = User::find($id);
 
-        if ($request->has('name')) {
-            $admin->name = $request->name;
-        }
-        if ($request->has('email')) {
-            $admin->email = $request->email;
-        }
-        if ($request->has('password')) {
-            $admin->password = Hash::make($request->password);
+        if (!$admin) {
+            return response()->json(['message' => 'Admin not found'], 404);
         }
 
-        $admin->save();
+        $data = $request->validated();
+
+        if (isset($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
+        }
+
+        $admin->update($data);
+
         return response()->json([
-            'success' => true,
-            'data' => [
-                'name' => $admin->name,
-                'email' => $admin->email,
-            ]
-        ]);
+            'message' => 'Admin updated successfully',
+            'data' => $admin
+        ], 200);
     }
 }
