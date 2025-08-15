@@ -27,6 +27,7 @@ Route::post('/dashboard/login', [AuthController::class, 'webLogin']);
 
 
 
+
 //---------------------Authenticated  routes---------------------------
 Route::middleware('auth:sanctum')->group(function () {
     //--------------------------Auth--------------------------
@@ -87,6 +88,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 
+
+
     // //----------------------------Category----------------------------
     //---------------------------APIs using language middleware------------------------------
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
@@ -105,19 +108,29 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 
+
+
+
     // //----------------------------Challenge--------------------------------
     Route::post('/challenge/update/{id}', [ChallengesController::class, 'update']);
     Route::apiResource('challenges', ChallengesController::class)->except(['update']);
     Route::get('/challenge/JoinToBookChallenge/{id}', [ChallengesController::class, 'JoinToBookChallenge']);
 
+      Route::get('/challenge/getAllChallenges', [ChallengesController::class, 'getAllChallenges']);
     //---------------------------APIs using language middleware------------------------------
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
         Route::get('/challenge/getchallenges', [ChallengesController::class, 'getchallenges']);
     });
 
 
+
+
+
     //----------------------------Suggestion----------------------------
     Route::post('/suggestion/Update/{id}', [SuggestionController::class, 'update']);
+
+
+
 
 
     //------------------------------------Country-------------------------------------
@@ -126,9 +139,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/country/get-trips', [CountryController::class, 'getTrips']);
 
 
+
+
     //------------------------------------Size Category-------------------------------------
     Route::apiResource('size-categories', SizeCategoryController::class);
     Route::post('/size-category/update/{size_category_id}', [SizeCategoryController::class, 'update']);
+
+
 
 
 
@@ -136,20 +153,23 @@ Route::middleware('auth:sanctum')->group(function () {
         //----------------------------Admin--------------------------------------
         Route::apiResource('admins', UserController::class);
         Route::post('/admin/update/{id}', [UserController::class, 'update']);
+
         //-----------------------------Reader-------------------------------------
         Route::apiResource('readers', ReaderController::class)->except(['store', 'update']);
-
 
         //------------------------------Permissions------------------------------------
         Route::get('/admin-permissions/{admin}', [AdminPermissionController::class, 'show']);
         Route::post('/admin-permissions/{admin}', [AdminPermissionController::class, 'update']);
         //----------------------------Complaints & Suggestions-------------------------------
         Route::get('/complaint/getComplaints', [ComplaintController::class, 'getComplaints']);
-        Route::apiResource('suggestions', SuggestionController::class)->except(['store']);
+        Route::apiResource('suggestions', SuggestionController::class);
     });
 
+    Route::post('/complaint/store', [ComplaintController::class, 'store']);
+    Route::post('/suggestion/store', [SuggestionController::class, 'store']);
     Route::get('/admin/getAdmin', [UserController::class, 'getAdmin']);
     Route::get('/admin-permissions', [AdminPermissionController::class, 'showCurrent']);
+
 
     //-----------------------------Badge-------------------------------------
     Route::post('/badge/update/{id}', [BagdeController::class, 'update']);

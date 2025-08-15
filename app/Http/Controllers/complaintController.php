@@ -23,4 +23,17 @@ class ComplaintController extends Controller
         });
         return response()->json($complaints);
     }
+
+    public function store(\App\Http\Requests\AddComplaintRequest $request)
+    {
+        $user = Auth::user();
+        $complaint = Complaint::create([
+            'subject' => $request->subject,
+            'description' => $request->description,
+            'reader_id' => $user->reader->id
+        ]);
+        return response()->json([
+            'message' => 'Thank you! Your Complaint has been submitted successfully.'
+        ]);
+    }
 }
