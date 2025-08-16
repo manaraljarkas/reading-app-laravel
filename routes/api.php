@@ -37,6 +37,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('auth/edit-profile', [AuthController::class, 'editProfile']);
     // Route::post('/profile', [AuthController::class, 'saveProfile']);
     Route::get('reader/getAllProfiles', [ReaderController::class, 'getAllProfiles']);
+    Route::post('/complaint/store', [ComplaintController::class, 'store']);
 
     Route::get('/test-db', function () {
         try {
@@ -118,7 +119,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('challenges', ChallengesController::class)->except(['update']);
     Route::get('/challenge/JoinToBookChallenge/{id}', [ChallengesController::class, 'JoinToBookChallenge']);
     Route::post('/challenge/JoinToChallenge/{id}', [ChallengesController::class, 'JoinToChallenge']);
-    
+
     Route::get('/challenge/getAllChallenges', [ChallengesController::class, 'getAllChallenges']);
 
     //---------------------------APIs using language middleware------------------------------
@@ -169,7 +170,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('suggestions', SuggestionController::class);
     });
 
-    Route::post('/complaint/store', [ComplaintController::class, 'store']);
+
     Route::post('/suggestion/store', [SuggestionController::class, 'store']);
     Route::get('/admin/getAdmin', [UserController::class, 'getAdmin']);
     Route::get('/admin-permissions', [AdminPermissionController::class, 'showCurrent']);
