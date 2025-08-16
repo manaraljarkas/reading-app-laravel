@@ -22,8 +22,8 @@ class AddComplaintRequest extends FormRequest
     public function rules(): array
     {
         return [
-        'subject'=>'required|string',
-        'description'=>'required|string'
+        'subject'=>'required|string|max:255',
+        'description'=>'required|string|max:500'
         ];
     }
 }

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use \Exception;
 use App\Models\Complaint;
 use App\Http\Requests\AddComplaintRequest;
 use Illuminate\Support\Facades\Auth;
@@ -25,18 +24,21 @@ class ComplaintController extends Controller
         return response()->json($complaints);
     }
 
-    public function store(AddComplaintRequest $request)
+    public function createComplaint(AddComplaintRequest $request)
     {
-        $reader = Auth::user()?->reader;
+        $user = Auth::user();
+        $reader = $user->reader;
 
         if (!$reader) {
-            return response()->json(['message' => 'Reader profile not found'], 404);
+            return response()->json([
+                'message' => 'Reader profile not found.',
+            ], 404);
         }
 
         $complaint = $reader->complaints()->create($request->validated());
 
         return response()->json([
-            'message' => 'Thank you! Your Complaint has been submitted successfully.',
+            'message' => 'Complaint submitted successfully.',
             'complaint' => $complaint
         ], 201);
     }
