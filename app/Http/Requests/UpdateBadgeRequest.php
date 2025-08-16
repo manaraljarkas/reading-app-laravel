@@ -26,7 +26,7 @@ class UpdateBadgeRequest extends FormRequest
             'title.ar' => 'sometimes|string',
             'achievment.en' => 'sometimes|string',
             'achievment.ar' => 'sometimes|string',
-            'image' => 'sometimes|image|mimes:jpg,jpeg,png,gif|max:2048',
+            'image' => 'sometimes|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
         ];
     }
 }

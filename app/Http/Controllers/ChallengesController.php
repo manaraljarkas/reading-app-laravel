@@ -97,39 +97,33 @@ class ChallengesController extends Controller
     public function update(UpdateChallengeRequest $request, $id)
     {
         $user = Auth::user();
+        $data = $request->validated();
 
-        $challenge = Challenge::select('id', 'title', 'description', 'points', 'duration', 'number_of_books', 'size_category_id', 'category_id')->with('sizeCategory')->with('category')->findOrFail($id);
-        if ($request->has('title.en')) {
-            $challenge->setTranslation('title', 'en', $request->input('title.en'));
+        $challenge = Challenge::findOrFail($id);
+
+        if (empty($data)) {
+            return response()->json([
+                'message' => 'No update data provided.'
+            ], 422);
         }
-        if ($request->has('title.ar')) {
-            $challenge->setTranslation('title', 'ar', $request->input('title.ar'));
+        if (isset($data['title'])) {
+            $challenge->setTranslations('title', $data['title']);
+            unset($data['title']);
         }
 
-        if ($request->has('description.en')) {
-            $challenge->setTranslation('description', 'en', $request->input('description.en'));
+        if (isset($data['description'])) {
+            $challenge->setTranslations('description', $data['description']);
+            unset($data['description']);
         }
-        if ($request->has('description.ar')) {
-            $challenge->setTranslation('description', 'ar', $request->input('description.ar'));
+
+        $challenge->update($data);
+
+        if (!empty($data)) {
+            $challenge->update($data);
+        } else {
+            $challenge->save();
         }
-        if ($request->has('points')) {
-            $challenge->points = $request->input('points');
-        }
-        if ($request->has('duration')) {
-            $challenge->duration = $request->input('duration');
-        }
-        if ($request->has('number_of_books')) {
-            $challenge->number_of_books = $request->input('number_of_books');
-        }
-        if ($request->has('size_category_id')) {
-            $challenge->size_category_id = $request->size_category_id;
-        }
-        if ($request->has('category_id')) {
-            $challenge->category_id = $request->category_id;
-        }
-        $challenge->load('sizeCategory');
-        $challenge->load('category');
-        $challenge->save();
+        $challenge->load(['sizeCategory', 'category']);
         return response()->json([
             'succes' => true,
             'message' => 'Challenge Updated Successful.',
@@ -170,7 +164,7 @@ class ChallengesController extends Controller
     public function store(StoreChallengeRequest $request)
     {
         $user = Auth::user();
-
+        $data = $request->validated();
         DB::transaction(function () use ($request) {
             $challenge = Challenge::create([
                 'title' => [
@@ -263,7 +257,8 @@ class ChallengesController extends Controller
     public function getAllChallenges()
     {
         $user = Auth::user();
-        $challenges = Challenge::with('sizeCategory', 'category', 'books','books.readerBooks')->get()->map(function ($challenge) {
+        $challenges = Challenge::with('sizeCategory', 'category', 'books', 'books.readerBooks', 'readers')->orderByDesc('created_at')->get()->map(function ($challenge) use ($user) {
+            $is_challenged = $challenge->readers->contains('id', $user->reader->id);
             return [
                 'id' => $challenge->id,
                 'title' => $challenge->title,
@@ -272,24 +267,42 @@ class ChallengesController extends Controller
                 'duration' => $challenge->duration,
                 'number_of_books' => $challenge->number_of_books,
                 'size_category_name' => $challenge->sizeCategory->name,
+                'is_challenged' => $is_challenged,
                 'category' => [
                     'id' => $challenge->category->id,
                     'name' => $challenge->category->name,
                     'icon' => $challenge->category->icon
                 ],
-                'books' => $challenge->books->map(function ($book) {
-                    $average=$book->readerBooks->avg('rating');
+                'books' => $challenge->books->map(function ($book) use ($is_challenged) {
+                    $average = $book->readerBooks->avg('rating');
+
                     return [
                         'id' => $book->id,
                         'title' => $book->title,
                         'cover_image' => $book->cover_image,
                         'number_of_pages' => $book->number_of_pages,
                         'author_name' => $book->author->name,
-                        'book_rate' => round($average,2),
+                        'book_rate' => round($average, 2),
                     ];
                 })
             ];
         });
         return response()->json(['data' => $challenges]);
     }
+
+    public function JoinToChallenge($challengeId)
+    {
+        $user = Auth::user();
+        $challenge = Challenge::findOrFail($challengeId);
+        if ($challenge->readers()->where('reader_id', '=', $user->reader->id)->exists()) {
+            return response()->json(['message' => ' You Are Already Joined to this challenge .']);
+        }
+        $challenge->readers()->attach($user->reader->id, [
+            'progress' => 'in_progress',
+            'percentage' => 0,
+            'earned_points' => 0,
+        ]);
+        return response()->json(['message' => 'Joined to challenge successfully.']);
+    }
+
 }

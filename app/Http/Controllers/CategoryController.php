@@ -46,7 +46,7 @@ class CategoryController extends Controller
                 return [
                     'id' => $category->id,
                     'icon' =>  $category->icon,
-                    'name' => $category->getTranslation('name','en'),
+                    'name' => $category->getTranslation('name', 'en'),
                     'number_of_books' => $category->books_count,
                 ];
             });
@@ -55,7 +55,7 @@ class CategoryController extends Controller
     public function store(StoreCategoryRequest $request)
     {
         $user = Auth::user();
-
+        $data = $request->validated();
         // Upload icon image to Cloudinary
         $imageUpload = Cloudinary::uploadApi()->upload(
             $request->file('icon')->getRealPath(),
@@ -81,13 +81,16 @@ class CategoryController extends Controller
     public function update(UpdateCategoryRequest $request, $id)
     {
         $user = Auth::user();
-        $category = Category::select('id', 'name', 'icon')->findOrFail($id);
-        // Update name translations
-        if ($request->has('name_en')) {
-            $category->setTranslation('name', 'en', $request->input('name_en'));
+        $data = $request->validated();
+        if (empty($data)) {
+            return response()->json([
+                'message' => 'No update data provided.'
+            ], 422);
         }
-        if ($request->has('name_ar')) {
-            $category->setTranslation('name', 'ar', $request->input('name_ar'));
+        $category = Category::findOrFail($id);
+        // Update name translations
+        if (isset($data['name'])) {
+            $category->setTranslations('name', $data['name']);
         }
         // Upload icon
         if ($request->hasFile('icon')) {
@@ -97,6 +100,7 @@ class CategoryController extends Controller
             );
             $category->icon = $imageUpload['secure_url'];
         }
+
         $category->save();
         return response()->json([
             'success' => true,

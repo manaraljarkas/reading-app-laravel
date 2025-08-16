@@ -15,15 +15,15 @@ class BagdeController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $badges = Badge::select('id','title', 'image', 'achievment')
+        $badges = Badge::select('id', 'title', 'image', 'achievment')
             ->withcount('readers')
             ->paginate(5)
             ->through(function ($badge) {
                 return [
-                    'id'=>$badge->id,
+                    'id' => $badge->id,
                     'image' => $badge->image,
-                    'title' => $badge->getTranslation('title','en'),
-                    'description' => $badge->getTranslation('achievment','en'),
+                    'title' => $badge->getTranslation('title', 'en'),
+                    'description' => $badge->getTranslation('achievment', 'en'),
                     'number_of_earners' => $badge->readers_count,
                 ];
             });
@@ -45,7 +45,7 @@ class BagdeController extends Controller
     public function store(StoreBadgeRequest $request)
     {
         $user = Auth::user();
-
+        $data = $request->validated();
         // Upload image to Cloudinary
         $imageUpload = Cloudinary::uploadApi()->upload(
             $request->file('image')->getRealPath(),
@@ -68,23 +68,26 @@ class BagdeController extends Controller
             'message' => 'Badge created successfully.',
         ]);
     }
-
-    public function update(Request $request, $id)
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(\App\Http\Requests\UpdateBadgeRequest $request, $id)
     {
         $user = Auth::user();
         $badge = Badge::findOrFail($id);
+        $data = $request->validated();
 
-        if ($request->has('title_en')) {
-            $badge->setTranslation('title', 'en', $request->input('title_en'));
+        if (empty($data)) {
+            return response()->json([
+                'message' => 'No update data provided.'
+            ], 422);
         }
-        if ($request->has('title_ar')) {
-            $badge->setTranslation('title', 'ar', $request->input('title_ar'));
+
+        if (isset($data['title'])) {
+            $badge->setTranslations('title', $data['title']);
         }
-        if ($request->has('achievment_en')) {
-            $badge->setTranslation('achievment', 'en', $request->input('achievment_en'));
-        }
-        if ($request->has('achievment_ar')) {
-            $badge->setTranslation('achievment', 'ar', $request->input('achievment_ar'));
+        if (isset($data['achievment'])) {
+            $badge->setTranslations('achievment', $data['achievment']);
         }
 
         if ($request->hasFile('image')) {
@@ -94,18 +97,16 @@ class BagdeController extends Controller
             );
             $badge->image = $imageUpload['secure_url'];
         }
-        try {
-            $badge->save();
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
+
+        $badge->save();
         return response()->json([
-            'success'=>true,
-            'message'=>'Badge updated successfully.',
-            'data'=>[
-            'title' => $badge->getTranslations('title'),
-            'achievment' => $badge->getTranslations('achievment'),
-            'image' => $badge->image,]
+            'success' => true,
+            'message' => 'Badge updated successfully.',
+            'data' => [
+                'title' => $badge->getTranslations('title'),
+                'achievment' => $badge->getTranslations('achievment'),
+                'image' => $badge->image,
+            ]
         ]);
     }
     public function show($id)

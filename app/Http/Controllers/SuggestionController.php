@@ -49,6 +49,7 @@ class SuggestionController extends Controller
         ]);
     }
 
+
     public function Update(Request $request, $suggestionId)
     {
         $admin = Auth::user();
@@ -59,6 +60,7 @@ class SuggestionController extends Controller
         ]);
 
         $suggestion->status = $request->input('status');
+
         $suggestion->save();
         return response()->json([
             'success' => true,
@@ -70,6 +72,7 @@ class SuggestionController extends Controller
     public function store(\App\Http\Requests\AddSuggestionRequest $request)
     {
         $user = Auth::user();
+        $data = $request->validated();
         $suggestion = BookSuggestion::create([
             'title' => $request->title,
             'author_name' => $request->author_name,

@@ -117,8 +117,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/challenge/update/{id}', [ChallengesController::class, 'update']);
     Route::apiResource('challenges', ChallengesController::class)->except(['update']);
     Route::get('/challenge/JoinToBookChallenge/{id}', [ChallengesController::class, 'JoinToBookChallenge']);
+    Route::post('/challenge/JoinToChallenge/{id}', [ChallengesController::class, 'JoinToChallenge']);
+    
+    Route::get('/challenge/getAllChallenges', [ChallengesController::class, 'getAllChallenges']);
 
-      Route::get('/challenge/getAllChallenges', [ChallengesController::class, 'getAllChallenges']);
     //---------------------------APIs using language middleware------------------------------
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
         Route::get('/challenge/getchallenges', [ChallengesController::class, 'getchallenges']);
