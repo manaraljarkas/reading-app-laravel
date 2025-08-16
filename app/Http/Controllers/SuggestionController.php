@@ -69,7 +69,7 @@ class SuggestionController extends Controller
         ]);
     }
 
-    public function store(\App\Http\Requests\AddSuggestionRequest $request)
+        public function store(\App\Http\Requests\AddSuggestionRequest $request)
     {
         $user = Auth::user();
         $data = $request->validated();
@@ -83,4 +83,5 @@ class SuggestionController extends Controller
             'message' => 'Thank you! Your suggestion has been submitted successfully.',
         ]);
     }
+    
 }
