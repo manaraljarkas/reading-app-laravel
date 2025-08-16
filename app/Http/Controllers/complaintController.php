@@ -6,8 +6,6 @@ use App\Models\Complaint;
 use App\Http\Requests\AddComplaintRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\JsonResponse;
-
 
 class ComplaintController extends Controller
 {
@@ -27,24 +25,49 @@ class ComplaintController extends Controller
         return response()->json($complaints);
     }
 
-    public function createComplaint(Request $request): JsonResponse
+    // public function createComplaint(AddComplaintRequest $request)
+    // {
+    //     $user = Auth::user();
+    //     $reader = $user->reader;
+
+    //     if (!$reader) {
+    //         return response()->json([
+    //             'message' => 'Reader profile not found.',
+    //         ], 404);
+    //     }
+
+    //     $complaint = $reader->complaints()->create($request->validated());
+
+    //     return response()->json([
+    //         'message' => 'Complaint submitted successfully.',
+    //         'complaint' => $complaint
+    //     ], 201);
+    // }
+
+    public function createComplaint(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             'subject' => 'required|string|max:255',
             'description' => 'required|string',
         ]);
 
-        $reader = Auth::user()->reader;
+        $reader = $this->readerOrFail();
 
-        $complaint = Complaint::create([
-            'subject'     => $request->subject,
-            'description' => $request->description,
-            'reader_id'   => $reader->id,
-        ]);
+        $complaint = new Complaint($data);
+        $complaint->reader()->associate($reader);
+        $complaint->save();
 
-        return response()->json([
-            'message' => 'Complaint created successfully',
-            'complaint' => $complaint,
-        ], 201);
+        return response()->json($complaint, 201);
+    }
+
+    private function readerOrFail()
+    {
+        $user = Auth::user();
+
+        $reader = $user?->reader;
+        if (!$reader) {
+            abort(409, 'Authenticated user has no reader profile attached.');
+        }
+        return $reader;
     }
 }
