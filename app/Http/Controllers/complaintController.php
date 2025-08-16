@@ -7,7 +7,7 @@ use App\Http\Requests\AddComplaintRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\JsonResponse;
-
+use Illuminate\Support\Facades\Log;
 
 class ComplaintController extends Controller
 {
@@ -39,13 +39,9 @@ class ComplaintController extends Controller
             return response()->json(['message' => 'Reader profile not found.'], 404);
         }
 
-        $data = $request->validate([
-            'subject' => 'required|string|max:255',
-            'description' => 'required|string|max:500',
-        ]);
-
+        $data = $request->validated();
         $data['reader_id'] = $reader->id;
-
+        Log::info('Complaint Data:', $data);
         $complaint = Complaint::create($data);
 
         return response()->json([

@@ -25,8 +25,6 @@ Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
 Route::post('/dashboard/login', [AuthController::class, 'webLogin']);
 
-Route::post('/complaint/test/{reader}', [ComplaintController::class, 'testComplaint']);
-
 
 
 //---------------------Authenticated  routes---------------------------
@@ -37,7 +35,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('auth/edit-profile', [AuthController::class, 'editProfile']);
     // Route::post('/profile', [AuthController::class, 'saveProfile']);
     Route::get('reader/getAllProfiles', [ReaderController::class, 'getAllProfiles']);
-    Route::post('/complaint/store', [ComplaintController::class, 'createComplaint']);
+    Route::post('complaint/store', [ComplaintController::class, 'createComplaint']);
 
 
 
