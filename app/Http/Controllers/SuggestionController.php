@@ -74,9 +74,9 @@ class SuggestionController extends Controller
         $user = Auth::user();
         $data = $request->validated();
         $suggestion = BookSuggestion::create([
-            'title' => $request->title,
-            'author_name' => $request->author_name,
-            'note' => $request->note,
+            'title' => $data['title'],
+            'author_name' => $data['author_name'] ??null,
+            'note' => $data['note'] ??null,
             'reader_id' => $user->reader->id
         ]);
         return response()->json([
