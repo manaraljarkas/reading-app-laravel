@@ -6,6 +6,8 @@ use App\Models\Complaint;
 use App\Http\Requests\AddComplaintRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\JsonResponse;
+
 
 class ComplaintController extends Controller
 {
@@ -25,32 +27,30 @@ class ComplaintController extends Controller
         return response()->json($complaints);
     }
 
-    public function createComplaint(AddComplaintRequest $request)
+    public function createComplaint(AddComplaintRequest $request): JsonResponse
     {
         $user = Auth::user();
-        $reader = $user->reader;
-
-        if (!$reader) {
-            return response()->json([
-                'message' => 'Reader profile not found.',
-            ], 404);
+        if (!$user) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
         }
 
-        $complaint = $reader->complaints()->create($request->validated());
+        $reader = $user->reader;
+        if (!$reader) {
+            return response()->json(['message' => 'Reader profile not found.'], 404);
+        }
 
-        return response()->json([
-            'message' => 'Complaint submitted successfully.',
-            'complaint' => $complaint
-        ], 201);
-    }
+        $data = $request->validate([
+            'subject' => 'required|string|max:255',
+            'description' => 'required|string|max:500',
+        ]);
 
-    public function testComplaint(Request $request, \App\Models\Reader $reader)
-    {
-        $data = $request->all();
         $data['reader_id'] = $reader->id;
 
         $complaint = Complaint::create($data);
 
-        return response()->json($complaint, 201);
+        return response()->json([
+            'message'   => 'Complaint submitted successfully.',
+            'complaint' => $complaint,
+        ], 201);
     }
 }
