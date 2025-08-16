@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use \Exception;
 use App\Models\Complaint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,13 +28,27 @@ class ComplaintController extends Controller
     public function store(\App\Http\Requests\AddComplaintRequest $request)
     {
         $user = Auth::user();
-        $complaint = Complaint::create([
-            'subject' => $request->subject,
-            'description' => $request->description,
-            'reader_id' => $user->reader->id
-        ]);
-        return response()->json([
-            'message' => 'Thank you! Your Complaint has been submitted successfully.'
-        ]);
+        // $complaint = Complaint::create([
+        //     'subject' => $request->subject,
+        //     'description' => $request->description,
+        //     'reader_id' => $user->reader->id
+        // ]);
+        // return response()->json([
+        //     'message' => 'Thank you! Your Complaint has been submitted successfully.'
+        // ]);
+        try {
+            $complaint = Complaint::create([
+                'subject' => $request->subject,
+                'description' => $request->description,
+                'reader_id' => $user->reader->id
+            ]);
+            return response()->json([
+                'message' => 'Thank you! Your Complaint has been submitted successfully.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }
