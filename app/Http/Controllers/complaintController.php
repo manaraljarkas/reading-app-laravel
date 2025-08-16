@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Complaint;
 use App\Http\Requests\AddComplaintRequest;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ComplaintController extends Controller
@@ -41,5 +42,15 @@ class ComplaintController extends Controller
             'message' => 'Complaint submitted successfully.',
             'complaint' => $complaint
         ], 201);
+    }
+
+    public function testComplaint(Request $request, \App\Models\Reader $reader)
+    {
+        $data = $request->all();
+        $data['reader_id'] = $reader->id;
+
+        $complaint = Complaint::create($data);
+
+        return response()->json($complaint, 201);
     }
 }
