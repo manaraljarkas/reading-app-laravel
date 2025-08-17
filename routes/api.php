@@ -71,7 +71,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/books/toread', [ReaderBookController::class, 'getToReadBooks']);
         Route::get('/books/inread', [ReaderBookController::class, 'getInReadBooks']);
         Route::get('/books/completed', [ReaderBookController::class, 'getCompletedBooks']);
-
+        Route::get('/search/books', [BookController::class, 'searchBooks']);
         Route::get('/books/GetBookChallenge/{Id}', [ChallengesController::class, 'GetBookChallenge']);
     });
 

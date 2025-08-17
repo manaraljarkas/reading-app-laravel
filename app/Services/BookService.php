@@ -127,4 +127,19 @@ class BookService
     {
         return Auth::user()?->reader?->id;
     }
+
+    public function searchBooks(?string $search = null)
+    {
+        $query = $this->baseQuery();
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('title->en', 'LIKE', "%{$search}%")
+                    ->orWhere('title->ar', 'LIKE', "%{$search}%")
+                    ->orWhere('publish_date', 'LIKE', "%{$search}%");
+            });
+        }
+
+        return $query->get();
+    }
 }
