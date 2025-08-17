@@ -56,6 +56,7 @@ Route::middleware('auth:sanctum')->group(function () {
     //---------------------------APIs using language middleware------------------------------
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
         Route::get('/author/getAuthors', [AuthorController::class, 'getAuthors']);
+        Route::get('search/authors', [AuthorController::class, 'searchAuthors']);
     });
 
 
