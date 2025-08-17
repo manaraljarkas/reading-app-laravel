@@ -76,25 +76,38 @@ class ReaderController extends Controller
     public function showProfile($readerId = null)
     {
         if ($readerId) {
-            $reader = Reader::findOrFail($readerId);
+            $reader = Reader::find($readerId); // removed findOrFail so it won't throw exception
         } else {
             $user = Auth::user();
-            if (! $user || ! $user->reader) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No authenticated reader found'
-                ], 404);
-            }
-            $reader = $user->reader;
-            $readerId = $reader->id;
+            $reader = $user ? $user->reader : null;
         }
 
-        $countService = new \App\Services\CountService($readerId);
+        if (! $reader) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile returned successfully',
+                'data' => [
+                    'first_name'        => "",
+                    'last_name'         => "",
+                    'picture'           => "",
+                    'nickname'          => "",
+                    'bio'               => "",
+                    'quote'             => "",
+                    'books_number'      => 0,
+                    'countries_number'  => 0,
+                    'challenges_number' => 0,
+                    'total_points'      => 0,
+                    'badges'            => []
+                ]
+            ]);
+        }
+
+        $countService = new \App\Services\CountService($reader->id);
 
         $locale = app()->getLocale();
         $badges = DB::table('reader_badges')
             ->join('badges', 'badges.id', '=', 'reader_badges.badge_id')
-            ->where('reader_badges.reader_id', $readerId)
+            ->where('reader_badges.reader_id', $reader->id)
             ->get()
             ->map(function ($badge) use ($locale) {
                 $title = json_decode($badge->title, true);
@@ -108,16 +121,16 @@ class ReaderController extends Controller
             'success' => true,
             'message' => 'Profile returned successfully',
             'data' => [
-                'first_name'        => $reader->first_name,
-                'last_name'        => $reader->last_name,
-                'picture'           => $reader->picture,
-                'nickname'          => $reader->nickname,
-                'bio'               => $reader->bio,
-                'quote'             => $reader->quote,
+                'first_name'        => $reader->first_name ?? "",
+                'last_name'         => $reader->last_name ?? "",
+                'picture'           => $reader->picture ?? "",
+                'nickname'          => $reader->nickname ?? "",
+                'bio'               => $reader->bio ?? "",
+                'quote'             => $reader->quote ?? "",
                 'books_number'      => $countService->countBooks(),
                 'countries_number'  => $countService->countCountries(),
                 'challenges_number' => $countService->countChallenges(),
-                'total_points'      => $reader->total_points,
+                'total_points'      => $reader->total_points ?? 0,
                 'badges'            => $badges,
             ]
         ]);
@@ -128,7 +141,7 @@ class ReaderController extends Controller
         $user = Auth::user();
         $search = $request->input('search');
 
-        $readers = Reader::select('id','first_name', 'last_name', 'picture', 'nickname', 'total_points');
+        $readers = Reader::select('id', 'first_name', 'last_name', 'picture', 'nickname', 'total_points');
 
         if ($search) {
             $readers->where(function ($query) use ($search) {

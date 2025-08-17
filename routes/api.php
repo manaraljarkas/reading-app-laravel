@@ -15,6 +15,7 @@ use App\Http\Controllers\AdminPermissionController;
 use App\Http\Controllers\BookChallengeController;
 use App\Http\Controllers\SizeCategoryController;
 use App\Http\Controllers\ReaderBookController;
+use App\Http\Controllers\SearchController;
 use Illuminate\Support\Facades\DB as FacadesDB;
 use Illuminate\Support\Facades\Route;
 
@@ -33,10 +34,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
     Route::post('auth/setup-profile', [AuthController::class, 'setupProfile']);
     Route::post('auth/edit-profile', [AuthController::class, 'editProfile']);
-    // Route::post('/profile', [AuthController::class, 'saveProfile']);
     Route::get('reader/getAllProfiles', [ReaderController::class, 'getAllProfiles']);
     Route::post('complaint/store', [ComplaintController::class, 'createComplaint']);
-
 
 
     Route::get('/test-db', function () {
@@ -97,6 +96,7 @@ Route::middleware('auth:sanctum')->group(function () {
     //---------------------------APIs using language middleware------------------------------
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
         Route::get('/category/getCategories', [CategoryController::class, 'getCategories']);
+        Route::get('search/category', [CategoryController::class, 'searchCategories']);
         Route::get('/reader/showProfile/{id}', [ReaderController::class, 'showProfile']);
         Route::get('/reader/showProfile', [ReaderController::class, 'showProfile']);
     });
@@ -108,7 +108,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('categories', CategoryController::class)->except(['show', 'destroy']);
     Route::post('/categories/follow/{category}', [CategoryController::class, 'followCategory']);
     Route::delete('/categories/unfollow/{category}', [CategoryController::class, 'unfollowCategory']);
-
 
 
 

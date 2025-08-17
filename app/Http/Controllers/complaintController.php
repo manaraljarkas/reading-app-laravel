@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Complaint;
 use App\Http\Requests\AddComplaintRequest;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ComplaintController extends Controller
@@ -25,49 +24,22 @@ class ComplaintController extends Controller
         return response()->json($complaints);
     }
 
-    // public function createComplaint(AddComplaintRequest $request)
-    // {
-    //     $user = Auth::user();
-    //     $reader = $user->reader;
-
-    //     if (!$reader) {
-    //         return response()->json([
-    //             'message' => 'Reader profile not found.',
-    //         ], 404);
-    //     }
-
-    //     $complaint = $reader->complaints()->create($request->validated());
-
-    //     return response()->json([
-    //         'message' => 'Complaint submitted successfully.',
-    //         'complaint' => $complaint
-    //     ], 201);
-    // }
-
-    public function createComplaint(Request $request)
-    {
-        $data = $request->validate([
-            'subject' => 'required|string|max:255',
-            'description' => 'required|string',
-        ]);
-
-        $reader = $this->readerOrFail();
-
-        $complaint = new Complaint($data);
-        $complaint->reader()->associate($reader);
-        $complaint->save();
-
-        return response()->json($complaint, 201);
-    }
-
-    private function readerOrFail()
+    public function createComplaint(AddComplaintRequest $request)
     {
         $user = Auth::user();
+        $reader = $user->reader;
 
-        $reader = $user?->reader;
         if (!$reader) {
-            abort(409, 'Authenticated user has no reader profile attached.');
+            return response()->json([
+                'message' => 'Reader profile not found.',
+            ], 404);
         }
-        return $reader;
+
+        $complaint = $reader->complaints()->create($request->validated());
+
+        return response()->json([
+            'message' => 'Complaint submitted successfully.',
+            'complaint' => $complaint
+        ], 201);
     }
 }
