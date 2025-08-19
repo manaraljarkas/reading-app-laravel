@@ -146,4 +146,40 @@ class AuthorController extends Controller
             ]
         ]);
     }
+
+    public function searchAuthors(Request $request)
+    {
+        $search = $request->input('search');
+        $locale = app()->getLocale();
+
+        $query = Author::withCount('books')->with('country');
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name->en', 'LIKE', "%{$search}%")
+                    ->orWhere('name->ar', 'LIKE', "%{$search}%")
+                    ->orWhereHas('country', function ($q2) use ($search) {
+                        $q2->where('name->en', 'LIKE', "%{$search}%")
+                            ->orWhere('name->ar', 'LIKE', "%{$search}%");
+                    });
+            });
+        }
+
+        $authors = $query->get();
+
+        $Authors = $authors->map(function ($author) use ($locale) {
+            return [
+                'name' => $author->getTranslation('name', $locale),
+                'id' => $author->id,
+                'country_name' => $author->country?->getTranslation('name', $locale),
+                'image' => $author->image,
+                'number_of_books' => $author->books_count,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $Authors,
+        ]);
+    }
 }

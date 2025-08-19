@@ -14,12 +14,20 @@ use App\Models\User;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Services\BookService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
 
 
 class BookController extends Controller
 {
+    protected BookService $service;
+
+    public function __construct(BookService $service)
+    {
+        $this->service = $service;
+    }
     public function getBookFile($bookId)
     {
         $user = Auth::user();
@@ -236,6 +244,17 @@ class BookController extends Controller
         ]);
         return response()->json([
             'message' => 'comment added successfully'
+        ]);
+    }
+
+    public function searchBooks(Request $request): JsonResponse
+    {
+        $search = $request->input('search');
+        $books = $this->service->searchBooks($search);
+
+        return response()->json([
+            'success' => true,
+            'data' => $this->service->transformBooks($books),
         ]);
     }
 }
