@@ -29,12 +29,7 @@ class ComplaintController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user) {
-            return response()->json(['message' => 'Unauthorized'], 401);
-        }
-        if (!$user->reader) {
-            return response()->json(['message' => 'Reader profile not found'], 404);
-        }
+        
         // $complaint = Complaint::create([
         //     'subject' => $request->subject,
         //     'description' => $request->description,

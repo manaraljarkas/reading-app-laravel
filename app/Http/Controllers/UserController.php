@@ -68,7 +68,7 @@ class UserController extends Controller
     public function getAdmin()
     {
         $user = Auth::user();
-        if ($user->role == 'admin' || $user->role == 'superAdmin') {
+        if ($user->role == 'admin' || $user->role == 'super_admin') {
             return response()->json([
                 'success' => true,
                 'data' => [

@@ -38,6 +38,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route::post('/profile', [AuthController::class, 'saveProfile']);
     Route::get('reader/getAllProfiles', [ReaderController::class, 'getAllProfiles']);
     Route::post('/complaint/store', [ComplaintController::class, 'store']);
+    Route::get('/admin/getAdmin', [UserController::class, 'getAdmin']);
 
     Route::get('/test-db', function () {
         try {
@@ -172,7 +173,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     Route::post('/suggestion/store', [SuggestionController::class, 'store']);
-    Route::get('/admin/getAdmin', [UserController::class, 'getAdmin']);
+
     Route::get('/admin-permissions', [AdminPermissionController::class, 'showCurrent']);
 
 
