@@ -36,6 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('auth/edit-profile', [AuthController::class, 'editProfile']);
     Route::get('reader/getAllProfiles', [ReaderController::class, 'getAllProfiles']);
     Route::post('complaint/store', [ComplaintController::class, 'createComplaint']);
+    Route::get('/admin/getAdmin', [UserController::class, 'getAdmin']);
 
 
     Route::get('/test-db', function () {
