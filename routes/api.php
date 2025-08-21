@@ -136,6 +136,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('suggestions', SuggestionController::class);
     });
 
+
+    Route::post('/suggestion/store', [SuggestionController::class, 'store']);
+
     Route::get('/admin/getAdmin', [UserController::class, 'getAdmin']);
     Route::get('/admin-permissions', [AdminPermissionController::class, 'showCurrent']);
 });

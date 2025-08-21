@@ -248,13 +248,15 @@ class BookController extends Controller
         $comments = Comment::with('reader')->where('book_id', '=', $bookId)->get()
             ->map(function ($comment) use ($bookId) {
                 return [
+                    'reader_id'=>$comment->reader->id,
                     'reader_name' => $comment->reader?->first_name,
                     'reader_image' => $comment->reader?->picture,
                     'reader_nickname' => $comment->reader?->nickname,
                     'comment' => $comment->comment
                 ];
             });
-        return response()->json($comments);
+        return response()->json([
+            'comments'=>$comments]);
     }
 
     public function AddCommentToTheBook($bookId, Request $request)
