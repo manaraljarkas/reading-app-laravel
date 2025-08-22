@@ -22,7 +22,7 @@ class StoreBookChallengeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'book_id' => 'required|integer|exists:books,id',
+            'book_id' => 'required|integer|exists:books,id|unique:book_challenges,book_id',
             'duration' => 'required|integer',
             'points' => 'required|integer',
             'description.en' => 'required|string',

@@ -68,6 +68,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('books/{id}', 'destroy')->middleware(['auth:sanctum', 'permission:delete book']);
     });
 
+    // Book Challenges
+    Route::controller(BookChallengeController::class)->group(function () {
+        Route::post('/bookchallenge/create', 'store')->middleware(['auth:sanctum', 'permission:create book']);
+        Route::post('/bookchallenge/update/{id}', 'update')->middleware(['auth:sanctum', 'permission:update book']);
+    });
+
     // ReaderBook actions
     Route::get('book/AddBookToFavorite/{id}', [ReaderBookController::class, 'AddBookToFavorite']);
     Route::get('book/getBookComments/{id}', [BookController::class, 'getBookComments']);
@@ -76,10 +82,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('book/AddCommentToTheBook/{id}', [BookController::class, 'AddCommentToTheBook']);
     Route::post('book/update-reading-progress/{id}', [ReaderBookController::class, 'updateReadingProgress']);
     Route::post('book/remove-from-favorites/{id}', [ReaderBookController::class, 'removeFromFavorites']);
-
-    // Book Challenges
-    Route::post('/bookchallenge/update/{id}', [BookChallengeController::class, 'update']);
-    Route::post('/bookchallenge/create', [BookChallengeController::class, 'store']);
 
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
         Route::get('/books/most-rated', [ReaderBookController::class, 'getMostRatedBooks']);
@@ -94,8 +96,16 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // ==================== Category ====================
-    Route::post('/category/update/{id}', [CategoryController::class, 'update']);
-    Route::apiResource('categories', CategoryController::class)->except(['show', 'destroy']);
+    // Route::post('/category/update/{id}', [CategoryController::class, 'update']);
+    // Route::apiResource('categories', CategoryController::class);
+
+    Route::controller(CategoryController::class)->group(function () {
+        Route::get('categories', 'index')->middleware(['auth:sanctum', 'permission:read category']);
+        Route::get('categories/{id}', 'show')->middleware(['auth:sanctum', 'permission:read category']);
+        Route::post('categories', 'store')->middleware(['auth:sanctum', 'permission:create category']);
+        Route::post('/category/update/{id}', 'update')->middleware(['auth:sanctum', 'permission:update category']);
+        Route::delete('categories/{id}', 'destroy')->middleware(['auth:sanctum', 'permission:delete category']);
+    });
     Route::get('/category/getCategories', [CategoryController::class, 'getCategories']);
     Route::post('/categories/follow/{category}', [CategoryController::class, 'followCategory']);
     Route::delete('/categories/unfollow/{category}', [CategoryController::class, 'unfollowCategory']);
@@ -121,8 +131,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/suggestion/store', [SuggestionController::class, 'store']);
 
     // ==================== Country ====================
-    Route::apiResource('countries', CountryController::class);
-    Route::post('/country/update/{country_id}', [CountryController::class, 'update']);
+    Route::controller(CountryController::class)->group(function () {
+        Route::get('countries', 'index')->middleware(['auth:sanctum', 'permission:read country']);
+        Route::get('countries/{country_id}', 'show')->middleware(['auth:sanctum', 'permission:read country']);
+        Route::post('countries', 'store')->middleware(['auth:sanctum', 'permission:create country']);
+        Route::post('/country/update/{country_id}', 'update')->middleware(['auth:sanctum', 'permission:update country']);
+        Route::delete('countries/{country_id}', 'destroy')->middleware(['auth:sanctum', 'permission:delete country']);
+    });
     Route::get('/country/get-trips', [CountryController::class, 'getTrips']);
 
     // ==================== Size Category ====================
