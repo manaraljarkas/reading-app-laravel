@@ -56,6 +56,7 @@ class AuthorController extends Controller
 
     public function store(StoreAuthoreRequest $request)
     {
+        ini_set('max_execution_time', 360);
         $user = Auth::user();
         $data = $request->validated();
         $imageUrl = null;
@@ -78,6 +79,7 @@ class AuthorController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Author created successfully.',
+            'data' => $author
         ]);
     }
 
@@ -97,6 +99,7 @@ class AuthorController extends Controller
      */
     public function update(UpdateAuthorRequest $request, $id)
     {
+        ini_set('max_execution_time', 360);
         $user = Auth::user();
         $data = $request->validated();
         $author = Author::with('country')->findOrFail($id);

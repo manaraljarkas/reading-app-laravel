@@ -43,8 +43,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     // ==================== Author ====================
-    Route::post('/author/update/{id}', [AuthorController::class, 'update']);
-    Route::apiResource('authors', AuthorController::class);
+    Route::controller(AuthorController::class)->group(function () {
+        Route::get('authors', 'index')->middleware(['auth:sanctum', 'permission:read author']);
+        Route::get('authors/{id}', 'show')->middleware(['auth:sanctum', 'permission:read author']);
+        Route::post('authors', 'store')->middleware(['auth:sanctum', 'permission:create author']);
+        Route::post('/author/update/{id}', 'update')->middleware(['auth:sanctum', 'permission:update author']);
+        Route::delete('authors/{id}', 'destroy')->middleware(['auth:sanctum', 'permission:delete author']);
+    });
+
 
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
         Route::get('/author/getAuthors', [AuthorController::class, 'getAuthors']);
@@ -54,8 +60,13 @@ Route::middleware('auth:sanctum')->group(function () {
     // ==================== Book ====================
     Route::get('book/getBookFile/{BookId}', [BookController::class, 'getBookFile']);
     Route::get('book/getNumbers', [BookController::class, 'getNumbers']);
-    Route::apiResource('books', BookController::class);
-    Route::post('/book/update/{id}', [BookController::class, 'update']);
+    Route::controller(BookController::class)->group(function () {
+        Route::get('books', 'index')->middleware(['auth:sanctum', 'permission:read book']);
+        Route::get('books/{id}', 'show')->middleware(['auth:sanctum', 'permission:read book']);
+        Route::post('books', 'store')->middleware(['auth:sanctum', 'permission:create book']);
+        Route::post('/book/update/{id}', 'update')->middleware(['auth:sanctum', 'permission:update book']);
+        Route::delete('books/{id}', 'destroy')->middleware(['auth:sanctum', 'permission:delete book']);
+    });
 
     // ReaderBook actions
     Route::get('book/AddBookToFavorite/{id}', [ReaderBookController::class, 'AddBookToFavorite']);
