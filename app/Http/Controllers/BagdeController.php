@@ -44,9 +44,9 @@ class BagdeController extends Controller
 
     public function store(StoreBadgeRequest $request)
     {
+        ini_set('max_execution_time', 360);
         $user = Auth::user();
         $data = $request->validated();
-        // Upload image to Cloudinary
         $imageUpload = Cloudinary::uploadApi()->upload(
             $request->file('image')->getRealPath(),
             ['folder' => 'reading-app/badges']
@@ -66,6 +66,7 @@ class BagdeController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Badge created successfully.',
+            'data' => $badges
         ]);
     }
     /**
@@ -73,6 +74,7 @@ class BagdeController extends Controller
      */
     public function update(\App\Http\Requests\UpdateBadgeRequest $request, $id)
     {
+        ini_set('max_execution_time', 360);
         $user = Auth::user();
         $badge = Badge::findOrFail($id);
         $data = $request->validated();

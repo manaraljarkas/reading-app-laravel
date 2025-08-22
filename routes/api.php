@@ -119,8 +119,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/size-category/update/{size_category_id}', [SizeCategoryController::class, 'update']);
 
     // ==================== Badge ====================
-    Route::post('/badge/update/{id}', [BagdeController::class, 'update']);
-    Route::apiResource('badges', BagdeController::class);
+    Route::controller(BagdeController::class)->group(function () {
+        Route::get('badges', 'index')->middleware(['auth:sanctum', 'permission:read badge']);
+        Route::get('badges/{id}', 'show')->middleware(['auth:sanctum', 'permission:read badge']);
+        Route::post('badges', 'store')->middleware(['auth:sanctum', 'permission:create badge']);
+        Route::post('/badge/update/{id}', 'update')->middleware(['auth:sanctum', 'permission:update badge']);
+        Route::delete('badges/{id}', 'destroy')->middleware(['auth:sanctum', 'permission:delete badge']);
+    });
 
     // ==================== Admin (Super Admin Only) ====================
     Route::middleware('role:super_admin')->group(function () {
