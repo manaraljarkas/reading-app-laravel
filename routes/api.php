@@ -96,9 +96,6 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // ==================== Category ====================
-    // Route::post('/category/update/{id}', [CategoryController::class, 'update']);
-    // Route::apiResource('categories', CategoryController::class);
-
     Route::controller(CategoryController::class)->group(function () {
         Route::get('categories', 'index')->middleware(['auth:sanctum', 'permission:read category']);
         Route::get('categories/{id}', 'show')->middleware(['auth:sanctum', 'permission:read category']);
@@ -116,8 +113,15 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // ==================== Challenge ====================
-    Route::post('/challenge/update/{id}', [ChallengesController::class, 'update']);
-    Route::apiResource('challenges', ChallengesController::class)->except(['update']);
+    // Route::post('/challenge/update/{id}', [ChallengesController::class, 'update']);
+    // Route::apiResource('challenges', ChallengesController::class)->except(['update']);
+    Route::controller(ChallengesController::class)->group(function () {
+        Route::get('challenges', 'index')->middleware(['auth:sanctum', 'permission:read challenge']);
+        Route::get('challenges/{id}', 'show')->middleware(['auth:sanctum', 'permission:read challenge']);
+        Route::post('challenges', 'store')->middleware(['auth:sanctum', 'permission:create challenge']);
+        Route::post('/challenge/update/{id}', 'update')->middleware(['auth:sanctum', 'permission:update challenge']);
+        Route::delete('challenges/{id}', 'destroy')->middleware(['auth:sanctum', 'permission:delete challenge']);
+    });
     Route::get('/challenge/JoinToBookChallenge/{id}', [ChallengesController::class, 'JoinToBookChallenge']);
     Route::post('/challenge/JoinToChallenge/{id}', [ChallengesController::class, 'JoinToChallenge']);
     Route::get('/challenge/getAllChallenges', [ChallengesController::class, 'getAllChallenges']);

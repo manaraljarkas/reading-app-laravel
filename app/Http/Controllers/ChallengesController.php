@@ -163,35 +163,31 @@ class ChallengesController extends Controller
     }
     public function store(StoreChallengeRequest $request)
     {
-        $user = Auth::user();
         $data = $request->validated();
-        DB::transaction(function () use ($request) {
+
+        DB::transaction(function () use ($data) {
             $challenge = Challenge::create([
                 'title' => [
-                    'en' => $request->input('title')['en'],
-                    'ar' => $request->input('title')['ar']
+                    'en' => $data['title']['en'],
+                    'ar' => $data['title']['ar']
                 ],
                 'description' => [
-                    'en' => $request->input('description')['en'],
-                    'ar' => $request->input('description')['ar']
+                    'en' => $data['description']['en'],
+                    'ar' => $data['description']['ar']
                 ],
-                'points' => $request->points,
-                'number_of_books' => $request->number_of_books,
-                'duration' => $request->duration,
-                'category_id' => $request->category_id,
-                'size_category_id' => $request->size_category_id,
+                'points' => $data['points'],
+                'number_of_books' => $data['number_of_books'],
+                'duration' => $data['duration'],
+                'category_id' => $data['category_id'],
+                'size_category_id' => $data['size_category_id'],
             ]);
-            $number_of_books = $request->number_of_books;
-            $ids_books = $request->ids_books;
 
-            if ($request->has('ids_books')) {
-                $bookIds = $request->ids_books;
-
-                if (count($bookIds) > $number_of_books) {
+            if (!empty($data['ids_books'])) {
+                if (count($data['ids_books']) > $data['number_of_books']) {
                     abort(400, 'The number of entered books is more than the number of challenge books.');
                 }
 
-                foreach ($bookIds as $book_id) {
+                foreach ($data['ids_books'] as $book_id) {
                     DB::table('challenge_books')->insert([
                         'challenge_id' => $challenge->id,
                         'book_id' => $book_id,
@@ -201,12 +197,13 @@ class ChallengesController extends Controller
                 }
             }
         });
+
         return response()->json([
             'success' => true,
-            'message' => 'Challenge added successfully'
+            'message' => 'Challenge added successfully',
+            'data' => $data
         ]);
     }
-
 
     public function GetBookChallenge($bookId)
     {
@@ -304,5 +301,4 @@ class ChallengesController extends Controller
         ]);
         return response()->json(['message' => 'Joined to challenge successfully.']);
     }
-
 }
