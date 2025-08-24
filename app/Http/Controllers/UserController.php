@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreAdminRequest;
 use App\Http\Requests\UpdateAdminRequest;
+use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -49,6 +50,7 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => 'admin',
+            'is_password_changed' => false
         ]);
 
         return response()->json(['message' => 'Admin addedd sueccsufly']);
@@ -106,5 +108,29 @@ class UserController extends Controller
             'message' => 'Admin updated successfully',
             'data' => $admin
         ], 200);
+    }
+
+    public function changePassword(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['message' => 'User not found.'], 404);
+        }
+
+        if (!$request->filled('new_password')) {
+            return response()->json(['message' => 'No password provided.'], 422);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->new_password),
+            'is_password_changed' => true,
+        ]);
+
+        return response()->json([
+            'message' => 'Password updated successfully.',
+            'data' => $user,
+        ]);
     }
 }

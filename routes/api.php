@@ -174,6 +174,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/suggestion/store', [SuggestionController::class, 'store']);
 
+    Route::post('/admin/change-password', [UserController::class, 'changePassword']);
     Route::get('/admin/getAdmin', [UserController::class, 'getAdmin']);
     Route::get('/admin-permissions', [AdminPermissionController::class, 'showCurrent']);
 });
