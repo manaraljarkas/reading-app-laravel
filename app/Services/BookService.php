@@ -79,6 +79,7 @@ class BookService
                     ? CountryHelper::countryToEmoji($book->author->country->code)
                     : null,
                 'publish_date' => $book->publish_date,
+                 'summary' => $book->summary,
                 'cover_image' => $book->cover_image,
                 'points' => $book->points,
                 'star_rate' => round($book->star_rate),
