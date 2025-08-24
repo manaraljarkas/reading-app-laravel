@@ -42,4 +42,20 @@ class ComplaintController extends Controller
             'complaint' => $complaint
         ], 201);
     }
+    public function destroy($compalintId)
+    {
+        $user = Auth::user();
+        $complaint = Complaint::findOrfail($compalintId);
+        if (!$complaint) {
+            return response()->json([
+                'success' => false,
+                'message' => 'complaint not found'
+            ]);
+        }
+        $complaint->delete();
+        return response()->json([
+            'success' => true,
+            'message' => 'complaint deleted successfuly'
+        ]);
+    }
 }

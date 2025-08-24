@@ -37,7 +37,10 @@ class CountService
             ->distinct('authors.country_id')
             ->count('authors.country_id');
     }
-
+    public function Number_of_books_in_favorites()
+    {
+        return DB::table('reader_books')->where('reader_id', '=', $this->readerId)->where('is_favourite',1)->count();
+    }
     public function countBadges()
     {
         return DB::table('reader_badges')

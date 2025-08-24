@@ -6,7 +6,8 @@ use App\Http\Requests\StoreSizeCategoryRequest;
 use App\Http\Requests\UpdateSizeCategoryRequest;
 use App\Models\SizeCategory;
 use Illuminate\Http\JsonResponse;
-
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 class SizeCategoryController extends Controller
 {
     /**
@@ -98,5 +99,21 @@ class SizeCategoryController extends Controller
         return response()->json([
             'message' => 'Size category deleted successfully.',
         ]);
+    }
+    public function search(Request $request)
+    {
+        $user = Auth::user();
+        $search = $request->input('search');
+        $query = SizeCategory::query();
+        if ($search) {
+            $query->where('name->en', 'LIKE', "%{$search}%");
+        }
+        $sizeCategories = $query->get()->map(function ($sizecategory) {
+            return [
+                'id' => $sizecategory->id,
+                'name' => $sizecategory->getTranslation('name', 'en'),
+            ];
+        });
+        return response()->json(['size_categories' => $sizeCategories]);
     }
 }

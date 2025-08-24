@@ -15,56 +15,78 @@ use App\Http\Controllers\AdminPermissionController;
 use App\Http\Controllers\BookChallengeController;
 use App\Http\Controllers\SizeCategoryController;
 use App\Http\Controllers\ReaderBookController;
-use App\Http\Controllers\SearchController;
-use Illuminate\Support\Facades\DB as FacadesDB;
 use Illuminate\Support\Facades\Route;
 
 
 
-//      Unauthenticated  routes
+// ==================== Unauthenticated Routes ====================
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
 Route::post('/dashboard/login', [AuthController::class, 'webLogin']);
 
 
-
-//---------------------Authenticated  routes---------------------------
+// ==================== Authenticated Routes ====================
 Route::middleware('auth:sanctum')->group(function () {
-    //--------------------------Auth--------------------------
+
+    // ---------- Authentication ----------
     Route::post('logout', [AuthController::class, 'logout']);
     Route::post('auth/setup-profile', [AuthController::class, 'setupProfile']);
     Route::post('auth/edit-profile', [AuthController::class, 'editProfile']);
+
+    // ---------- Reader ----------
     Route::get('reader/getAllProfiles', [ReaderController::class, 'getAllProfiles']);
+    Route::get('/reader/showProfile/{id}', [ReaderController::class, 'showProfile']);
+    Route::get('/reader/showProfile', [ReaderController::class, 'showProfile']);
+    Route::get('/reader/search', [ReaderController::class, 'search']);
+
+    // ---------- Complaint ----------
     Route::post('complaint/store', [ComplaintController::class, 'createComplaint']);
-    Route::get('/admin/getAdmin', [UserController::class, 'getAdmin']);
 
 
-    Route::get('/test-db', function () {
-        try {
-            FacadesDB::connection()->getPdo();
-            return response()->json(['message' => 'Database connection is active.']);
-        } catch (\Exception $e) {
-            return response()->json(['message' => 'Database connection failed: ' . $e->getMessage()], 500);
-        }
+    // ==================== Author ====================
+    Route::controller(AuthorController::class)->group(function () {
+        Route::get('authors', 'index')->middleware(['auth:sanctum', 'permission:read author']);
+        Route::get('authors/{id}', 'show')->middleware(['auth:sanctum', 'permission:read author']);
+        Route::post('authors', 'store')->middleware(['auth:sanctum', 'permission:create author']);
+        Route::post('/author/update/{id}', 'update')->middleware(['auth:sanctum', 'permission:update author']);
+        Route::delete('authors/{id}', 'destroy')->middleware(['auth:sanctum', 'permission:delete author']);
     });
+    Route::get('/author/search', [AuthorController::class, 'search']);
 
-
-    //--------------------------Author------------------------
-    Route::post('/author/update/{id}', [AuthorController::class, 'update']);
-    Route::apiResource('authors', AuthorController::class);
-
-
-    //---------------------------APIs using language middleware------------------------------
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
         Route::get('/author/getAuthors', [AuthorController::class, 'getAuthors']);
         Route::get('search/authors', [AuthorController::class, 'searchAuthors']);
     });
 
+    // ==================== Book ====================
+    Route::get('book/getBookFile/{BookId}', [BookController::class, 'getBookFile']);
+    Route::get('book/getNumbers', [BookController::class, 'getNumbers']);
+    Route::get('book/search', [BookController::class, 'search']);
+    Route::get('/book/SearchBookINCategory/{id}', [BookController::class, 'SearchBookINCategory']);
+    Route::controller(BookController::class)->group(function () {
+        Route::get('books', 'index')->middleware(['auth:sanctum', 'permission:read book']);
+        Route::get('books/{id}', 'show')->middleware(['auth:sanctum', 'permission:read book']);
+        Route::post('books', 'store')->middleware(['auth:sanctum', 'permission:create book']);
+        Route::post('/book/update/{id}', 'update')->middleware(['auth:sanctum', 'permission:update book']);
+        Route::delete('books/{id}', 'destroy')->middleware(['auth:sanctum', 'permission:delete book']);
+    });
 
+    // Book Challenges
+    Route::controller(BookChallengeController::class)->group(function () {
+        Route::post('/bookchallenge/create', 'store')->middleware(['auth:sanctum', 'permission:create book']);
+        Route::post('/bookchallenge/update/{id}', 'update')->middleware(['auth:sanctum', 'permission:update book']);
+    });
 
-    //---------------------------Book--------------------------
+    // ReaderBook actions
+    Route::get('book/AddBookToFavorite/{id}', [ReaderBookController::class, 'AddBookToFavorite']);
+    Route::get('book/getBookComments/{id}', [BookController::class, 'getBookComments']);
+    Route::get('book/AddBookToDoList/{id}', [ReaderBookController::class, 'AddBookToDoList']);
+    Route::post('book/RateBook/{id}', [ReaderBookController::class, 'RateBook']);
+    Route::post('book/AddCommentToTheBook/{id}', [BookController::class, 'AddCommentToTheBook']);
+    Route::post('book/update-reading-progress/{id}', [ReaderBookController::class, 'updateReadingProgress']);
+    Route::post('book/remove-from-favorites/{id}', [ReaderBookController::class, 'removeFromFavorites']);
+    Route::get('book/getReaderBookInfo', [ReaderBookController::class, 'getReaderBookInfo']);
 
-    //---------------------------APIs using language middleware------------------------------
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
         Route::get('/books/most-rated', [ReaderBookController::class, 'getMostRatedBooks']);
         Route::get('/books/author-books/{authorId}', [ReaderBookController::class, 'getAuthorBooks']);
@@ -77,96 +99,85 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/books/GetBookChallenge/{Id}', [ChallengesController::class, 'GetBookChallenge']);
     });
 
-    Route::get('book/getBookFile/{BookId}', [BookController::class, 'getBookFile']);
-    Route::get('book/getNumbers', [BookController::class, 'getNumbers']);
-    Route::apiResource('books', BookController::class);
-    Route::post('/book/update/{id}', [BookController::class, 'update']);
-    Route::get('book/AddBookToFavorite/{id}', [ReaderBookController::class, 'AddBookToFavorite']);
-    Route::get('book/getBookComments/{id}', [BookController::class, 'getBookComments']);
-    Route::get('book/AddBookToDoList/{id}', [ReaderBookController::class, 'AddBookToDoList']);
-    Route::post('book/RateBook/{id}', [ReaderBookController::class, 'RateBook']);
-    Route::post('book/AddCommentToTheBook/{id}', [BookController::class, 'AddCommentToTheBook']);
-    Route::post('book/update-reading-progress/{id}', [ReaderBookController::class, 'updateReadingProgress']);
-    Route::post('book/remove-from-favorites/{id}', [ReaderBookController::class, 'removeFromFavorites']);
-    Route::post('/bookchallenge/update/{id}', [BookChallengeController::class, 'update']);
-    Route::post('/bookchallenge/create', [BookChallengeController::class, 'store']);
+    // ==================== Category ====================
+    Route::controller(CategoryController::class)->group(function () {
+        Route::get('categories', 'index')->middleware(['auth:sanctum', 'permission:read category']);
+        Route::get('categories/{id}', 'show')->middleware(['auth:sanctum', 'permission:read category']);
+        Route::post('categories', 'store')->middleware(['auth:sanctum', 'permission:create category']);
+        Route::post('/category/update/{id}', 'update')->middleware(['auth:sanctum', 'permission:update category']);
+        Route::delete('categories/{id}', 'destroy')->middleware(['auth:sanctum', 'permission:delete category']);
+    });
+    Route::get('/category/getCategories', [CategoryController::class, 'getCategories']);
+    Route::post('/categories/follow/{category}', [CategoryController::class, 'followCategory']);
+    Route::delete('/categories/unfollow/{category}', [CategoryController::class, 'unfollowCategory']);
+    Route::get('/category/search', [CategoryController::class, 'search']);
+    Route::get('/book/SearchBookINCategory', [BookController::class, 'SearchBookINCategory']);
 
 
-
-
-    // //----------------------------Category----------------------------
-    //---------------------------APIs using language middleware------------------------------
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
         Route::get('/category/getCategories', [CategoryController::class, 'getCategories']);
         Route::get('search/category', [CategoryController::class, 'searchCategories']);
-        Route::get('/reader/showProfile/{id}', [ReaderController::class, 'showProfile']);
-        Route::get('/reader/showProfile', [ReaderController::class, 'showProfile']);
     });
 
-    Route::post('/category/update/{id}', [CategoryController::class, 'update']);
-    Route::apiResource('categories', CategoryController::class);
-    Route::get('/category/getCategories', [CategoryController::class, 'getCategories']);
-    Route::post('/category/update/{id}', [CategoryController::class, 'update']);
-    Route::apiResource('categories', CategoryController::class)->except(['show', 'destroy']);
-    Route::post('/categories/follow/{category}', [CategoryController::class, 'followCategory']);
-    Route::delete('/categories/unfollow/{category}', [CategoryController::class, 'unfollowCategory']);
-
-
-
-
-
-    // //----------------------------Challenge--------------------------------
-    Route::post('/challenge/update/{id}', [ChallengesController::class, 'update']);
-    Route::apiResource('challenges', ChallengesController::class)->except(['update']);
+    // ==================== Challenge ====================
+    // Route::post('/challenge/update/{id}', [ChallengesController::class, 'update']);
+    // Route::apiResource('challenges', ChallengesController::class)->except(['update']);
+    Route::controller(ChallengesController::class)->group(function () {
+        Route::get('challenges', 'index')->middleware(['auth:sanctum', 'permission:read challenge']);
+        Route::get('challenges/{id}', 'show')->middleware(['auth:sanctum', 'permission:read challenge']);
+        Route::post('challenges', 'store')->middleware(['auth:sanctum', 'permission:create challenge']);
+        Route::post('/challenge/update/{id}', 'update')->middleware(['auth:sanctum', 'permission:update challenge']);
+        Route::delete('challenges/{id}', 'destroy')->middleware(['auth:sanctum', 'permission:delete challenge']);
+    });
     Route::get('/challenge/JoinToBookChallenge/{id}', [ChallengesController::class, 'JoinToBookChallenge']);
     Route::post('/challenge/JoinToChallenge/{id}', [ChallengesController::class, 'JoinToChallenge']);
-
     Route::get('/challenge/getAllChallenges', [ChallengesController::class, 'getAllChallenges']);
+    Route::get('/challenge/search', [ChallengesController::class, 'search']);
 
-    //---------------------------APIs using language middleware------------------------------
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
         Route::get('/challenge/getchallenges', [ChallengesController::class, 'getchallenges']);
     });
 
-
-
-
-
-    //----------------------------Suggestion----------------------------
+    // ==================== Suggestion ====================
     Route::post('/suggestion/Update/{id}', [SuggestionController::class, 'update']);
+    Route::post('/suggestion/store', [SuggestionController::class, 'store']);
 
-
-
-
-
-    //------------------------------------Country-------------------------------------
-    Route::apiResource('countries', CountryController::class);
-    Route::post('/country/update/{country_id}', [CountryController::class, 'update']);
+    // ==================== Country ====================
+    Route::controller(CountryController::class)->group(function () {
+        Route::get('countries', 'index')->middleware(['auth:sanctum', 'permission:read country']);
+        Route::get('countries/{country_id}', 'show')->middleware(['auth:sanctum', 'permission:read country']);
+        Route::post('countries', 'store')->middleware(['auth:sanctum', 'permission:create country']);
+        Route::post('/country/update/{country_id}', 'update')->middleware(['auth:sanctum', 'permission:update country']);
+        Route::delete('countries/{country_id}', 'destroy')->middleware(['auth:sanctum', 'permission:delete country']);
+    });
     Route::get('/country/get-trips', [CountryController::class, 'getTrips']);
+    Route::get('/country/searchCountry', [CountryController::class, 'searchCountry']);
 
-
-
-
-    //------------------------------------Size Category-------------------------------------
+    // ==================== Size Category ====================
     Route::apiResource('size-categories', SizeCategoryController::class);
     Route::post('/size-category/update/{size_category_id}', [SizeCategoryController::class, 'update']);
+    Route::get('/size-category/search', [SizeCategoryController::class,'search']);
 
+    // ==================== Badge ====================
+     Route::get('/badge/search', [BagdeController::class, 'search']);
+    Route::controller(BagdeController::class)->group(function () {
+        Route::get('badges', 'index')->middleware(['auth:sanctum', 'permission:read badge']);
+        Route::get('badges/{id}', 'show')->middleware(['auth:sanctum', 'permission:read badge']);
+        Route::post('badges', 'store')->middleware(['auth:sanctum', 'permission:create badge']);
+        Route::post('/badge/update/{id}', 'update')->middleware(['auth:sanctum', 'permission:update badge']);
+        Route::delete('badges/{id}', 'destroy')->middleware(['auth:sanctum', 'permission:delete badge']);
+    });
 
-
-
-
-    Route::middleware(['auth:sanctum', 'role:super_admin'])->group(function () {
-        //----------------------------Admin--------------------------------------
+    // ==================== Admin (Super Admin Only) ====================
+    Route::middleware('role:super_admin')->group(function () {
         Route::apiResource('admins', UserController::class);
         Route::post('/admin/update/{id}', [UserController::class, 'update']);
 
-        //-----------------------------Reader-------------------------------------
         Route::apiResource('readers', ReaderController::class)->except(['store', 'update']);
 
-        //------------------------------Permissions------------------------------------
         Route::get('/admin-permissions/{admin}', [AdminPermissionController::class, 'show']);
         Route::post('/admin-permissions/{admin}', [AdminPermissionController::class, 'update']);
-        //----------------------------Complaints & Suggestions-------------------------------
+
         Route::get('/complaint/getComplaints', [ComplaintController::class, 'getComplaints']);
         Route::apiResource('suggestions', SuggestionController::class);
     });
@@ -174,10 +185,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/suggestion/store', [SuggestionController::class, 'store']);
 
+    Route::get('/admin/getAdmin', [UserController::class, 'getAdmin']);
     Route::get('/admin-permissions', [AdminPermissionController::class, 'showCurrent']);
-
-
-    //-----------------------------Badge-------------------------------------
-    Route::post('/badge/update/{id}', [BagdeController::class, 'update']);
-    Route::apiResource('badges', BagdeController::class);
+    Route::get('/admin/search', [UserController::class, 'search']);
 });

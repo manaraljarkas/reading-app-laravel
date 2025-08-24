@@ -216,7 +216,7 @@ class BookController extends Controller
         $comments = Comment::with('reader')->where('book_id', '=', $bookId)->get()
             ->map(function ($comment) use ($bookId) {
                 return [
-                    'reader_id'=>$comment->reader->id,
+                    'reader_id' => $comment->reader->id,
                     'reader_name' => $comment->reader?->first_name,
                     'reader_image' => $comment->reader?->picture,
                     'reader_nickname' => $comment->reader?->nickname,
@@ -224,7 +224,8 @@ class BookController extends Controller
                 ];
             });
         return response()->json([
-            'comments'=>$comments]);
+            'comments' => $comments
+        ]);
     }
 
     public function AddCommentToTheBook($bookId, Request $request)
@@ -259,4 +260,19 @@ class BookController extends Controller
             'data' => $this->service->transformBooks($books),
         ]);
     }
+
+    public function SearchBookINCategory(Request $request, $categoryId)
+    {
+        $search = $request->input('search');
+        $locale=app()->getLocale();
+
+        $books = $this->service->SearchbookWithCategory($categoryId, $search);
+
+        return response()->json([
+            'success' => true,
+            'data' => $this->service->transformBooks($books),
+        ]);
+    }
+
+
 }

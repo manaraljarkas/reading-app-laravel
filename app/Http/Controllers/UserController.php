@@ -7,7 +7,7 @@ use App\Http\Requests\UpdateAdminRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-
+use Illuminate\Http\Request;
 class UserController extends Controller
 {
     public function index()
@@ -106,5 +106,23 @@ class UserController extends Controller
             'message' => 'Admin updated successfully',
             'data' => $admin
         ], 200);
+    }
+    public function search(Request $request)
+    {
+        $user = Auth::user();
+        $search = $request->input('search');
+        $query = User::where('role', 'admin')->select('id', 'name', 'email');
+        if ($search) {
+            $query->where('name', 'LIKE', "%{$search}%");
+        }
+        $admins = $query->paginate(5)->through(function ($admin) {
+            return [
+                'id' => $admin->id,
+                'name' => $admin->name,
+                'email' => $admin->email
+            ];
+        });
+
+        return response()->json(['admins' => $admins]);
     }
 }

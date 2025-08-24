@@ -2,9 +2,10 @@
 
 namespace App\Services;
 
+use App\Helpers\CountryHelper;
 use App\Models\Book;
 use Illuminate\Support\Facades\Auth;
-use App\Helpers\CountryHelper;
+use Illuminate\Support\Facades\DB;
 
 class BookService
 {
@@ -141,5 +142,28 @@ class BookService
         }
 
         return $query->get();
+    }
+
+    public function SearchbookWithCategory($categoryId, ?string $search = null)
+    {
+        $query = $this->baseQuery()->where('category_id', $categoryId);
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('title->en', 'LIKE', "%{$search}%")
+                    ->orWhere('title->ar', 'LIKE', "%{$search}%")
+                    ->orWhere('publish_date', 'LIKE', "%{$search}%");
+            });
+        }
+
+        return $query->get();
+    }
+    public function CalculatingTheAverage()
+    {
+        $readerId = $this->getReaderId();
+        if (!$readerId) return null;
+        return DB::table('reader_books')
+            ->where('reader_id', $readerId)
+            ->avg('rating');
     }
 }

@@ -161,4 +161,24 @@ class ReaderController extends Controller
             'data' => $results,
         ]);
     }
+    public function search(Request $request)
+    {
+        $user = Auth::user();
+        $search = $request->input('search');
+        $query = Reader::select('id', 'first_name','last_name','picture');
+        if ($search) {
+            $query->where('first_name', 'LIKE', "%{$search}%")->
+            orwhere('last_name','LIKE', "%{$search}%");
+        }
+        $readers = $query->paginate(5)->through(function ($reader) {
+            return [
+                'id' => $reader->id,
+                'first_name' => $reader->first_name,
+                'last_name'=>$reader->last_name,
+                'picture' => $reader->picture
+            ];
+        });
+
+        return response()->json(['readers' => $readers]);
+    }
 }
