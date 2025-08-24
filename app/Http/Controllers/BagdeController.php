@@ -77,30 +77,21 @@ class BagdeController extends Controller
         ini_set('max_execution_time', 360);
         $user = Auth::user();
         $badge = Badge::findOrFail($id);
-        $data = $request->validated();
+        $validated = $request->validated();
 
-        if (empty($data)) {
+        if (empty($validated)) {
             return response()->json([
                 'message' => 'No update data provided.'
             ], 422);
         }
 
-        if (isset($data['title'])) {
-            $badge->setTranslations('title', $data['title']);
-        }
-        if (isset($data['achievment'])) {
-            $badge->setTranslations('achievment', $data['achievment']);
-        }
-
         if ($request->hasFile('image')) {
-            $imageUpload = Cloudinary::uploadApi()->upload(
+            $validated['image'] = Cloudinary::uploadApi()->upload(
                 $request->file('image')->getRealPath(),
                 ['folder' => 'reading-app/badges']
-            );
-            $badge->image = $imageUpload['secure_url'];
+            )['secure_url'];
         }
-
-        $badge->save();
+        $badge->update($validated);
         return response()->json([
             'success' => true,
             'message' => 'Badge updated successfully.',
@@ -125,4 +116,28 @@ class BagdeController extends Controller
             ]
         ]);
     }
+    public function search(Request $request)
+    {
+        $search = $request->input('search');
+
+        $query = Badge::select('id', 'title', 'image', 'achievment')
+            ->withCount('readers');
+
+        if ($search) {
+            $query->where('title->en', 'LIKE', "%{$search}%");
+        }
+
+        $badges = $query->paginate(5)->through(function ($badge) {
+            return [
+                'id' => $badge->id,
+                'image' => $badge->image,
+                'title' => $badge->getTranslation('title', 'en'),
+                'description' => $badge->getTranslation('achievment', 'en'),
+                'number_of_earners' => $badge->readers_count,
+            ];
+        });
+
+        return response()->json($badges);
+}
+    
 }

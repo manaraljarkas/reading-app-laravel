@@ -37,6 +37,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('reader/getAllProfiles', [ReaderController::class, 'getAllProfiles']);
     Route::get('/reader/showProfile/{id}', [ReaderController::class, 'showProfile']);
     Route::get('/reader/showProfile', [ReaderController::class, 'showProfile']);
+    Route::get('/reader/search', [ReaderController::class, 'search']);
 
     // ---------- Complaint ----------
     Route::post('complaint/store', [ComplaintController::class, 'createComplaint']);
@@ -50,6 +51,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/author/update/{id}', 'update')->middleware(['auth:sanctum', 'permission:update author']);
         Route::delete('authors/{id}', 'destroy')->middleware(['auth:sanctum', 'permission:delete author']);
     });
+    Route::get('/author/search', [AuthorController::class, 'search']);
 
 
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
@@ -60,6 +62,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // ==================== Book ====================
     Route::get('book/getBookFile/{BookId}', [BookController::class, 'getBookFile']);
     Route::get('book/getNumbers', [BookController::class, 'getNumbers']);
+    Route::get('book/search', [BookController::class, 'search']);
+    Route::get('/book/SearchBookINCategory/{id}', [BookController::class, 'SearchBookINCategory']);
     Route::controller(BookController::class)->group(function () {
         Route::get('books', 'index')->middleware(['auth:sanctum', 'permission:read book']);
         Route::get('books/{id}', 'show')->middleware(['auth:sanctum', 'permission:read book']);
@@ -82,6 +86,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('book/AddCommentToTheBook/{id}', [BookController::class, 'AddCommentToTheBook']);
     Route::post('book/update-reading-progress/{id}', [ReaderBookController::class, 'updateReadingProgress']);
     Route::post('book/remove-from-favorites/{id}', [ReaderBookController::class, 'removeFromFavorites']);
+    Route::get('book/getReaderBookInfo', [ReaderBookController::class, 'getReaderBookInfo']);
 
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
         Route::get('/books/most-rated', [ReaderBookController::class, 'getMostRatedBooks']);
@@ -106,6 +111,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/category/getCategories', [CategoryController::class, 'getCategories']);
     Route::post('/categories/follow/{category}', [CategoryController::class, 'followCategory']);
     Route::delete('/categories/unfollow/{category}', [CategoryController::class, 'unfollowCategory']);
+    Route::get('/category/search', [CategoryController::class, 'search']);
+    Route::get('/book/SearchBookINCategory', [BookController::class, 'SearchBookINCategory']);
+
+
+    Route::prefix('mobile')->middleware('set.lang')->group(function () {
+        Route::get('/category/getCategories', [CategoryController::class, 'getCategories']);
+        Route::get('search/category', [CategoryController::class, 'searchCategories']);
+    });
+    
+    Route::get('/category/getCategories', [CategoryController::class, 'getCategories']);
+    Route::post('/categories/follow/{category}', [CategoryController::class, 'followCategory']);
+    Route::delete('/categories/unfollow/{category}', [CategoryController::class, 'unfollowCategory']);
 
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
         Route::get('/category/getCategories', [CategoryController::class, 'getCategories']);
@@ -125,6 +142,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/challenge/JoinToBookChallenge/{id}', [ChallengesController::class, 'JoinToBookChallenge']);
     Route::post('/challenge/JoinToChallenge/{id}', [ChallengesController::class, 'JoinToChallenge']);
     Route::get('/challenge/getAllChallenges', [ChallengesController::class, 'getAllChallenges']);
+    Route::get('/challenge/search', [ChallengesController::class, 'search']);
 
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
         Route::get('/challenge/getchallenges', [ChallengesController::class, 'getchallenges']);
@@ -143,12 +161,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('countries/{country_id}', 'destroy')->middleware(['auth:sanctum', 'permission:delete country']);
     });
     Route::get('/country/get-trips', [CountryController::class, 'getTrips']);
+    Route::get('/country/searchCountry', [CountryController::class, 'searchCountry']);
 
     // ==================== Size Category ====================
     Route::apiResource('size-categories', SizeCategoryController::class);
     Route::post('/size-category/update/{size_category_id}', [SizeCategoryController::class, 'update']);
+    Route::get('/size-category/search', [SizeCategoryController::class,'search']);
 
     // ==================== Badge ====================
+     Route::get('/badge/search', [BagdeController::class, 'search']);
     Route::controller(BagdeController::class)->group(function () {
         Route::get('badges', 'index')->middleware(['auth:sanctum', 'permission:read badge']);
         Route::get('badges/{id}', 'show')->middleware(['auth:sanctum', 'permission:read badge']);
@@ -177,4 +198,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/admin/change-password', [UserController::class, 'changePassword']);
     Route::get('/admin/getAdmin', [UserController::class, 'getAdmin']);
     Route::get('/admin-permissions', [AdminPermissionController::class, 'showCurrent']);
+    Route::get('/admin/search', [UserController::class, 'search']);
+
 });

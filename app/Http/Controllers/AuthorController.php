@@ -6,6 +6,7 @@ use App\Http\Requests\StoreAuthoreRequest;
 use App\Http\Requests\UpdateAuthorRequest;
 use App\Http\Resources\AuthorResource;
 use App\Models\Author;
+use App\Models\Book;
 use App\Models\Country;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Http\Request;
@@ -101,28 +102,18 @@ class AuthorController extends Controller
     {
         ini_set('max_execution_time', 360);
         $user = Auth::user();
-        $data = $request->validated();
+        $validated = $request->validated();
         $author = Author::with('country')->findOrFail($id);
 
-        if (isset($data['name'])) {
-            $author->setTranslations('name', $data['name']);
-            unset($data['name']);
-        }
-
         if ($request->hasFile('image')) {
-            $imageUpload = Cloudinary::uploadApi()->upload(
+            $validated['image'] = Cloudinary::uploadApi()->upload(
                 $request->file('image')->getRealPath(),
                 ['folder' => 'reading-app/authors']
-            );
-            $author->image = $imageUpload['secure_url'];
+            )['secure_url'];
         }
-        if (!empty($data)) {
-            $author->update($data);
-        } else {
-            $author->save();
-        }
-        $author->refresh();
-        $author->load('country');
+
+        $author->update($validated);
+        $author->refresh()->load('country');
         return response()->json([
             'success' => true,
             'message' => 'Author Updated successfully.',
@@ -184,5 +175,21 @@ class AuthorController extends Controller
             'success' => true,
             'data' => $Authors,
         ]);
+    }
+    public function search(Request $request)
+    {
+        $user = Auth::user();
+        $search = $request->input('search');
+        $query = Author::query();
+        if ($search) {
+            $query->where('name->en','LIKE', "%{$search}%");
+        }
+        $authors = $query->get()->map(function ($author) {
+            return [
+                'id' => $author->id,
+                'name' => $author->getTranslation('name', 'en'),
+            ];
+        });
+        return response()->json(['authors' => $authors]);
     }
 }

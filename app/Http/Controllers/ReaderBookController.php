@@ -197,4 +197,20 @@ class ReaderBookController extends Controller
 
         return response()->json(['message' => 'Book removed from favorites successfully.']);
     }
+
+    public function getReaderBookInfo()
+    {
+        $user = Auth::user();
+        $readerId = $user->reader->id;
+
+        $CountService = new \App\Services\BookService();
+        $CountBook = new \App\Services\CountService($readerId);
+
+        $average_rating =(float) $CountService->CalculatingTheAverage();
+        $sum_books = $CountBook->countBooks() + $CountBook->Number_of_books_in_favorites();
+        return response()->json([
+            'average_rating' => $average_rating,
+            'sum_books' => $sum_books,
+        ]);
+    }
 }

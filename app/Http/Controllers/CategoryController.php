@@ -5,12 +5,12 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreCategoryRequest;
 
 use App\Http\Requests\UpdateCategoryRequest;
+use App\Models\Book;
 use App\Models\Category;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
-
 class CategoryController extends Controller
 {
     public function getCategories()
@@ -84,27 +84,21 @@ class CategoryController extends Controller
     {
         ini_set('max_execution_time', 360);
         $user = Auth::user();
-        $data = $request->validated();
-        if (empty($data)) {
+        $validated = $request->validated();
+        if (empty($validated)) {
             return response()->json([
                 'message' => 'No update data provided.'
             ], 422);
         }
         $category = Category::findOrFail($id);
-        // Update name translations
-        if (isset($data['name'])) {
-            $category->setTranslations('name', $data['name']);
-        }
-        // Upload icon
+
         if ($request->hasFile('icon')) {
-            $imageUpload = Cloudinary::uploadApi()->upload(
+            $validated['icon'] = Cloudinary::uploadApi()->upload(
                 $request->file('icon')->getRealPath(),
                 ['folder' => 'reading-app/categories']
-            );
-            $category->icon = $imageUpload['secure_url'];
+            )['secure_url'];
         }
-
-        $category->save();
+        $category->update($validated);
         return response()->json([
             'success' => true,
             'message' => 'Category Updated Successfuly.',
@@ -235,5 +229,21 @@ class CategoryController extends Controller
             'success' => true,
             'data' => $categories
         ]);
+    }
+    public function search(Request $request)
+    {
+        $user = Auth::user();
+        $search = $request->input('search');
+        $query = Category::query();
+        if ($search) {
+            $query->where('name->en', 'LIKE', "%{$search}%");
+        }
+       $categories=$query->get()->map(function($category){
+        return[
+         'id'=>$category->id,
+         'name'=>$category->getTranslation('name','en')
+        ];
+       });
+        return response()->json(['categories'=>$categories]);
     }
 }

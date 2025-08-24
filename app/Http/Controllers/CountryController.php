@@ -27,7 +27,7 @@ class CountryController extends Controller
 
         return response()->json([
             'message' => 'Countries retrieved successfully.',
-            'data' =>$countries
+            'data' => $countries
         ]);
     }
 
@@ -141,4 +141,25 @@ class CountryController extends Controller
             'data' => $trips,
         ], 200);
     }
+    public function searchCountry(Request $request)
+    {
+        $user = Auth::user();
+        $search = $request->input('search');
+        $query = Country::query();
+        if ($search) {
+            $query->where('name->en', 'LIKE', "%{$search}%");
+        }
+
+        $Countries = $query->get()->map(function ($country) {
+            return [
+                'id' => $country->id,
+                'name' => $country->getTranslation('name', 'en')
+            ];
+        });
+        return response()->json([
+            'countries'=>$Countries]
+        );
+    }
+    
 }
+
