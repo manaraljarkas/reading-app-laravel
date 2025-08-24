@@ -54,6 +54,7 @@ class CategoryController extends Controller
     }
     public function store(StoreCategoryRequest $request)
     {
+        ini_set('max_execution_time', 360);
         $user = Auth::user();
         $data = $request->validated();
         // Upload icon image to Cloudinary
@@ -74,12 +75,14 @@ class CategoryController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Category added successfully'
+            'message' => 'Category added successfully',
+            'data' => $category
         ]);
     }
 
     public function update(UpdateCategoryRequest $request, $id)
     {
+        ini_set('max_execution_time', 360);
         $user = Auth::user();
         $validated = $request->validated();
         if (empty($validated)) {

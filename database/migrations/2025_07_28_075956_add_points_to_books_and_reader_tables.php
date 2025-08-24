@@ -11,10 +11,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Schema::table('books_and_reader_tables', function (Blueprint $table) {
-        //     Schema::table('books', function (Blueprint $table) {
-        //         $table->integer('points')->default(0);
-        //     });
         Schema::table('books', function (Blueprint $table) {
             $table->integer('points')->default(0);
         });

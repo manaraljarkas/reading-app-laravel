@@ -53,6 +53,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     Route::get('/author/search', [AuthorController::class, 'search']);
 
+
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
         Route::get('/author/getAuthors', [AuthorController::class, 'getAuthors']);
         Route::get('search/authors', [AuthorController::class, 'searchAuthors']);
@@ -113,6 +114,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/category/search', [CategoryController::class, 'search']);
     Route::get('/book/SearchBookINCategory', [BookController::class, 'SearchBookINCategory']);
 
+
+    Route::prefix('mobile')->middleware('set.lang')->group(function () {
+        Route::get('/category/getCategories', [CategoryController::class, 'getCategories']);
+        Route::get('search/category', [CategoryController::class, 'searchCategories']);
+    });
+    
+    Route::get('/category/getCategories', [CategoryController::class, 'getCategories']);
+    Route::post('/categories/follow/{category}', [CategoryController::class, 'followCategory']);
+    Route::delete('/categories/unfollow/{category}', [CategoryController::class, 'unfollowCategory']);
 
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
         Route::get('/category/getCategories', [CategoryController::class, 'getCategories']);
@@ -188,4 +198,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admin/getAdmin', [UserController::class, 'getAdmin']);
     Route::get('/admin-permissions', [AdminPermissionController::class, 'showCurrent']);
     Route::get('/admin/search', [UserController::class, 'search']);
+
 });

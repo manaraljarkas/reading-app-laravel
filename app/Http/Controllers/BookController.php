@@ -6,6 +6,7 @@ use App\Http\Requests\StoreBookRequest;
 use App\Http\Requests\UpdateBookRequest;
 use App\Models\Badge;
 use App\Models\Book;
+use App\Models\ReaderBook;
 use App\Models\Category;
 use App\Models\Challenge;
 use App\Models\Comment;
@@ -95,35 +96,66 @@ class BookController extends Controller
         return response()->json($books);
     }
 
-    public function show($bookId)
+    public function show(int $bookId): JsonResponse
     {
-        $user = Auth::user();
-        $book = Book::where('id', '=', $bookId)->with('sizecategory')->with('bookChallenges')->first();
-        $number_of_participants = DB::table('reader_books')->where('reader_books.book_id', '=', $bookId)->count();
-        $book_challenge_points = DB::table('reader_books')
-            ->where('book_id', $bookId)
-            ->where('reader_id', $user->reader->id)
-            ->value('earned_points');
+        $book = Book::with([
+            'author:id,name',
+            'category:id,name',
+            'sizeCategory:id,name',
+            'bookChallenges',
+            'comments.reader:id,first_name,last_name,nickname,picture'
+        ])->find($bookId);
 
-        $comments = Comment::where('book_id', '=', $bookId)
-            ->with('reader')
-            ->get()
-            ->map(function ($comment) {
-                return [
-                    'image' => $comment->reader?->picture,
-                    'name' => $comment->reader?->first_name,
-                    'comment' => $comment->comment,
-                ];
-            });
+        if (!$book) {
+            return response()->json([
+                'message' => 'Book not found.'
+            ], 404);
+        }
+
+        $averageRating = ReaderBook::where('book_id', $bookId)
+            ->avg('rating') ?? 0;
+
+        $challengeParticipants = ReaderBook::where('book_id', $bookId)
+            ->where('is_challenged', true)
+            ->count();
+
+        $totalReaders = ReaderBook::where('book_id', $bookId)
+            ->whereIn('status', ['in_read', 'completed'])
+            ->count();
+
+        $comments = $book->comments->map(function ($comment) {
+            return [
+                'image' => $comment->reader?->picture,
+                'full_name' => trim($comment->reader?->first_name . ' ' . $comment->reader?->last_name),
+                'nickname'  => $comment->reader?->nickname,
+                'comment' => $comment->comment,
+            ];
+        });
 
         return response()->json([
-            'size_Category' => $book->sizecategory->getTranslations('name'),
-            'description' => $book->getTranslations('description'),
-            'summary' => $book->getTranslations('summary'),
-            'book_challenge_duration' => $book->bookChallenges?->duration,
-            'book_challenge_points' => $book_challenge_points,
-            'book_challenge_participants' => $number_of_participants,
-            'comments' => $comments,
+            'message' => 'Book retrieved successfully.',
+            'data' => [
+                'title'           => $book->title,
+                'description'     => $book->description,
+                'summary'         => $book->summary,
+                'publish_date'    => $book->publish_date,
+                'points'          => $book->points,
+                'book_pdf'        => $book->book_pdf,
+                'cover_image'     => $book->cover_image,
+                'number_of_pages' => $book->number_of_pages,
+                'author_name'     => $book->author?->name,
+                'category_name'   => $book->category?->name,
+                'size_category_name' => $book->sizeCategory?->name,
+                'rate'            => (int) $averageRating,
+                'book_challenge'  => $book->bookChallenges ? [
+                    'duration'    => $book->bookChallenges->duration,
+                    'points'      => $book->bookChallenges->points,
+                    'description' => $book->bookChallenges->description,
+                ] : null,
+                'book_challenge_participants' => $challengeParticipants,
+                'total_readers'   => $totalReaders,
+                'comments'        => $comments,
+            ],
         ]);
     }
 
