@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('readers', function (Blueprint $table) {
-            $table->dropColumn('points');
+        Schema::table('reader_books', function (Blueprint $table) {
+            $table->timestamp('challenge_joined_at')->nullable()->after('is_challenged');
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('readers', function (Blueprint $table) {
-            $table->integer('points')->default(0);
+        Schema::table('reader_books', function (Blueprint $table) {
+            $table->dropColumn('challenge_joined_at');
         });
     }
 };
