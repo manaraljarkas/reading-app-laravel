@@ -256,7 +256,7 @@ class BookController extends Controller
                 ];
             });
         return response()->json([
-            'comments' => $comments
+            'data' => $comments
         ]);
     }
 
