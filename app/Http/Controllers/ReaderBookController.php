@@ -170,7 +170,7 @@ class ReaderBookController extends Controller
         return response()->json([
             'message' => 'Reading progress updated successfully.'
         ]);
-    }
+    }   
 
     public function removeFromFavorites($bookId)
     {

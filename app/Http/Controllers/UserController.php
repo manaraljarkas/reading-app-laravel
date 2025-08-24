@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreAdminRequest;
 use App\Http\Requests\UpdateAdminRequest;
-use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -53,7 +52,10 @@ class UserController extends Controller
             'is_password_changed' => false
         ]);
 
-        return response()->json(['message' => 'Admin addedd sueccsufly']);
+        return response()->json([
+            'message' => 'Admin addedd sueccsufly',
+            'data' => $admin
+        ]);
     }
 
     public function destroy($adminId)

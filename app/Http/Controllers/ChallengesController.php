@@ -8,7 +8,6 @@ use App\Models\Book;
 use App\Models\BookChallenge;
 use App\Models\Challenge;
 use App\Models\ReaderBook;
-use App\Models\ReaderChallenge;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -141,7 +140,7 @@ class ChallengesController extends Controller
             'success' => true,
             'message' => 'Challenge details retrieved successfully.',
             'data' => [
-                'description' => $challenge->getTranslation('description','en'),
+                'description' => $challenge->getTranslation('description', 'en'),
                 'number_of_books' => $challenge->number_of_books,
                 'books_pdfs' => $books,
             ]
@@ -282,36 +281,33 @@ class ChallengesController extends Controller
         }
         $challenge->readers()->attach($user->reader->id, [
             'progress' => 'in_progress',
-            'percentage' => 0,
-            'earned_points' => 0,
+            'percentage' => 0
         ]);
         return response()->json(['message' => 'Joined to challenge successfully.']);
     }
     public function search(Request $request)
-{
-    $search = $request->input('search');
+    {
+        $search = $request->input('search');
 
-    $query = Challenge::with(['category', 'sizeCategory'])
-        ->withCount('readers');
+        $query = Challenge::with(['category', 'sizeCategory'])
+            ->withCount('readers');
 
-    if ($search) {
-        $query->where('title->en', 'LIKE', "%{$search}%");
+        if ($search) {
+            $query->where('title->en', 'LIKE', "%{$search}%");
+        }
+
+        $challenges = $query->paginate(5)->through(function ($challenge) {
+            return [
+                'id' => $challenge->id,
+                'title' => $challenge->getTranslation('title', 'en'),
+                'points' => $challenge->points,
+                'category' => $challenge->category?->getTranslation('name', 'en') ?? 'No category',
+                'size_category' => $challenge->sizeCategory?->getTranslation('name', 'en'),
+                'duration' => $challenge->duration,
+                'number_of_participants' => $challenge->readers_count,
+            ];
+        });
+
+        return response()->json($challenges);
     }
-
-    $challenges = $query->paginate(5)->through(function ($challenge) {
-        return [
-            'id' => $challenge->id,
-            'title' => $challenge->getTranslation('title', 'en'),
-            'points' => $challenge->points,
-            'category' => $challenge->category?->getTranslation('name', 'en') ?? 'No category',
-            'size_category' => $challenge->sizeCategory?->getTranslation('name', 'en'),
-            'duration' => $challenge->duration,
-            'number_of_participants' => $challenge->readers_count,
-        ];
-    });
-
-    return response()->json($challenges);
-}
-
-
 }
