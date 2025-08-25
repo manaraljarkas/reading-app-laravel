@@ -262,7 +262,7 @@ class BookController extends Controller
 
     public function AddCommentToTheBook($bookId, Request $request)
     {
-        $reader = Auth::user();
+        $user = Auth::user();
         $book = Book::find($bookId);
         if (!$book) {
             return response()->json(['message' => 'Book not found .'], 404);
@@ -275,7 +275,7 @@ class BookController extends Controller
         $comment = Comment::create([
             'comment' => $request->comment,
             'book_id' => $bookId,
-            'reader_id' => $reader->id,
+            'reader_id' => $user->reader->id,
         ]);
         return response()->json([
             'message' => 'comment added successfully'
