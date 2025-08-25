@@ -49,9 +49,13 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => 'admin',
+            'is_password_changed' => false
         ]);
 
-        return response()->json(['message' => 'Admin addedd sueccsufly']);
+        return response()->json([
+            'message' => 'Admin addedd sueccsufly',
+            'data' => $admin
+        ]);
     }
 
     public function destroy($adminId)
@@ -124,5 +128,29 @@ class UserController extends Controller
         });
 
         return response()->json(['admins' => $admins]);
+    }
+
+    public function changePassword(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['message' => 'User not found.'], 404);
+        }
+
+        if (!$request->filled('new_password')) {
+            return response()->json(['message' => 'No password provided.'], 422);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->new_password),
+            'is_password_changed' => true,
+        ]);
+
+        return response()->json([
+            'message' => 'Password updated successfully.',
+            'data' => $user,
+        ]);
     }
 }

@@ -8,7 +8,7 @@ use App\Models\ReaderBook;
 use App\Models\Book;
 use App\Models\Reader;
 use Illuminate\Http\JsonResponse;
-use App\Services\BookService;
+use App\Services\{BookService, ReadingProgressService};
 use Illuminate\Http\Request;
 
 class ReaderBookController extends Controller
@@ -129,47 +129,18 @@ class ReaderBookController extends Controller
     public function updateReadingProgress(UpdateReadingProgressRequest $request, $id)
     {
         $userId = Auth::id();
-
         $reader = Reader::where('user_id', $userId)->first();
 
         if (!$reader) {
-            return response()->json([
-                'message' => 'Reader profile not found.',
-            ], 404);
+            return response()->json(['message' => 'Reader profile not found.'], 404);
         }
 
-        $readerBook = ReaderBook::where('reader_id', $reader->id)
-            ->where('book_id', $id)
-            ->first();
-
-        if (!$readerBook) {
-            return response()->json([
-                'message' => 'Reading progress not found for this book.',
-            ], 404);
+        try {
+            app(ReadingProgressService::class)->updateProgress($reader, $id, $request->progress);
+            return response()->json(['message' => 'Reading progress updated successfully.']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 400);
         }
-
-        $book = Book::find($id);
-
-        if (!$book) {
-            return response()->json([
-                'message' => 'Book not found.',
-            ], 404);
-        }
-
-        $progress = min($request->progress, $book->number_of_pages);
-        $readerBook->progress = $progress;
-
-        if ($progress >= $book->number_of_pages) {
-            $readerBook->status = 'completed';
-        } elseif ($readerBook->status === 'completed' && $progress < $book->number_of_pages) {
-            $readerBook->status = 'in_read';
-        }
-
-        $readerBook->save();
-
-        return response()->json([
-            'message' => 'Reading progress updated successfully.'
-        ]);
     }
 
     public function removeFromFavorites($bookId)
@@ -206,7 +177,7 @@ class ReaderBookController extends Controller
         $CountService = new \App\Services\BookService();
         $CountBook = new \App\Services\CountService($readerId);
 
-        $average_rating =(float) $CountService->CalculatingTheAverage();
+        $average_rating = (float) $CountService->CalculatingTheAverage();
         $sum_books = $CountBook->countBooks() + $CountBook->Number_of_books_in_favorites();
         return response()->json([
             'average_rating' => $average_rating,

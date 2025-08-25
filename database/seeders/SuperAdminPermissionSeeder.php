@@ -13,18 +13,18 @@ class SuperAdminPermissionSeeder extends Seeder
      */
     public function run(): void
     {
-        $superAdmin = User::where('email', 'superadmin@test.com')->first();
+        $superAdmins = User::role('super_admin')->get();
 
-        if (!$superAdmin) {
-            $this->command->error('Super admin user not found!');
+        if ($superAdmins->isEmpty()) {
+            $this->command->error('No super admin users found!');
             return;
         }
 
         $allPermissions = Permission::all();
 
-        $superAdmin->syncPermissions($allPermissions);
-
-        $this->command->info('All permissions assigned to super admin successfully.');
-
+        foreach ($superAdmins as $superAdmin) {
+            $superAdmin->syncPermissions($allPermissions);
+            $this->command->info("All permissions assigned to {$superAdmin->email} successfully.");
+        }
     }
 }

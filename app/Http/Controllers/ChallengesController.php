@@ -141,7 +141,7 @@ class ChallengesController extends Controller
             'success' => true,
             'message' => 'Challenge details retrieved successfully.',
             'data' => [
-                'description' => $challenge->getTranslation('description','en'),
+                'description' => $challenge->getTranslation('description', 'en'),
                 'number_of_books' => $challenge->number_of_books,
                 'books_pdfs' => $books,
             ]
@@ -232,6 +232,7 @@ class ChallengesController extends Controller
             $bookId => [
                 'is_challenged' => true,
                 'status' => 'in_read',
+                'challenge_joined_at' => now(),
             ]
         ]);
 
@@ -276,42 +277,65 @@ class ChallengesController extends Controller
     public function JoinToChallenge($challengeId)
     {
         $user = Auth::user();
+        $reader = $user->reader;
+
+        // Make sure challenge exists
         $challenge = Challenge::findOrFail($challengeId);
-        if ($challenge->readers()->where('reader_id', '=', $user->reader->id)->exists()) {
-            return response()->json(['message' => ' You Are Already Joined to this challenge .']);
-        }
-        $challenge->readers()->attach($user->reader->id, [
-            'progress' => 'in_progress',
-            'percentage' => 0,
-            'earned_points' => 0,
-        ]);
-        return response()->json(['message' => 'Joined to challenge successfully.']);
+
+        return DB::transaction(function () use ($reader, $challenge) {
+
+            // 1) Hard check the attempts table directly (ignore soft-deleted)
+            $activeExists = ReaderChallenge::where('challenge_id', $challenge->id)
+                ->where('reader_id', $reader->id)
+                ->where('progress', 'in_progress')
+                ->whereNull('deleted_at')
+                ->lockForUpdate() // prevent race: two requests joining at the same time
+                ->exists();
+
+            if ($activeExists) {
+                return response()->json([
+                    'message' => 'You are already participating in this challenge.'
+                ], 409);
+            }
+
+            // 2) Create a brand-new attempt row
+            ReaderChallenge::create([
+                'challenge_id'    => $challenge->id,
+                'reader_id'       => $reader->id,
+                'progress'        => 'in_progress',
+                'percentage'      => 0,
+                'completed_books' => 0,   // ensure this column exists; if not, remove this line
+            ]);
+
+            return response()->json([
+                'message' => 'Joined to challenge successfully.'
+            ]);
+        });
     }
+
     public function search(Request $request)
-{
-    $search = $request->input('search');
+    {
+        $search = $request->input('search');
 
-    $query = Challenge::with(['category', 'sizeCategory'])
-        ->withCount('readers');
+        $query = Challenge::with(['category', 'sizeCategory'])
+            ->withCount('readers');
 
-    if ($search) {
-        $query->where('title->en', 'LIKE', "%{$search}%");
+        if ($search) {
+            $query->where('title->en', 'LIKE', "%{$search}%");
+        }
+
+        $challenges = $query->paginate(5)->through(function ($challenge) {
+            return [
+                'id' => $challenge->id,
+                'title' => $challenge->getTranslation('title', 'en'),
+                'points' => $challenge->points,
+                'category' => $challenge->category?->getTranslation('name', 'en') ?? 'No category',
+                'size_category' => $challenge->sizeCategory?->getTranslation('name', 'en'),
+                'duration' => $challenge->duration,
+                'number_of_participants' => $challenge->readers_count,
+            ];
+        });
+
+        return response()->json($challenges);
     }
-
-    $challenges = $query->paginate(5)->through(function ($challenge) {
-        return [
-            'id' => $challenge->id,
-            'title' => $challenge->getTranslation('title', 'en'),
-            'points' => $challenge->points,
-            'category' => $challenge->category?->getTranslation('name', 'en') ?? 'No category',
-            'size_category' => $challenge->sizeCategory?->getTranslation('name', 'en'),
-            'duration' => $challenge->duration,
-            'number_of_participants' => $challenge->readers_count,
-        ];
-    });
-
-    return response()->json($challenges);
-}
-
-
 }
