@@ -8,6 +8,7 @@ use App\Models\Book;
 use App\Models\BookChallenge;
 use App\Models\Challenge;
 use App\Models\ReaderBook;
+use App\Models\ReaderChallenge;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -231,6 +232,7 @@ class ChallengesController extends Controller
             $bookId => [
                 'is_challenged' => true,
                 'status' => 'in_read',
+                'challenge_joined_at' => now(),
             ]
         ]);
 
@@ -275,16 +277,42 @@ class ChallengesController extends Controller
     public function JoinToChallenge($challengeId)
     {
         $user = Auth::user();
+        $reader = $user->reader;
+
+        // Make sure challenge exists
         $challenge = Challenge::findOrFail($challengeId);
-        if ($challenge->readers()->where('reader_id', '=', $user->reader->id)->exists()) {
-            return response()->json(['message' => ' You Are Already Joined to this challenge .']);
-        }
-        $challenge->readers()->attach($user->reader->id, [
-            'progress' => 'in_progress',
-            'percentage' => 0
-        ]);
-        return response()->json(['message' => 'Joined to challenge successfully.']);
+
+        return DB::transaction(function () use ($reader, $challenge) {
+
+            // 1) Hard check the attempts table directly (ignore soft-deleted)
+            $activeExists = ReaderChallenge::where('challenge_id', $challenge->id)
+                ->where('reader_id', $reader->id)
+                ->where('progress', 'in_progress')
+                ->whereNull('deleted_at')
+                ->lockForUpdate() // prevent race: two requests joining at the same time
+                ->exists();
+
+            if ($activeExists) {
+                return response()->json([
+                    'message' => 'You are already participating in this challenge.'
+                ], 409);
+            }
+
+            // 2) Create a brand-new attempt row
+            ReaderChallenge::create([
+                'challenge_id'    => $challenge->id,
+                'reader_id'       => $reader->id,
+                'progress'        => 'in_progress',
+                'percentage'      => 0,
+                'completed_books' => 0,   // ensure this column exists; if not, remove this line
+            ]);
+
+            return response()->json([
+                'message' => 'Joined to challenge successfully.'
+            ]);
+        });
     }
+
     public function search(Request $request)
     {
         $search = $request->input('search');

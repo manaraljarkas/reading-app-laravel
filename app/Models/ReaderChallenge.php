@@ -8,5 +8,5 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class ReaderChallenge extends Model
 {
     use SoftDeletes;
-    protected $fillable = ['progress', 'percentage', 'reader_id', 'challenge_id'];
+    protected $fillable = ['progress', 'percentage', 'reader_id', 'challenge_id', 'completed_books'];
 }
