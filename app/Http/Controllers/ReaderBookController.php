@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateReadingProgressRequest;
-use Illuminate\Support\Facades\Auth;
-use App\Models\ReaderBook;
 use App\Models\Book;
 use App\Models\Reader;
-use Illuminate\Http\JsonResponse;
+use App\Models\ReaderBook;
 use App\Services\{BookService, ReadingProgressService};
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ReaderBookController extends Controller
 {
@@ -91,17 +92,33 @@ class ReaderBookController extends Controller
     {
         $user = Auth::user();
         $reader = $user->reader;
+
         if (!$reader) {
             return response()->json(['message' => 'Reader profile not found.'], 404);
         }
         $book = Book::findOrFail($bookId);
+
         if (!$book) {
             return response()->json(['message' => 'Book not found'], 404);
         }
-        $reader->books()->syncWithoutDetaching([
-            $bookId => ['status' => 'to_read']
-        ]);
-        return response()->json(['message' => 'Book added to To-Do List']);
+        $is_listed = ReaderBook::where('book_id', $bookId)->where('reader_id', $reader->id)->where('is_listed', true)->first();
+        if ($is_listed) {
+            $is_listed->update([
+                'is_listed' => false
+            ]);
+            return response()->json([
+                'message' => 'Book removed to To-Do List',
+                'is_listed' => false,
+            ]);
+        } else {
+            $reader->books()->syncWithoutDetaching([
+                $bookId => ['is_listed' => true]
+            ]);
+            return response()->json([
+                'message' => 'Book added to To-Do List',
+                'is_listed' => true
+            ]);
+        }
     }
 
     public function RateBook($bookId, Request $request)
