@@ -14,28 +14,43 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthorController extends Controller
 {
-    public function getAuthors()
-    {
-        $reader = Auth::user();
+public function getAuthors(Request $request)
+{
+    $reader = Auth::user();
+    $search = $request->input('search');
+    $locale = app()->getLocale();
 
-        $authors = Author::withCount('books')->with('country')->get();
+    $query = Author::withCount('books')->with('country');
 
-        $Authors = $authors->map(function ($author) {
-            $locale = app()->getLocale();
-            return [
-                'name' => $author->getTranslation('name', $locale),
-                'id' => $author->id,
-                'country_name' => $author->country?->getTranslation('name', $locale),
-                'image' => $author->image,
-                'number_of_books' => $author->books_count,
-            ];
+    if ($search) {
+        $query->where(function ($q) use ($search) {
+            $q->where('name->en', 'LIKE', "%{$search}%")
+              ->orWhere('name->ar', 'LIKE', "%{$search}%")
+              ->orWhereHas('country', function ($q2) use ($search) {
+                  $q2->where('name->en', 'LIKE', "%{$search}%")
+                     ->orWhere('name->ar', 'LIKE', "%{$search}%");
+              });
         });
-
-        return response()->json([
-            'success' => true,
-            'data' => $Authors,
-        ]);
     }
+
+    $authors = $query->get();
+
+    $authors = $authors->map(function ($author) use ($locale) {
+        return [
+            'id' => $author->id,
+            'name' => $author->getTranslation('name', $locale),
+            'country_name' => $author->country?->getTranslation('name', $locale),
+            'image' => $author->image,
+            'number_of_books' => $author->books_count,
+        ];
+    });
+
+    return response()->json([
+        'success' => true,
+        'data' => $authors,
+    ]);
+}
+
 
     public function index()
     {

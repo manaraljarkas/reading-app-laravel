@@ -19,22 +19,63 @@ class ReaderBookController extends Controller
     {
         $this->service = $service;
     }
-    public function getMostRatedBooks(): JsonResponse
+    public function getMostRatedBooks(Request $request): JsonResponse
     {
-        $books = $this->service->getTopRatedBooks();
+        $search = $request->input('search');
+       if($search)
+        {
+       $books = $this->service->searchBooks($search);
+        return response()->json([
+            'success' => true,
+            'data' => $this->service->transformBooks($books),
+        ]);
+       }
+        else
+       {
+         $books = $this->service->getTopRatedBooks();
         return $this->respond($books);
+       }
     }
 
-    public function getAuthorBooks($authorId): JsonResponse
-    {
-        $books = $this->service->getBooksByAuthor($authorId);
-        return $this->respond($books);
+   public function getAuthorBooks(Request $request, $authorId): JsonResponse
+{
+    $search = $request->input('search');
+    $locale = app()->getLocale();
+
+    $query = Book::where('author_id', $authorId);
+
+    if ($search) {
+        $query->where(function ($q) use ($search) {
+            $q->where('title', 'LIKE', "%{$search}%")
+              ->orWhere('title', 'LIKE', "%{$search}%")
+              ->orWhere('publish_date', 'LIKE', "%{$search}%");
+        });
     }
 
-    public function getCategoryBooks($categoryId): JsonResponse
+    $books = $query->get();
+
+    return $this->respond($books);
+}
+
+
+    public function getCategoryBooks(Request $request,$categoryId): JsonResponse
     {
-        $books = $this->service->getBooksByCategory($categoryId);
+        $search = $request->input('search');
+
+        if ($search)
+            {
+               $books = $this->service->SearchbookWithCategory($categoryId, $search);
+                return response()->json([
+               'success' => true,
+               'data' => $this->service->transformBooks($books)
+                ]);
+            }
+    else
+      {
+         $books = $this->service->getBooksByCategory($categoryId);
         return $this->respond($books);
+       }
+
     }
 
     public function getFavoriteBooks(): JsonResponse
@@ -170,7 +211,7 @@ class ReaderBookController extends Controller
         return response()->json([
             'message' => 'Reading progress updated successfully.'
         ]);
-    }   
+    }
 
     public function removeFromFavorites($bookId)
     {
