@@ -296,7 +296,7 @@ class BookController extends Controller
     public function SearchBookINCategory(Request $request, $categoryId)
     {
         $search = $request->input('search');
-        $locale=app()->getLocale();
+        $locale = app()->getLocale();
 
         $books = $this->service->SearchbookWithCategory($categoryId, $search);
 
@@ -305,6 +305,22 @@ class BookController extends Controller
             'data' => $this->service->transformBooks($books),
         ]);
     }
-
-
+    public function search(Request $request)
+    {
+        $user = Auth::user();
+        $search = $request->input('search');
+        $query = Book::query();
+        if ($search) {
+            $query->where('title->en', 'Like', "%{$search}%");
+        }
+        $books = $query->get()->map(function ($book) {
+            return [
+                'id' => $book->id,
+                'title' => $book->getTranslation('title', 'en'),
+            ];
+        });
+        return response()->json([
+            'books' => $books
+        ]);
+    }
 }
