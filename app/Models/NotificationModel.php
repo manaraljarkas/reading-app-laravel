@@ -11,9 +11,10 @@ class NotificationModel extends DatabaseNotification
 
     protected $table = 'notifications';
 
-    public $translatable = ['data'];
+    //public $translatable = ['data'];
 
     protected $casts = [
         'data' => 'array',
+        'category' => 'array',
     ];
 }
