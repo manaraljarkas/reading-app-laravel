@@ -348,7 +348,7 @@ class ChallengesController extends Controller
         $user = Auth::user();
         $Challenges = ReaderChallenge::where('progress', 'completed')->select('id','progress','percentage','completed_books','challenge_id','reader_id')->get();
         return response()->json([
-            'challenges' => $Challenges
+            'data' => $Challenges
         ]);
     }
 }
