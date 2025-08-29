@@ -58,7 +58,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('authors/{id}', 'destroy')->middleware(['auth:sanctum', 'permission:delete author']);
     });
     Route::get('/author/search', [AuthorController::class, 'search']);
-
+    Route::get('/author/SearchAuthorWithPagination', [AuthorController::class, 'SearchAuthorWithPagination']);
 
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
         Route::get('/author/getAuthors', [AuthorController::class, 'getAuthors']);
@@ -96,7 +96,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('book/update-reading-progress/{id}', [ReaderBookController::class, 'updateReadingProgress']);
     Route::post('book/remove-from-favorites/{id}', [ReaderBookController::class, 'removeFromFavorites']);
     Route::get('book/getReaderBookInfo', [ReaderBookController::class, 'getReaderBookInfo']);
-
+    Route::get('book/SarchBookWithPagination', [BookController::class, 'SarchBookWithPagination']);
+    Route::get('/book/SearchBookINCategory', [BookController::class, 'SearchBookINCategory']);
 
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
         Route::get('/books/most-rated', [ReaderBookController::class, 'getMostRatedBooks']);
@@ -122,10 +123,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/categories/follow/{category}', [CategoryController::class, 'followCategory']);
     Route::delete('/categories/unfollow/{category}', [CategoryController::class, 'unfollowCategory']);
     Route::get('/category/search', [CategoryController::class, 'search']);
-    Route::get('/book/SearchBookINCategory', [BookController::class, 'SearchBookINCategory']);
+    Route::get('/category/SearchWithPagination', [CategoryController::class, 'SearchWithPagination']);
 
-
-    Route::prefix('mobile')->middleware('set.lang')->group(function () {
+   Route::prefix('mobile')->middleware('set.lang')->group(function () {
         Route::get('/category/getCategories', [CategoryController::class, 'getCategories']);
         Route::get('search/category', [CategoryController::class, 'searchCategories']);
     });

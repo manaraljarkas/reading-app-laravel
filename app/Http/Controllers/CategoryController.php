@@ -258,4 +258,23 @@ class CategoryController extends Controller
        });
         return response()->json(['categories'=>$categories]);
     }
+    public function SearchWithPagination(Request $request){
+     $user=Auth::user();
+     $search=$request->input('search');
+     $query=Category::withcount('books');
+     if($search){
+    $query->where('name->en','LIKE',"%{$search}%");
+     }
+    $categories=$query->paginate(5)->through(function ($category){
+    return[
+        'id' => $category->id,
+        'icon' =>  $category->icon,
+        'name' => $category->getTranslation('name', 'en'),
+        'number_of_books' => $category->books_count,
+    ];
+    });
+     return response()->json([
+    'categories'=>$categories
+     ]);
+    }
 }
