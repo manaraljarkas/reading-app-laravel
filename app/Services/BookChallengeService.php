@@ -27,6 +27,7 @@ class BookChallengeService
 
         if (now()->lte($deadline)) {
             $reader->increment('total_points', $challenge->points);
+            app(BadgeService::class)->checkAndAward($reader, 'points');
         }
 
         // Always reset challenge state (success or fail) so reader can rejoin

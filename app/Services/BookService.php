@@ -90,7 +90,7 @@ class BookService
                 'progress' => optional($readerBook)->progress ?? 0,
                 'is_favourite' => (bool) optional($readerBook)->is_favourite,
                 'is_challenged' => (bool) optional($readerBook)->is_challenged,
-                'is_in_library' => !is_null($readerBook),
+                'is_in_library' => optional($readerBook)->status === 'to_read',
             ];
         });
     }

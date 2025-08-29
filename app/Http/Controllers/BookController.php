@@ -16,18 +16,21 @@ use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Services\BookService;
+use App\Services\FcmService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
-
-
+use App\Notifications\NewBookNotification;
+use Illuminate\Support\Facades\Log;
 
 class BookController extends Controller
 {
     protected BookService $service;
+    protected $fcmService;
 
-    public function __construct(BookService $service)
+    public function __construct(BookService $service, FcmService $fcmService)
     {
         $this->service = $service;
+        $this->fcmService = $fcmService;
     }
     public function getBookFile($bookId)
     {
@@ -174,6 +177,7 @@ class BookController extends Controller
     public function store(StoreBookRequest $request)
     {
         ini_set('max_execution_time', 600);
+
         try {
             $validated = $request->validated();
 
@@ -192,6 +196,31 @@ class BookController extends Controller
             }
 
             $book = Book::create($validated);
+            $book->load('category');
+
+            $followers = $book->category->readers
+                ->map(fn($r) => $r->user)
+                ->filter(fn($u) => $u);
+
+            foreach ($followers as $user) {
+                $user->notify(new NewBookNotification($book));
+            }
+
+            $title = "📚 New Book Added";
+            $body  = "{$book->getTranslation('title', 'en')} is now available in {$book->category->getTranslation('name', 'en')}";
+
+            $data = [
+                'book_id' => (string) $book->id,
+                'category_id' => (string) $book->category_id,
+                'type' => 'info',
+            ];
+
+            try {
+                $followersWithToken = $followers->filter(fn($u) => $u->fcm_token);
+                $this->fcmService->notifyUsers($followersWithToken, $title, $body, $data);
+            } catch (\Throwable $e) {
+                Log::error("FCM push failed: " . $e->getMessage());
+            }
 
             return response()->json([
                 'message' => 'Book created successfully',
@@ -296,7 +325,7 @@ class BookController extends Controller
     public function SearchBookINCategory(Request $request, $categoryId)
     {
         $search = $request->input('search');
-        $locale=app()->getLocale();
+        $locale = app()->getLocale();
 
         $books = $this->service->SearchbookWithCategory($categoryId, $search);
 
@@ -305,6 +334,4 @@ class BookController extends Controller
             'data' => $this->service->transformBooks($books),
         ]);
     }
-
-
 }

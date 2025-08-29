@@ -69,9 +69,7 @@ class BagdeController extends Controller
             'data' => $badges
         ]);
     }
-    /**
-     * Update the specified resource in storage.
-     */
+
     public function update(\App\Http\Requests\UpdateBadgeRequest $request, $id)
     {
         ini_set('max_execution_time', 360);
@@ -138,6 +136,5 @@ class BagdeController extends Controller
         });
 
         return response()->json($badges);
-}
-    
+    }
 }

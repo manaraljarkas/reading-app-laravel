@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\{Book, Reader, Challenge, ReaderChallenge};
+use App\Services\BadgeService;
 use Carbon\Carbon;
 
 class ChallengeService
@@ -47,6 +48,8 @@ class ChallengeService
             if ($percentage >= 100) {
                 $rc->update(['progress' => 'completed']);
                 $reader->increment('total_points', $challenge->points);
+                app(BadgeService::class)->checkAndAward($reader, 'points');
+                app(BadgeService::class)->checkAndAward($reader, 'challenge_completed');
             }
         }
     }

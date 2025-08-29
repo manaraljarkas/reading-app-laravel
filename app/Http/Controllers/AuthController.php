@@ -47,6 +47,35 @@ class AuthController extends Controller
         ], 201);
     }
 
+    // public function login(LoginRequest $request)
+    // {
+    //     if (!Auth::attempt($request->only('email', 'password'))) {
+    //         return response()->json([
+    //             'message' => 'Invalid email or password'
+    //         ], 401);
+    //     }
+
+    //     $user = User::where('email', $request->email)->firstOrFail();
+    //     $token = $user->createToken('auth_token')->plainTextToken;
+    //     $reader = $user->reader;
+
+    //     if (!$reader) {
+    //         return response()->json([
+    //             'message' => 'Login successfully but profile not found for this user.',
+    //             'token' => $token
+    //         ], 200);
+    //     }
+
+    //     return response()->json([
+    //         'message' => 'Login successfully',
+    //         'first_name' => $reader->first_name,
+    //         'last_name' => $reader->last_name,
+    //         'picture' => $reader->picture,
+    //         'nickname' => $reader->nickname,
+    //         'token' => $token
+    //     ], 200);
+    // }
+
     public function login(LoginRequest $request)
     {
         if (!Auth::attempt($request->only('email', 'password'))) {
@@ -56,6 +85,12 @@ class AuthController extends Controller
         }
 
         $user = User::where('email', $request->email)->firstOrFail();
+
+        // Update FCM token if provided in the request
+        if ($request->has('fcm_token')) {
+            $user->update(['fcm_token' => $request->fcm_token]);
+        }
+
         $token = $user->createToken('auth_token')->plainTextToken;
         $reader = $user->reader;
 
@@ -75,6 +110,7 @@ class AuthController extends Controller
             'token' => $token
         ], 200);
     }
+
 
     public function webLogin(LoginRequest $request)
     {
@@ -194,4 +230,3 @@ class AuthController extends Controller
         }
     }
 }
-

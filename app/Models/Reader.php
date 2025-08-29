@@ -5,10 +5,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\Notifiable;
 
 class Reader extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes,Notifiable;
     protected $fillable = [
         'first_name',
         'last_name',
@@ -17,7 +18,8 @@ class Reader extends Model
         'nickname',
         'quote',
         'user_id',
-        'total_points'
+        'total_points',
+        'fcm_token'
     ];
 
     public function complaints()

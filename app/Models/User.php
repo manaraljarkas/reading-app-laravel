@@ -14,14 +14,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable,HasRoles,SoftDeletes,HasApiTokens;
+    use HasFactory, Notifiable, HasRoles, SoftDeletes, HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
-    protected $fillable = ['name','email','password','role','is_password_changed'];
+    protected $fillable = ['name', 'email', 'password', 'role', 'is_password_changed', 'fcm_token'];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -50,4 +50,8 @@ class User extends Authenticatable
     {
         return $this->hasOne(Reader::class);
     }
+    // public function routeNotificationForFcm()
+    // {
+    //     return $this->fcm_token;
+    // }
 }
