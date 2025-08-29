@@ -12,6 +12,7 @@ use App\Http\Controllers\ReaderController;
 use App\Http\Controllers\SuggestionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminPermissionController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\BookChallengeController;
 use App\Http\Controllers\SizeCategoryController;
 use App\Http\Controllers\ReaderBookController;
@@ -32,6 +33,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
     Route::post('auth/setup-profile', [AuthController::class, 'setupProfile']);
     Route::post('auth/edit-profile', [AuthController::class, 'editProfile']);
+    //------------Notifications------------------
+    Route::get('notifications', [NotificationController::class, 'index']);
+    Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount']);
+    Route::post('notifications/mark-all', [NotificationController::class, 'markAllAsRead']);
+    Route::post('notifications/mark/{id}', [NotificationController::class, 'markAsRead']);
 
     // ---------- Reader ----------
     Route::get('reader/getAllProfiles', [ReaderController::class, 'getAllProfiles']);
@@ -171,10 +177,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // ==================== Size Category ====================
     Route::apiResource('size-categories', SizeCategoryController::class);
     Route::post('/size-category/update/{size_category_id}', [SizeCategoryController::class, 'update']);
-    Route::get('/size-category/search', [SizeCategoryController::class,'search']);
+    Route::get('/size-category/search', [SizeCategoryController::class, 'search']);
 
     // ==================== Badge ====================
-     Route::get('/badge/search', [BagdeController::class, 'search']);
+    Route::get('/badge/search', [BagdeController::class, 'search']);
     Route::controller(BagdeController::class)->group(function () {
         Route::get('badges', 'index')->middleware(['auth:sanctum', 'permission:read badge']);
         Route::get('badges/{id}', 'show')->middleware(['auth:sanctum', 'permission:read badge']);
@@ -204,5 +210,4 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admin/getAdmin', [UserController::class, 'getAdmin']);
     Route::get('/admin-permissions', [AdminPermissionController::class, 'showCurrent']);
     Route::get('/admin/search', [UserController::class, 'search']);
-
 });

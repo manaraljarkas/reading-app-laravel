@@ -19,11 +19,17 @@ class ReadingProgressService
     {
         $readerBook = ReaderBook::where('reader_id', $reader->id)
             ->where('book_id', $bookId)
-            ->firstOrFail();
+            ->first();
+
+        if (!$readerBook) {
+            $readerBook = new ReaderBook();
+            $readerBook->reader_id = $reader->id;
+            $readerBook->book_id = $bookId;
+            $readerBook->progress = 0;
+            $readerBook->status = 'in_read';
+        }
 
         $book = Book::findOrFail($bookId);
-
-        // Update progress
         $progress = min($newProgress, $book->number_of_pages);
         $readerBook->progress = $progress;
 
@@ -35,22 +41,19 @@ class ReadingProgressService
             }
             $readerBook->status = 'completed';
             $completedNow = true;
-        } elseif ($progress < $book->number_of_pages) {
+        } else {
             $readerBook->status = 'in_read';
         }
 
         $readerBook->save();
 
-        // --- If completed: award points & check challenges
         if ($completedNow) {
             $reader->increment('total_points', $book->points);
-
-            // Book-specific challenge
+            app(BadgeService::class)->checkAndAward($reader, 'first_book');
+            app(BadgeService::class)->checkAndAward($reader, 'points');
             if ($readerBook->is_challenged) {
                 $this->bookChallengeService->handleCompletion($reader, $book);
             }
-
-            // Multi-book challenges
             $this->challengeService->handleBookCompletion($reader, $book);
         }
     }

@@ -9,7 +9,7 @@ use Spatie\Translatable\HasTranslations;
 class Badge extends Model
 {
     use SoftDeletes,HasTranslations ;
-    protected $fillable = ['title', 'achievment', 'image'];
+    protected $fillable = ['title', 'achievment', 'image', 'type'];
     public $translatable = ['title', 'achievment'];
     protected $casts = [
         'title' => 'array',
