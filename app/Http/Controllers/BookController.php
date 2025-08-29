@@ -135,9 +135,9 @@ class BookController extends Controller
         return response()->json([
             'message' => 'Book retrieved successfully.',
             'data' => [
-                'title'           => $book->title,
-                'description'     => $book->description,
-                'summary'         => $book->summary,
+                'title'           => $book->getTranslations('title'),
+                'description'     => $book->getTranslations('description'),
+                'summary'         => $book->getTranslations('summary'),
                 'publish_date'    => $book->publish_date,
                 'points'          => $book->points,
                 'book_pdf'        => $book->book_pdf,

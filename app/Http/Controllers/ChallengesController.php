@@ -141,7 +141,7 @@ class ChallengesController extends Controller
             'success' => true,
             'message' => 'Challenge details retrieved successfully.',
             'data' => [
-                'description' => $challenge->getTranslation('description', 'en'),
+                'description' => $challenge->getTranslations('description'),
                 'number_of_books' => $challenge->number_of_books,
                 'books_pdfs' => $books,
             ]
