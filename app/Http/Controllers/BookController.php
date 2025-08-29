@@ -99,7 +99,8 @@ class BookController extends Controller
     public function show(int $bookId): JsonResponse
     {
         $book = Book::with([
-            'author:id,name',
+            'author.country:id,name',
+            'author:id,name,country_id',
             'category:id,name',
             'sizeCategory:id,name',
             'bookChallenges',
@@ -143,9 +144,14 @@ class BookController extends Controller
                 'book_pdf'        => $book->book_pdf,
                 'cover_image'     => $book->cover_image,
                 'number_of_pages' => $book->number_of_pages,
+                'author_id'=>$book->author_id,
                 'author_name'     => $book->author?->name,
-                'category_name'   => $book->category?->name,
-                'size_category_name' => $book->sizeCategory?->name,
+                'category_id'=>$book->category_id,
+                'category_name'   => $book->Category?->name,
+                'size_category_id'=>$book->size_category_id,
+                'size_category_name' => $book->SizeCategory?->name,
+                'country_id'=>$book->author?->country_id,
+                'country_name'=>$book->author?->country?->name,
                 'rate'            => (int) $averageRating,
                 'book_challenge'  => $book->bookChallenges ? [
                     'duration'    => $book->bookChallenges->duration,

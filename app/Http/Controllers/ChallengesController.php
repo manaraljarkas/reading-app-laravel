@@ -133,24 +133,30 @@ class ChallengesController extends Controller
     }
     public function show($id)
     {
-        $challenge = Challenge::findOrFail($id);
-
-        $books = DB::table('challenge_books')
-            ->where('challenge_id', $id)
-            ->join('books', 'books.id', '=', 'challenge_books.book_id')
-            ->select('books.book_pdf')
-            ->get()
-            ->map(function ($book) {
-                return  $book->book_pdf;
-            });
+        $challenge = Challenge::with('Category','SizeCategory','books')->withCount('readers')->findOrFail($id);
 
         return response()->json([
             'success' => true,
             'message' => 'Challenge details retrieved successfully.',
             'data' => [
+                'title'=>$challenge->getTranslations('title'),
+                'points'=>$challenge->points,
+                'category_id'=>$challenge->Category?->id,
+                'category_name'=>$challenge->Category?->getTranslations('name'),
+                'size_category_id'=>$challenge->SizeCategory?->id,
+                'size_catgory_name'=>$challenge->SizeCategory?->getTranslations('name'),
                 'description' => $challenge->getTranslations('description'),
                 'number_of_books' => $challenge->number_of_books,
-                'books_pdfs' => $books,
+                'duration'=>$challenge->duration,
+                'number_of_participants' => $challenge->readers_count,
+                'books' =>$challenge->books->map(function($book) use( $challenge){
+                return[
+                    'id'=>$book->id,
+                    'title_book'=>$book->getTranslations('title'),
+                    'book_pdf'=>$book->book_pdf,
+                    'cover_image'=>$book->cover_image
+                ];
+                })
             ]
         ]);
     }
