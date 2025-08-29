@@ -254,6 +254,11 @@ class ReaderBookController extends Controller
     public function getReaderBookInfo()
     {
         $user = Auth::user();
+        if (!$user || !$user->reader) {
+            return response()->json([
+                'message' => 'Reader profile not found',
+            ], 404);
+        }
         $readerId = $user->reader->id;
 
         $CountService = new \App\Services\BookService();
