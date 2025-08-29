@@ -338,4 +338,13 @@ class ChallengesController extends Controller
 
         return response()->json($challenges);
     }
+
+    public function getSuccessChallenge()
+    {
+        $user = Auth::user();
+        $Challenges = ReaderChallenge::where('progress', 'completed')->select('id','progress','percentage','completed_books','challenge_id','reader_id')->get();
+        return response()->json([
+            'challenges' => $Challenges
+        ]);
+    }
 }

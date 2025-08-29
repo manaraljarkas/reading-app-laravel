@@ -88,6 +88,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('book/remove-from-favorites/{id}', [ReaderBookController::class, 'removeFromFavorites']);
     Route::get('book/getReaderBookInfo', [ReaderBookController::class, 'getReaderBookInfo']);
 
+
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
         Route::get('/books/most-rated', [ReaderBookController::class, 'getMostRatedBooks']);
         Route::get('/books/author-books/{authorId}', [ReaderBookController::class, 'getAuthorBooks']);
@@ -119,7 +120,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/category/getCategories', [CategoryController::class, 'getCategories']);
         Route::get('search/category', [CategoryController::class, 'searchCategories']);
     });
-    
+
     Route::get('/category/getCategories', [CategoryController::class, 'getCategories']);
     Route::post('/categories/follow/{category}', [CategoryController::class, 'followCategory']);
     Route::delete('/categories/unfollow/{category}', [CategoryController::class, 'unfollowCategory']);
@@ -143,7 +144,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/challenge/JoinToChallenge/{id}', [ChallengesController::class, 'JoinToChallenge']);
     Route::get('/challenge/getAllChallenges', [ChallengesController::class, 'getAllChallenges']);
     Route::get('/challenge/search', [ChallengesController::class, 'search']);
-
+    Route::get('challenge/getSuccessChallenge', [ChallengesController::class, 'getSuccessChallenge']);
+    
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
         Route::get('/challenge/getchallenges', [ChallengesController::class, 'getchallenges']);
     });
