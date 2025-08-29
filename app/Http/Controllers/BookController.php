@@ -323,4 +323,13 @@ class BookController extends Controller
             'books' => $books
         ]);
     }
+    public function getAllBook()
+    {
+        $user = Auth::user();
+        $books = Book::get();
+
+        return response()->json([
+            'books' => $this->service->transformBooks($books)
+        ]);
+    }
 }
