@@ -13,7 +13,7 @@ class SuggestionController extends Controller
     public function index()
     {
         $reader = Auth::user();
-        $suggestions = BookSuggestion::select('title', 'author_name', 'reader_id', 'created_at')->get();
+        $suggestions = BookSuggestion::get();
         $suggestions = $suggestions->map(function ($suggestion) {
             $date_of_suggestion = Carbon::parse($suggestion->created_at);
             return [
@@ -21,20 +21,17 @@ class SuggestionController extends Controller
                 'book_title' => $suggestion->title,
                 'author' => $suggestion->author_name,
                 'date_of_suggestion' => $date_of_suggestion,
+                'note' => $suggestion->note,
             ];
         });
 
-        return response()->json($suggestions);
-    }
-
-    public function show($suggestionId)
-    {
-        $admin = Auth::user();
-        $suggestion = BookSuggestion::FindOrFail($suggestionId);
         return response()->json([
-            'note' => $suggestion->note,
+            'success' => true,
+            'message' => 'Suggestions returned successfully',
+            'data' => $suggestions
         ]);
     }
+
     public function destroy($suggestionId)
     {
         $user = Auth::user();
@@ -83,5 +80,5 @@ class SuggestionController extends Controller
             'message' => 'Thank you! Your suggestion has been submitted successfully.',
         ]);
     }
-    
+
 }

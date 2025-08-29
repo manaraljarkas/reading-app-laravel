@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateReadingProgressRequest;
-use Illuminate\Support\Facades\Auth;
-use App\Models\ReaderBook;
 use App\Models\Book;
 use App\Models\Reader;
-use Illuminate\Http\JsonResponse;
+use App\Models\ReaderBook;
 use App\Services\{BookService, ReadingProgressService};
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ReaderBookController extends Controller
 {
@@ -19,22 +20,63 @@ class ReaderBookController extends Controller
     {
         $this->service = $service;
     }
-    public function getMostRatedBooks(): JsonResponse
+    public function getMostRatedBooks(Request $request): JsonResponse
     {
-        $books = $this->service->getTopRatedBooks();
+        $search = $request->input('search');
+       if($search)
+        {
+       $books = $this->service->searchBooks($search);
+        return response()->json([
+            'success' => true,
+            'data' => $this->service->transformBooks($books),
+        ]);
+       }
+        else
+       {
+         $books = $this->service->getTopRatedBooks();
         return $this->respond($books);
+       }
     }
 
-    public function getAuthorBooks($authorId): JsonResponse
-    {
-        $books = $this->service->getBooksByAuthor($authorId);
-        return $this->respond($books);
+   public function getAuthorBooks(Request $request, $authorId): JsonResponse
+{
+    $search = $request->input('search');
+    $locale = app()->getLocale();
+
+    $query = Book::where('author_id', $authorId);
+
+    if ($search) {
+        $query->where(function ($q) use ($search) {
+            $q->where('title', 'LIKE', "%{$search}%")
+              ->orWhere('title', 'LIKE', "%{$search}%")
+              ->orWhere('publish_date', 'LIKE', "%{$search}%");
+        });
     }
 
-    public function getCategoryBooks($categoryId): JsonResponse
+    $books = $query->get();
+
+    return $this->respond($books);
+}
+
+
+    public function getCategoryBooks(Request $request,$categoryId): JsonResponse
     {
-        $books = $this->service->getBooksByCategory($categoryId);
+        $search = $request->input('search');
+
+        if ($search)
+            {
+               $books = $this->service->SearchbookWithCategory($categoryId, $search);
+                return response()->json([
+               'success' => true,
+               'data' => $this->service->transformBooks($books)
+                ]);
+            }
+    else
+      {
+         $books = $this->service->getBooksByCategory($categoryId);
         return $this->respond($books);
+       }
+
     }
 
     public function getFavoriteBooks(): JsonResponse
@@ -91,17 +133,33 @@ class ReaderBookController extends Controller
     {
         $user = Auth::user();
         $reader = $user->reader;
+
         if (!$reader) {
             return response()->json(['message' => 'Reader profile not found.'], 404);
         }
         $book = Book::findOrFail($bookId);
+
         if (!$book) {
             return response()->json(['message' => 'Book not found'], 404);
         }
-        $reader->books()->syncWithoutDetaching([
-            $bookId => ['status' => 'to_read']
-        ]);
-        return response()->json(['message' => 'Book added to To-Do List']);
+        $is_listed = ReaderBook::where('book_id', $bookId)->where('reader_id', $reader->id)->where('is_listed', true)->first();
+        if ($is_listed) {
+            $is_listed->update([
+                'is_listed' => false
+            ]);
+            return response()->json([
+                'message' => 'Book removed to To-Do List',
+                'is_listed' => false,
+            ]);
+        } else {
+            $reader->books()->syncWithoutDetaching([
+                $bookId => ['is_listed' => true]
+            ]);
+            return response()->json([
+                'message' => 'Book added to To-Do List',
+                'is_listed' => true
+            ]);
+        }
     }
 
     public function RateBook($bookId, Request $request)
@@ -141,6 +199,30 @@ class ReaderBookController extends Controller
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 400);
         }
+
+        $book = Book::find($id);
+
+        if (!$book) {
+            return response()->json([
+                'message' => 'Book not found.',
+            ], 404);
+        }
+
+        $progress = min($request->progress, $book->number_of_pages);
+        $readerBook->progress = $progress;
+
+        if ($progress >= $book->number_of_pages) {
+            $readerBook->status = 'completed';
+        } elseif ($readerBook->status === 'completed' && $progress < $book->number_of_pages) {
+            $readerBook->status = 'in_read';
+        }
+
+        $readerBook->save();
+
+        return response()->json([
+            'message' => 'Reading progress updated successfully.'
+        ]);
+
     }
 
     public function removeFromFavorites($bookId)
@@ -172,6 +254,11 @@ class ReaderBookController extends Controller
     public function getReaderBookInfo()
     {
         $user = Auth::user();
+        if (!$user || !$user->reader) {
+            return response()->json([
+                'message' => 'Reader profile not found',
+            ], 404);
+        }
         $readerId = $user->reader->id;
 
         $CountService = new \App\Services\BookService();

@@ -173,9 +173,9 @@ class ReaderController extends Controller
         $readers = $query->paginate(5)->through(function ($reader) {
             return [
                 'id' => $reader->id,
-                'first_name' => $reader->first_name,
-                'last_name'=>$reader->last_name,
-                'picture' => $reader->picture
+                'name' => $reader->first_name,
+                'email' => $reader->user?->email ?? 'no user attached',
+                'picture' =>  $reader->picture,
             ];
         });
 

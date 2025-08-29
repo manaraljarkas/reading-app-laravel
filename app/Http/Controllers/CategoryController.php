@@ -13,30 +13,42 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 class CategoryController extends Controller
 {
-    public function getCategories()
-    {
-        $categories = Category::select('id', 'name', 'icon')->get();
-        $user = Auth::user();
-        $readerId = $user->reader?->id;
+  public function getCategories(Request $request)
+{
+    $user = Auth::user();
+    $readerId = $user->reader?->id;
+    $search = $request->input('search');
 
-        $categories = $categories->map(function ($category) use ($readerId) {
-            $locale = app()->getLocale();
-            $is_followed = DB::table('reader_categories')->where('reader_categories.reader_id', '=', $readerId)->where('reader_categories.category_id', '=', $category->id)
-                ->exists();
+    $query = Category::select('id', 'name', 'icon');
 
-            return [
-                'id' => $category->id,
-                'name' => $category->getTranslation('name', $locale),
-                'icon' => $category->icon,
-                'is_followed' => $is_followed,
-            ];
-        });
-
-        return response()->json([
-            'success' => true,
-            'data' => $categories
-        ]);
+    if ($search) {
+        $query->where('name->en', 'LIKE', "%{$search}%");
     }
+
+    $categories = $query->get();
+
+    $locale = app()->getLocale();
+    $categories = $categories->map(function ($category) use ($readerId, $locale) {
+        $is_followed = DB::table('reader_categories')
+            ->where('reader_id', $readerId)
+            ->where('category_id', $category->id)
+            ->exists();
+
+        return [
+            'id' => $category->id,
+            'name' => $category->getTranslation('name', $locale),
+            'icon' => $category->icon,
+            'is_followed' => $is_followed,
+        ];
+    });
+
+    return response()->json([
+        'success' => true,
+        'data' => $categories
+    ]);
+}
+
+
     public function index()
     {
         $user = Auth::user();

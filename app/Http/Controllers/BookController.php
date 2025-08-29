@@ -138,9 +138,9 @@ class BookController extends Controller
         return response()->json([
             'message' => 'Book retrieved successfully.',
             'data' => [
-                'title'           => $book->title,
-                'description'     => $book->description,
-                'summary'         => $book->summary,
+                'title'           => $book->getTranslations('title'),
+                'description'     => $book->getTranslations('description'),
+                'summary'         => $book->getTranslations('summary'),
                 'publish_date'    => $book->publish_date,
                 'points'          => $book->points,
                 'book_pdf'        => $book->book_pdf,
@@ -291,7 +291,7 @@ class BookController extends Controller
 
     public function AddCommentToTheBook($bookId, Request $request)
     {
-        $reader = Auth::user();
+        $user = Auth::user();
         $book = Book::find($bookId);
         if (!$book) {
             return response()->json(['message' => 'Book not found .'], 404);
@@ -304,7 +304,7 @@ class BookController extends Controller
         $comment = Comment::create([
             'comment' => $request->comment,
             'book_id' => $bookId,
-            'reader_id' => $reader->id,
+            'reader_id' => $user->reader->id,
         ]);
         return response()->json([
             'message' => 'comment added successfully'
@@ -332,6 +332,33 @@ class BookController extends Controller
         return response()->json([
             'success' => true,
             'data' => $this->service->transformBooks($books),
+        ]);
+    }
+    public function search(Request $request)
+    {
+        $user = Auth::user();
+        $search = $request->input('search');
+        $query = Book::query();
+        if ($search) {
+            $query->where('title->en', 'Like', "%{$search}%");
+        }
+        $books = $query->get()->map(function ($book) {
+            return [
+                'id' => $book->id,
+                'title' => $book->getTranslation('title', 'en'),
+            ];
+        });
+        return response()->json([
+            'books' => $books
+        ]);
+    }
+    public function getAllBook()
+    {
+        $user = Auth::user();
+        $books = Book::get();
+
+        return response()->json([
+            'books' => $this->service->transformBooks($books)
         ]);
     }
 }

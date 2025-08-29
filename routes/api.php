@@ -63,13 +63,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
         Route::get('/author/getAuthors', [AuthorController::class, 'getAuthors']);
         Route::get('search/authors', [AuthorController::class, 'searchAuthors']);
+        Route::get('/book/getAllBook', [BookController::class, 'getAllBook']);
     });
 
     // ==================== Book ====================
     Route::get('book/getBookFile/{BookId}', [BookController::class, 'getBookFile']);
     Route::get('book/getNumbers', [BookController::class, 'getNumbers']);
     Route::get('book/search', [BookController::class, 'search']);
-    Route::get('/book/SearchBookINCategory/{id}', [BookController::class, 'SearchBookINCategory']);
+
+
+    Route::get('book/search', [BookController::class, 'getAllBook']);
     Route::controller(BookController::class)->group(function () {
         Route::get('books', 'index')->middleware(['auth:sanctum', 'permission:read book']);
         Route::get('books/{id}', 'show')->middleware(['auth:sanctum', 'permission:read book']);
@@ -93,6 +96,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('book/update-reading-progress/{id}', [ReaderBookController::class, 'updateReadingProgress']);
     Route::post('book/remove-from-favorites/{id}', [ReaderBookController::class, 'removeFromFavorites']);
     Route::get('book/getReaderBookInfo', [ReaderBookController::class, 'getReaderBookInfo']);
+
 
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
         Route::get('/books/most-rated', [ReaderBookController::class, 'getMostRatedBooks']);
@@ -149,6 +153,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/challenge/JoinToChallenge/{id}', [ChallengesController::class, 'JoinToChallenge']);
     Route::get('/challenge/getAllChallenges', [ChallengesController::class, 'getAllChallenges']);
     Route::get('/challenge/search', [ChallengesController::class, 'search']);
+    Route::get('challenge/getSuccessChallenge', [ChallengesController::class, 'getSuccessChallenge']);
 
     Route::prefix('mobile')->middleware('set.lang')->group(function () {
         Route::get('/challenge/getchallenges', [ChallengesController::class, 'getchallenges']);

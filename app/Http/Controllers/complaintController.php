@@ -21,7 +21,11 @@ class ComplaintController extends Controller
                 'date' => $complaint->created_at,
             ];
         });
-        return response()->json($complaints);
+        return response()->json([
+            'success' => true,
+            'message' => 'Complaints returned successfully',
+            'data' => $complaints
+        ]);
     }
 
     public function createComplaint(AddComplaintRequest $request)
