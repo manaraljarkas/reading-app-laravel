@@ -62,11 +62,14 @@ class UserController extends Controller
     {
         $user = Auth::user();
         $admin = User::where('role', 'admin')->where('id', $adminId)->first();
-        if (!$admin) {
-            return response()->json(['message' => 'Admin not found'], 404);
+        if($admin){
+            $admin->delete();
+            return response()->json(['message' => 'Admin deleted successfully']);
         }
-        $admin->delete();
-        return response()->json(['message' => 'Admin deleted successfully']);
+        else {
+            return response()->json(['message' => 'Admin not found Or not true role'], 404);
+        }
+
     }
 
     public function getAdmin()
