@@ -9,6 +9,7 @@ use App\Models\BookChallenge;
 use App\Models\Challenge;
 use App\Models\ReaderBook;
 use App\Models\ReaderChallenge;
+use App\Services\BookService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -16,6 +17,12 @@ use Illuminate\Support\Facades\DB;
 
 class ChallengesController extends Controller
 {
+    protected BookService $service;
+
+    public function __construct(BookService $service)
+    {
+        $this->service = $service;
+    }
     public function getchallenges()
     {
         $user = Auth::user();
@@ -242,7 +249,8 @@ class ChallengesController extends Controller
     {
         $user = Auth::user();
         $challenges = Challenge::with('sizeCategory', 'category', 'books', 'books.readerBooks', 'readers')->orderByDesc('created_at')->get()->map(function ($challenge) use ($user) {
-            $is_challenged = $challenge->readers->contains('id', $user->reader->id);
+         $is_challenged = $challenge->readers->contains('id', $user->reader->id);
+
             return [
                 'id' => $challenge->id,
                 'title' => $challenge->title,
@@ -257,18 +265,8 @@ class ChallengesController extends Controller
                     'name' => $challenge->category->name,
                     'icon' => $challenge->category->icon
                 ],
-                'books' => $challenge->books->map(function ($book) use ($is_challenged) {
-                    $average = $book->readerBooks->avg('rating');
+                'books' =>$this->service->transformBooks($challenge->books),
 
-                    return [
-                        'id' => $book->id,
-                        'title' => $book->title,
-                        'cover_image' => $book->cover_image,
-                        'number_of_pages' => $book->number_of_pages,
-                        'author_name' => $book->author->name,
-                        'book_rate' => round($average, 2),
-                    ];
-                })
             ];
         });
         return response()->json(['data' => $challenges]);
