@@ -12,11 +12,16 @@ class SuggestionController extends Controller
 {
     public function index()
     {
-        $reader = Auth::user();
-        $suggestions = BookSuggestion::get();
+        $suggestions = BookSuggestion::with('reader')->get();
+
         $suggestions = $suggestions->map(function ($suggestion) {
             $date_of_suggestion = Carbon::parse($suggestion->created_at);
+
             return [
+                'id' => $suggestion->id,
+                'reader_name' => $suggestion->reader
+                    ? trim($suggestion->reader->first_name . ' ' . $suggestion->reader->last_name)
+                    : null,
                 'reader_id' => $suggestion->reader_id,
                 'book_title' => $suggestion->title,
                 'author' => $suggestion->author_name,
@@ -31,6 +36,7 @@ class SuggestionController extends Controller
             'data' => $suggestions
         ]);
     }
+
 
     public function destroy($suggestionId)
     {
@@ -66,19 +72,18 @@ class SuggestionController extends Controller
         ]);
     }
 
-        public function store(\App\Http\Requests\AddSuggestionRequest $request)
+    public function store(\App\Http\Requests\AddSuggestionRequest $request)
     {
         $user = Auth::user();
         $data = $request->validated();
         $suggestion = BookSuggestion::create([
             'title' => $data['title'],
-            'author_name' => $data['author_name'] ??null,
-            'note' => $data['note'] ??null,
+            'author_name' => $data['author_name'] ?? null,
+            'note' => $data['note'] ?? null,
             'reader_id' => $user->reader->id
         ]);
         return response()->json([
             'message' => 'Thank you! Your suggestion has been submitted successfully.',
         ]);
     }
-
 }

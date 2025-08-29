@@ -18,7 +18,7 @@ class BadgeUnlockedNotification extends Notification
 
     public function via($notifiable)
     {
-        return ['database'];
+        return [\App\Channels\CustomDatabaseChannel::class];
     }
 
     public function toDatabase($notifiable)
@@ -36,10 +36,10 @@ class BadgeUnlockedNotification extends Notification
                     . $this->badge->getTranslation('title', 'ar')
                     . ". " . $this->badge->getTranslation('achievment', 'ar'),
             ],
-            'category' => [
+            'category' => json_encode([
                 'en' => "Badge awarded",
                 'ar' => "الحصول على شارة",
-            ],
+            ]),
         ];
     }
 }

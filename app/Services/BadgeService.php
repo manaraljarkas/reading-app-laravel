@@ -44,13 +44,8 @@ class BadgeService
 
                     try {
                         if ($reader->user->fcm_token) {
-                            $title = method_exists($badge, 'getTranslation')
-                                ? $badge->getTranslation('title', 'en')
-                                : $badge->title;
-
-                            $body = method_exists($badge, 'getTranslation')
-                                ? $badge->getTranslation('achievement', 'en')
-                                : $badge->achievement;
+                            $title = "🏆 " . $badge->getTranslation('title', 'en');
+                            $body  = $badge->getTranslation('achievment', 'en');
 
                             $data = [
                                 'badge_id' => (string) $badge->id,
@@ -60,7 +55,7 @@ class BadgeService
 
                             $this->fcmService->notifyUsers(
                                 collect([$reader->user]),
-                                "🏆 {$title}",
+                                $title,
                                 $body,
                                 $data
                             );
@@ -84,8 +79,10 @@ class BadgeService
             'points' => $reader->total_points >= ($badge->threshold ?? 0),
 
             'challenge_completed' => $reader->challenges()
-                ->wherePivot('progress', 'completed')
-                ->count() >= 1,
+                ->newPivotStatement() // direct query to pivot table
+                ->where('reader_id', $reader->id)
+                ->where('progress', 'completed')
+                ->exists(),
 
             default => false,
         };
