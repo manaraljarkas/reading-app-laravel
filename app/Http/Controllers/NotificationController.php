@@ -13,22 +13,21 @@ class NotificationController extends Controller
         $user = $request->user();
         $locale = $request->header('lang', app()->getLocale());
 
-        $staticCategories = [
-            'en' => 'New book',
-            'ar' => 'كتاب جديد'
-        ];
+        $notifications = $user->notifications()->latest()->get()->map(function ($notification) use ($locale) {
+            $titleData = $notification->data['title'] ?? [];
+            $messageData = $notification->data['message'] ?? [];
+            $categoryData = json_decode($notification->category, true) ?? [];
 
-        $notifications = $user->notifications()->latest()->get()->map(function ($notification) use ($locale, $staticCategories) {
             return [
                 'id'          => $notification->id,
-                'title'       => $notification->data['title'][$locale] ?? $notification->data['title']['en'],
-                'category'    => $staticCategories[$locale] ?? $staticCategories['en'],
-                'description' => $notification->data['message'][$locale] ?? $notification->data['message']['en'] ?? null,
-                'type'        => $notification->data['type'] ?? 'general',
+                'title'       => $titleData[$locale] ?? $titleData['en'] ?? null,
+                'category'    => $categoryData[$locale] ?? $categoryData['en'] ?? null,
+                'description' => $messageData[$locale] ?? $messageData['en'] ?? null,
                 'is_read'     => $notification->read_at ? true : false,
                 'created_at'  => $notification->created_at->toDateTimeString(),
             ];
         });
+
 
         return response()->json([
             'unread_count' => $user->unreadNotifications()->count(),
