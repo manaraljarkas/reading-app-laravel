@@ -12,7 +12,6 @@ use App\Mail\WelcomeMail;
 use App\Models\Reader;
 use App\Models\User;
 use App\Services\PermissionService;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -46,35 +45,6 @@ class AuthController extends Controller
             'token' => $token
         ], 201);
     }
-
-    // public function login(LoginRequest $request)
-    // {
-    //     if (!Auth::attempt($request->only('email', 'password'))) {
-    //         return response()->json([
-    //             'message' => 'Invalid email or password'
-    //         ], 401);
-    //     }
-
-    //     $user = User::where('email', $request->email)->firstOrFail();
-    //     $token = $user->createToken('auth_token')->plainTextToken;
-    //     $reader = $user->reader;
-
-    //     if (!$reader) {
-    //         return response()->json([
-    //             'message' => 'Login successfully but profile not found for this user.',
-    //             'token' => $token
-    //         ], 200);
-    //     }
-
-    //     return response()->json([
-    //         'message' => 'Login successfully',
-    //         'first_name' => $reader->first_name,
-    //         'last_name' => $reader->last_name,
-    //         'picture' => $reader->picture,
-    //         'nickname' => $reader->nickname,
-    //         'token' => $token
-    //     ], 200);
-    // }
 
     public function login(LoginRequest $request)
     {
@@ -133,46 +103,6 @@ class AuthController extends Controller
         ], 200);
     }
 
-    // public function saveProfile(ProfileRequest $request)
-    // {
-    //     $userId = Auth::id();
-    //     if (!$userId) {
-    //         return response()->json(['message' => 'Unauthenticated'], 401);
-    //     }
-
-    //     $hasProfile = Reader::where('user_id', $userId)->exists();
-
-    //     $validated = $request->validated();
-
-    //     if (!$hasProfile) {
-    //         if (empty($validated['first_name']) || empty($validated['last_name'])) {
-    //             return response()->json([
-    //                 'message' => 'First name and last name are required for new profile.'
-    //             ], 422);
-    //         }
-    //     }
-
-    //     if ($request->hasFile('picture')) {
-    //         $uploadResult = Cloudinary::uploadApi()->upload(
-    //             $request->file('picture')->getRealPath(),
-    //             ['folder' => 'reading-app/profiles']
-    //         );
-    //         $validated['picture'] = $uploadResult['secure_url'];
-    //     }
-
-    //     $reader = Reader::updateOrCreate(
-    //         ['user_id' => $userId],
-    //         $validated
-    //     );
-
-    //     if ($reader->wasRecentlyCreated) {
-    //         return response()->json(['message' => 'Profile created successfully.'], 201);
-    //     }
-
-    //     event(new ProfileUpdated($userId, array_keys($validated)));
-    //     return response()->json(['message' => 'Profile updated successfully.'], 200);
-    // }
-
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
@@ -191,11 +121,8 @@ class AuthController extends Controller
         $validated['user_id'] = $userId;
 
         if ($request->hasFile('picture')) {
-            $uploadResult = Cloudinary::uploadApi()->upload(
-                $request->file('picture')->getRealPath(),
-                ['folder' => 'reading-app/profiles']
-            );
-            $validated['picture'] = $uploadResult['secure_url'];
+            $path = $request->file('picture')->store('profiles', 'public');
+            $validated['picture'] = '/storage/' . $path;
         }
 
         $profile = Reader::create($validated);
@@ -216,11 +143,8 @@ class AuthController extends Controller
         $reader->fill($validated);
 
         if ($request->hasFile('picture')) {
-            $uploadResult = Cloudinary::uploadApi()->upload(
-                $request->file('picture')->getRealPath(),
-                ['folder' => 'reading-app/profiles']
-            );
-            $reader->picture = $uploadResult['secure_url'];
+            $path = $request->file('picture')->store('profiles', 'public');
+            $reader->picture = '/storage/' . $path;
         }
 
         if ($reader->save()) {
