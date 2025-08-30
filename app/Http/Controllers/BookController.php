@@ -220,7 +220,6 @@ class BookController extends Controller
             $data = [
                 'book_id' => (string) $book->id,
                 'category_id' => (string) $book->category_id,
-                'type' => 'info',
             ];
 
             try {
