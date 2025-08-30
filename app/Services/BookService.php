@@ -95,7 +95,7 @@ class BookService
         });
     }
 
-    private function baseQuery()
+    public function baseQuery()
     {
         $readerId = $this->getReaderId();
 
