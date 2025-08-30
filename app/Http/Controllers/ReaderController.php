@@ -103,7 +103,22 @@ class ReaderController extends Controller
         }
 
         $countService = new \App\Services\CountService($reader->id);
+        $completedBooks = DB::table('reader_books')
+            ->where('reader_id', $reader->id)
+            ->where('status', 'completed')
+            ->pluck('book_id');
+        $books_number = $completedBooks->count();
 
+        $countries_number = \App\Models\Book::whereIn('id', $completedBooks)
+            ->with('author.country')
+            ->get()
+            ->pluck('author.country_id')
+            ->unique()
+            ->count();
+            $challenges_number = DB::table('reader_challenges')
+            ->where('reader_id', $reader->id)
+            ->where('progress', 'completed')
+            ->count();
         $locale = app()->getLocale();
         $badges = DB::table('reader_badges')
             ->join('badges', 'badges.id', '=', 'reader_badges.badge_id')
@@ -127,9 +142,9 @@ class ReaderController extends Controller
                 'nickname'          => $reader->nickname ?? "",
                 'bio'               => $reader->bio ?? "",
                 'quote'             => $reader->quote ?? "",
-                'books_number'      => $countService->countBooks(),
-                'countries_number'  => $countService->countCountries(),
-                'challenges_number' => $countService->countChallenges(),
+                'books_number'      =>$books_number,
+                'countries_number'  => $countries_number,
+                'challenges_number' => $challenges_number,
                 'total_points'      => $reader->total_points ?? 0,
                 'badges'            => $badges,
             ]
@@ -165,10 +180,9 @@ class ReaderController extends Controller
     {
         $user = Auth::user();
         $search = $request->input('search');
-        $query = Reader::select('id', 'first_name','last_name','picture');
+        $query = Reader::select('id', 'first_name', 'last_name', 'picture');
         if ($search) {
-            $query->where('first_name', 'LIKE', "%{$search}%")->
-            orwhere('last_name','LIKE', "%{$search}%");
+            $query->where('first_name', 'LIKE', "%{$search}%")->orwhere('last_name', 'LIKE', "%{$search}%");
         }
         $readers = $query->paginate(5)->through(function ($reader) {
             return [
