@@ -18,7 +18,7 @@ class NewBookNotification extends Notification
 
     public function via($notifiable)
     {
-        return ['database'];
+        return [\App\Channels\CustomDatabaseChannel::class];
     }
 
     public function toDatabase($notifiable)
@@ -32,7 +32,10 @@ class NewBookNotification extends Notification
                 'en' => "New book '{$this->book->getTranslation('title', 'en')}' was added in category {$this->book->category->getTranslation('name', 'en')}.",
                 'ar' => "تمت إضافة كتاب جديد '{$this->book->getTranslation('title', 'ar')}' في فئة {$this->book->category->getTranslation('name', 'ar')}."
             ],
-            'type' => 'info',
+            'category' =>  json_encode([
+                'en' => "New book",
+                'ar' => "كتاب جديد",
+            ]),
         ];
     }
 }

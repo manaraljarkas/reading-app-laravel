@@ -204,12 +204,14 @@ class BookController extends Controller
             $book = Book::create($validated);
             $book->load('category');
 
-            $followers = $book->category->readers
-                ->map(fn($r) => $r->user)
-                ->filter(fn($u) => $u);
+            if ($book->category) {
+                $followers = $book->category->readers
+                    ->map(fn($r) => $r->user)
+                    ->filter(fn($u) => $u);
 
-            foreach ($followers as $user) {
-                $user->notify(new NewBookNotification($book));
+                foreach ($followers as $user) {
+                    $user->notify(new NewBookNotification($book));
+                }
             }
 
             $title = "📚 New Book Added";
@@ -371,7 +373,7 @@ class BookController extends Controller
     {
         $user = Auth::user();
         $search = $request->input('search');
-        $query = Book::with('readers','readerBooks','author','category');
+        $query = Book::with('readers', 'readerBooks', 'author', 'category');
         if ($search) {
             $query->where('title->en', 'LIKE', "%{$search}%");
         }
@@ -382,7 +384,7 @@ class BookController extends Controller
                 'author_name' => $book->author?->getTranslation('name', 'en'),
                 'category' => $book->category?->getTranslation('name', 'en'),
                 'publish_date' => $book->publish_date,
-                'star_rate' => round($book->readerBooks->avg('rating')?? 0, 2),
+                'star_rate' => round($book->readerBooks->avg('rating') ?? 0, 2),
                 'number_of_readers' => $book->readers->count(),
             ];
         });
