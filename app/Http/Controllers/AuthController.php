@@ -126,6 +126,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Login successfully',
+            'is_password_changed' => $user->is_password_changed,
             'token' => $token,
             'role' => $user->role,
             'permissions' => $permissions,
