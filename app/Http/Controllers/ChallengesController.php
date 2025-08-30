@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use Illuminate\Support\Facades\DB;
 
 use App\Http\Requests\StoreChallengeRequest;
 use App\Http\Requests\UpdateChallengeRequest;
@@ -13,7 +14,6 @@ use App\Services\BookService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class ChallengesController extends Controller
 {
@@ -133,29 +133,29 @@ class ChallengesController extends Controller
     }
     public function show($id)
     {
-        $challenge = Challenge::with('Category','SizeCategory','books')->withCount('readers')->findOrFail($id);
+        $challenge = Challenge::with('Category', 'SizeCategory', 'books')->withCount('readers')->findOrFail($id);
 
         return response()->json([
             'success' => true,
             'message' => 'Challenge details retrieved successfully.',
             'data' => [
-                'title'=>$challenge->getTranslations('title'),
-                'points'=>$challenge->points,
-                'category_id'=>$challenge->Category?->id,
-                'category_name'=>$challenge->Category?->getTranslations('name'),
-                'size_category_id'=>$challenge->SizeCategory?->id,
-                'size_catgory_name'=>$challenge->SizeCategory?->getTranslations('name'),
+                'title' => $challenge->getTranslations('title'),
+                'points' => $challenge->points,
+                'category_id' => $challenge->Category?->id,
+                'category_name' => $challenge->Category?->getTranslations('name'),
+                'size_category_id' => $challenge->SizeCategory?->id,
+                'size_catgory_name' => $challenge->SizeCategory?->getTranslations('name'),
                 'description' => $challenge->getTranslations('description'),
                 'number_of_books' => $challenge->number_of_books,
-                'duration'=>$challenge->duration,
+                'duration' => $challenge->duration,
                 'number_of_participants' => $challenge->readers_count,
-                'books' =>$challenge->books->map(function($book) use( $challenge){
-                return[
-                    'id'=>$book->id,
-                    'title_book'=>$book->getTranslations('title'),
-                    'book_pdf'=>$book->book_pdf,
-                    'cover_image'=>$book->cover_image
-                ];
+                'books' => $challenge->books->map(function ($book) use ($challenge) {
+                    return [
+                        'id' => $book->id,
+                        'title_book' => $book->getTranslations('title'),
+                        'book_pdf' => $book->book_pdf,
+                        'cover_image' => $book->cover_image
+                    ];
                 })
             ]
         ]);
@@ -254,8 +254,54 @@ class ChallengesController extends Controller
     public function getAllChallenges()
     {
         $user = Auth::user();
-        $challenges = Challenge::with('sizeCategory', 'category', 'books', 'books.readerBooks', 'readers')->orderByDesc('created_at')->get()->map(function ($challenge) use ($user) {
-         $is_challenged = $challenge->readers->contains('id', $user->reader->id);
+        $readerId = optional($user->reader)->id;
+
+        $challenges = Challenge::with([
+            'sizeCategory',
+            'category',
+            'books' => function($q) use ($readerId) {
+                $q->with([
+                    'author.country',
+                    'category',
+                    'sizecategory',
+                    'readerBooks' => function($q) use ($readerId) {
+                        if ($readerId) {
+                            $q->where('reader_id', $readerId);
+                        }
+                    }
+                ]);
+            }
+        ])->orderByDesc('created_at')->get()
+        ->map(function ($challenge) use ($readerId) {
+
+            $is_challenged = $challenge->readers->contains('reader_id', $readerId);
+
+            $books = $challenge->books->map(function ($book) use ($readerId) {
+                $readerBook = $book->readerBooks->firstWhere('reader_id', $readerId);
+
+                return [
+                    'id' => $book->id,
+                    'title' => $book->getTranslation('title', app()->getLocale()),
+                    'description' => $book->getTranslation('description', app()->getLocale()),
+                    'author_name' => optional($book->author)->getTranslation('name', app()->getLocale()),
+                    'country_flag' => $book->author && $book->author->country
+                        ? \App\Helpers\CountryHelper::countryToEmoji($book->author->country->code)
+                        : null,
+                    'publish_date' => $book->publish_date,
+                    'summary' => $book->summary,
+                    'cover_image' => $book->cover_image,
+                    'points' => $book->points,
+                    'star_rate' => round($book->star_rate ?? 0),
+                    'readers_count' => $book->readerBooks->count(),
+                    'category_name' => optional($book->category)->getTranslation('name', app()->getLocale()),
+                    'size_category_name' => optional($book->sizecategory)->getTranslation('name', app()->getLocale()),
+                    'number_of_pages' => $book->number_of_pages ?? 0,
+                    'progress' => optional($readerBook)->progress ?? 0,
+                    'is_favourite' => (bool) optional($readerBook)->is_favourite,
+                    'is_challenged' => (bool) optional($readerBook)->is_challenged,
+                    'is_in_library' => (bool) (optional($readerBook)->status === 'to_read'),
+                ];
+            });
 
             return [
                 'id' => $challenge->id,
@@ -271,10 +317,10 @@ class ChallengesController extends Controller
                     'name' => $challenge->category->name,
                     'icon' => $challenge->category->icon
                 ],
-                'books' =>$this->service->transformBooks($challenge->books),
-
+                'books' => $books,
             ];
         });
+
         return response()->json(['data' => $challenges]);
     }
 
@@ -346,9 +392,55 @@ class ChallengesController extends Controller
     public function getSuccessChallenge()
     {
         $user = Auth::user();
-        $Challenges = ReaderChallenge::where('progress', 'completed')->select('id','progress','percentage','completed_books','challenge_id','reader_id')->get();
+        $readerId = optional($user->reader)->id;
+
+        $challenges = Challenge::with([
+            'readers',
+            'sizeCategory',
+            'category',
+            'books' => function ($q) {
+                $q->select('books.*')
+                  ->addSelect([
+                      'star_rate' => DB::table('reader_books')
+                          ->selectRaw('COALESCE(AVG(rating), 0)')
+                          ->whereColumn('reader_books.book_id', 'books.id'),
+                      'readers_count' => DB::table('reader_books')
+                          ->selectRaw('COUNT(*)')
+                          ->whereColumn('reader_books.book_id', 'books.id')
+                          ->where('progress', '>', 0),
+                  ]);
+            },
+            'books.author.country',
+            'books.category',
+            'books.sizecategory',
+        ])
+        ->whereHas('readers', fn($q) => $q->where('progress', 'completed'))
+        ->orderByDesc('created_at')
+        ->get()
+        ->map(function ($challenge) use ($readerId) {
+            $is_challenged = $challenge->readers->contains('reader_id', $readerId);
+
+            return [
+                'id' => $challenge->id,
+                'title' => $challenge->title,
+                'description' => $challenge->description,
+                'points' => $challenge->points,
+                'duration' => $challenge->duration,
+                'number_of_books' => $challenge->number_of_books,
+                'size_category_name' => $challenge->sizeCategory->name,
+                'is_challenged' => $is_challenged,
+                'category' => [
+                    'id' => $challenge->category->id,
+                    'name' => $challenge->category->name,
+                    'icon' => $challenge->category->icon
+                ],
+                'books' => $this->service->transformBooks($challenge->books),
+            ];
+        });
+
         return response()->json([
-            'challenges' => $Challenges
+            'data' => $challenges
         ]);
     }
+
 }
