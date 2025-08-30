@@ -363,8 +363,7 @@ class BookController extends Controller
     public function getAllBook()
     {
         $user = Auth::user();
-        $books = Book::get();
-
+        $books = $this->service->baseQuery()->get();
         return response()->json([
             'books' => $this->service->transformBooks($books)
         ]);
