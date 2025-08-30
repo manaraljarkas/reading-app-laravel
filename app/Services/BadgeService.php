@@ -40,17 +40,18 @@ class BadgeService
                 $reader->badges()->attach($badge->id);
 
                 if ($reader->user) {
+                    // store in DB notifications
                     $reader->user->notify(new BadgeUnlockedNotification($badge));
 
+                    // push FCM notification
                     try {
                         if ($reader->user->fcm_token) {
-                            $title = "🏆 " . $badge->getTranslation('title', 'en');
-                            $body  = $badge->getTranslation('achievment', 'en');
+                            $title = "🏆 Badge Unlocked";
+                            $body  = "{$badge->getTranslation('achievment', 'en')}";
 
                             $data = [
                                 'badge_id' => (string) $badge->id,
                                 'type'     => 'badge',
-                                'image'    => $badge->image,
                             ];
 
                             $this->fcmService->notifyUsers(
