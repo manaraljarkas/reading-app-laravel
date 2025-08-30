@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('challenges', function (Blueprint $table) {
-                
+            $table->id();
             $table->json('title');
             $table->json('description')->nullable();
             $table->integer('points')->default(0);
