@@ -2,39 +2,50 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Log;
 use Kreait\Firebase\Factory;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification;
 
 class FcmService
 {
-    protected $messaging;
+    protected $messaging = null;
 
-    public function __construct()
+    protected function getMessaging()
     {
-        $firebase = (new Factory)
-            ->withServiceAccount(base_path(env('FIREBASE_CREDENTIALS')));
+        if ($this->messaging === null) {
+            $credentials = env('FIREBASE_CREDENTIALS');
 
-        $this->messaging = $firebase->createMessaging();
+            if (!$credentials || !file_exists(base_path($credentials))) {
+                return null;
+            }
+
+            $firebase = (new Factory)
+                ->withServiceAccount(base_path($credentials));
+
+            $this->messaging = $firebase->createMessaging();
+        }
+
+        return $this->messaging;
     }
 
-    /**
-     * Send a push notification to a single device token
-     */
     public function sendNotification(string $deviceToken, string $title, string $body, array $data = [])
     {
+        $messaging = $this->getMessaging();
+        if (!$messaging) {
+            Log::warning('Firebase not configured, skipping notification.');
+            return false;
+        }
+
         $notification = Notification::create($title, $body);
 
         $message = CloudMessage::withTarget('token', $deviceToken)
             ->withNotification($notification)
             ->withData($data);
 
-        return $this->messaging->send($message);
+        return $messaging->send($message);
     }
 
-    /**
-     * Send a notification to multiple users
-     */
     public function notifyUsers(iterable $users, string $title, string $body, array $data = [])
     {
         foreach ($users as $user) {
