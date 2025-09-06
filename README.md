@@ -59,7 +59,7 @@ The backend is built with **Laravel** and provides secure APIs for the mobile ap
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/your-username/huroof-backend.git
+    git clone https://github.com/manaraljarkas/reading-app-laravel.git
     cd huroof-backend
 
     ```
@@ -105,7 +105,7 @@ The backend is built with **Laravel** and provides secure APIs for the mobile ap
 📌 Full API documentation is available in the Postman collection:
 
 ```bash
-👉 https://www.postman.com/laravel-backend-team/workspace/reading-app-laravel
+👉https://www.postman.com/laravel-backend-team/workspace/reading-app-laravel
 
 
 ```
