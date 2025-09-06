@@ -54,15 +54,6 @@ The backend is built with **Laravel** and provides secure APIs for the mobile ap
 
 ---
 
-## 📂 Project Structure
-
-app/ # Application core code
-config/ # Configuration files
-database/ # Migrations & seeders
-routes/ # API routes
-
----
-
 ## ⚙️ Installation & Setup
 
 1. Clone the repository:
