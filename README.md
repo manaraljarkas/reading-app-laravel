@@ -100,12 +100,7 @@ The backend is built with **Laravel** and provides secure APIs for the mobile ap
     php artisan serve
     ```
 
-## 📡 API Documentation
+## 📡 API Documentation  
 
-📌 Full API documentation is available in the Postman collection:
-
-```bash
-👉https://www.postman.com/laravel-backend-team/workspace/reading-app-laravel
-
-
-```
+📌 Full API documentation is available in the Postman collection:  
+👉 [Huroof API Documentation (Postman)](https://www.postman.com/laravel-backend-team/workspace/reading-app-laravel)
